@@ -126,12 +126,6 @@ export const OrderModal = ({ open, onClose, order }: OrderModalProps) => {
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Customer Info */}
-          <div className="rounded-lg border border-border bg-secondary/30 p-4">
-            <h3 className="mb-2 text-sm font-medium">Información del Cliente</h3>
-            <p className="text-sm">{order.customerName}</p>
-            <p className="text-sm text-muted-foreground">{order.customerEmail}</p>
-          </div>
 
           {/* Status */}
           <div className="space-y-2">
@@ -186,7 +180,7 @@ export const OrderModal = ({ open, onClose, order }: OrderModalProps) => {
                   <div className="flex-1">
                     <p className="text-sm font-medium">{item.productName}</p>
                     <p className="text-sm text-muted-foreground">
-                      S/ {item.price.toFixed(2)} c/u
+                      Bs {item.price.toFixed(1)} c/u
                     </p>
                   </div>
                   <div className="flex items-center gap-2">
@@ -226,7 +220,7 @@ export const OrderModal = ({ open, onClose, order }: OrderModalProps) => {
 
           {/* Discount */}
           <div className="space-y-2">
-            <Label htmlFor="discount">Descuento (S/)</Label>
+            <Label htmlFor="discount">Descuento (Bs)</Label>
             <Input
               id="discount"
               type="number"
@@ -244,17 +238,17 @@ export const OrderModal = ({ open, onClose, order }: OrderModalProps) => {
           <div className="rounded-lg border border-border bg-secondary/30 p-4 space-y-2">
             <div className="flex justify-between text-sm">
               <span className="text-muted-foreground">Subtotal:</span>
-              <span>S/ {calculateSubtotal().toFixed(2)}</span>
+              <span>Bs {calculateSubtotal().toFixed(1)}</span>
             </div>
             {formData.discount > 0 && (
               <div className="flex justify-between text-sm text-destructive">
                 <span>Descuento:</span>
-                <span>- S/ {formData.discount.toFixed(2)}</span>
+                <span>- Bs {formData.discount.toFixed(1)}</span>
               </div>
             )}
             <div className="flex justify-between border-t border-border pt-2 text-base font-semibold">
               <span>Total:</span>
-              <span>S/ {calculateTotal().toFixed(2)}</span>
+              <span>Bs {calculateTotal().toFixed(1)}</span>
             </div>
           </div>
 

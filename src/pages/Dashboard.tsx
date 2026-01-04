@@ -25,7 +25,7 @@ const Dashboard = () => {
     },
     {
       title: "Ingresos Totales",
-      value: `S/ ${totalRevenue.toFixed(2)}`,
+      value: `Bs ${totalRevenue.toFixed(1)}`,
       icon: TrendingUp,
       description: "Todos los pedidos",
     },
@@ -79,7 +79,7 @@ const Dashboard = () => {
                     <p className="text-xs text-muted-foreground">{order.id}</p>
                   </div>
                   <div className="text-right">
-                    <p className="text-sm font-medium">S/ {order.total.toFixed(2)}</p>
+                    <p className="text-sm font-medium">Bs {order.total.toFixed(1)}</p>
                     <p className="text-xs text-muted-foreground">{order.status}</p>
                   </div>
                 </div>
@@ -111,7 +111,7 @@ const Dashboard = () => {
                     <p className="text-sm font-medium">{product.name}</p>
                     <p className="text-xs text-muted-foreground">{product.brand}</p>
                   </div>
-                  <p className="text-sm font-medium">S/ {product.price.toFixed(2)}</p>
+                  <p className="text-sm font-medium">Bs {product.price.toFixed(1)}</p>
                 </div>
               ))}
             </div>

@@ -89,7 +89,7 @@ const Products = () => {
       key: "price",
       label: "Precio",
       render: (product: Product) => (
-        <span className="font-medium">S/ {product.price.toFixed(2)}</span>
+        <span className="font-medium">Bs {product.price.toFixed(1)}</span>
       ),
     },
     {
