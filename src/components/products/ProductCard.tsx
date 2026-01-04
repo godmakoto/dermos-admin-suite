@@ -1,5 +1,5 @@
 import { Product } from "@/types";
-import { Power, Star, TrendingUp, Trash2 } from "lucide-react";
+import { Copy, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
@@ -7,6 +7,7 @@ interface ProductCardProps {
   product: Product;
   onClick: () => void;
   onDelete: (e: React.MouseEvent) => void;
+  onDuplicate: (e: React.MouseEvent) => void;
 }
 
 const getStockLevel = (stock: number) => {
@@ -29,7 +30,7 @@ const getStatusColor = (status: string) => {
   }
 };
 
-export const ProductCard = ({ product, onClick, onDelete }: ProductCardProps) => {
+export const ProductCard = ({ product, onClick, onDelete, onDuplicate }: ProductCardProps) => {
   const stockLevel = getStockLevel(product.stock);
 
   return (
@@ -73,32 +74,23 @@ export const ProductCard = ({ product, onClick, onDelete }: ProductCardProps) =>
         </p>
       </div>
 
-      {/* Actions */}
-      <div className="flex items-center gap-2">
+      {/* Stock Badge & Actions */}
+      <div className="ml-auto flex items-center gap-2">
+        <Badge
+          variant="outline"
+          className={`rounded-full border-2 px-3 py-1 text-sm font-medium ${stockLevel.color}`}
+        >
+          {product.stock} • {stockLevel.label}
+        </Badge>
+        
         <div className="flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
           <Button
             variant="ghost"
             size="icon"
             className="h-8 w-8"
-            onClick={(e) => e.stopPropagation()}
+            onClick={onDuplicate}
           >
-            <Power className={`h-4 w-4 ${getStatusColor(product.status)}`} />
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <Star className="h-4 w-4 text-muted-foreground hover:text-yellow-500" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
+            <Copy className="h-4 w-4 text-muted-foreground hover:text-primary" />
           </Button>
           <Button
             variant="ghost"
@@ -109,14 +101,6 @@ export const ProductCard = ({ product, onClick, onDelete }: ProductCardProps) =>
             <Trash2 className="h-4 w-4 text-destructive" />
           </Button>
         </div>
-
-        {/* Stock Badge */}
-        <Badge
-          variant="outline"
-          className={`ml-2 rounded-full border-2 px-3 py-1 text-sm font-medium ${stockLevel.color}`}
-        >
-          {product.stock} • {stockLevel.label}
-        </Badge>
       </div>
     </div>
   );
