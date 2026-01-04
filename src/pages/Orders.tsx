@@ -127,7 +127,7 @@ const Orders = () => {
     },
     {
       key: "items",
-      label: "Productos",
+      label: "Item",
       render: (order: Order) => (
         <span className="text-sm">
           {order.items.length} {order.items.length === 1 ? "producto" : "productos"}
