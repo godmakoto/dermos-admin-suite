@@ -1,3 +1,5 @@
+export type ProductStatus = "Activo" | "Inactivo" | "Agotado";
+
 export interface Product {
   id: string;
   name: string;
@@ -11,6 +13,8 @@ export interface Product {
   usage: string;
   ingredients: string;
   images: string[];
+  stock: number;
+  status: ProductStatus;
   createdAt: Date;
   updatedAt: Date;
 }
