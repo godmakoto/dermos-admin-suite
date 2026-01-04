@@ -52,6 +52,8 @@ const Orders = () => {
   const pendingCount = orders.filter((o) => o.status === "Pendiente").length;
   const completedCount = orders.filter((o) => o.status === "Finalizado").length;
   const cancelledCount = orders.filter((o) => o.status === "Cancelado").length;
+  const totalOrders = orders.length;
+  const totalRevenue = orders.reduce((sum, o) => sum + o.total, 0);
 
   // Filtered orders
   const filteredOrders = useMemo(() => {
@@ -328,6 +330,37 @@ const Orders = () => {
         onRowClick={handleEdit}
         emptyMessage="No hay pedidos que coincidan con los filtros."
       />
+
+      {/* Summary Indicators */}
+      <div className="mt-6 space-y-4">
+        {/* Status indicators */}
+        <div className="grid grid-cols-3 gap-4">
+          <div className="rounded-lg border border-border bg-card p-4">
+            <p className="text-sm text-muted-foreground">Finalizados</p>
+            <p className="text-2xl font-semibold text-green-500">{completedCount}</p>
+          </div>
+          <div className="rounded-lg border border-border bg-card p-4">
+            <p className="text-sm text-muted-foreground">Pendientes</p>
+            <p className="text-2xl font-semibold text-yellow-500">{pendingCount}</p>
+          </div>
+          <div className="rounded-lg border border-border bg-card p-4">
+            <p className="text-sm text-muted-foreground">Cancelados</p>
+            <p className="text-2xl font-semibold text-destructive">{cancelledCount}</p>
+          </div>
+        </div>
+
+        {/* Totals indicators */}
+        <div className="grid grid-cols-2 gap-4">
+          <div className="rounded-lg border border-border bg-card p-4">
+            <p className="text-sm text-muted-foreground">Total de Pedidos</p>
+            <p className="text-2xl font-semibold text-foreground">{totalOrders}</p>
+          </div>
+          <div className="rounded-lg border border-border bg-card p-4">
+            <p className="text-sm text-muted-foreground">Ingresos Totales</p>
+            <p className="text-2xl font-semibold text-green-500">{totalRevenue.toFixed(1)} Bs</p>
+          </div>
+        </div>
+      </div>
 
       <OrderModal
         open={modalOpen}
