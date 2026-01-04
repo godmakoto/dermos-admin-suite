@@ -143,22 +143,6 @@ const Orders = () => {
     <MainLayout>
       <PageHeader title="Gestión de Pedidos" description="Click en cualquier pedido para ver detalles y editar" />
 
-      {/* Summary Cards */}
-      <div className="mb-6 grid grid-cols-3 gap-4">
-        <div className="rounded-lg border border-border bg-card p-4">
-          <p className="text-sm text-muted-foreground">Pendientes</p>
-          <p className="text-2xl font-semibold text-yellow-500">{pendingCount}</p>
-        </div>
-        <div className="rounded-lg border border-border bg-card p-4">
-          <p className="text-sm text-muted-foreground">Finalizados</p>
-          <p className="text-2xl font-semibold text-green-500">{completedCount}</p>
-        </div>
-        <div className="rounded-lg border border-border bg-card p-4">
-          <p className="text-sm text-muted-foreground">Cancelados</p>
-          <p className="text-2xl font-semibold text-destructive">{cancelledCount}</p>
-        </div>
-      </div>
-
       {/* Search and Filters */}
       <div className="mb-6 flex flex-col gap-3 rounded-lg border border-border bg-card p-4 sm:flex-row sm:items-center">
         {/* Search */}
