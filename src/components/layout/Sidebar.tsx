@@ -1,6 +1,13 @@
-import { Link, useLocation } from "react-router-dom";
-import { Package, ShoppingCart, Settings, LayoutDashboard } from "lucide-react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Package, ShoppingCart, Settings, LayoutDashboard, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
 
 const navItems = [
   { icon: LayoutDashboard, label: "Dashboard", path: "/" },
@@ -11,18 +18,36 @@ const navItems = [
 
 export const Sidebar = () => {
   const location = useLocation();
+  const navigate = useNavigate();
 
   return (
     <aside className="fixed left-0 top-0 z-40 h-screen w-64 border-r border-sidebar-border bg-sidebar">
       <div className="flex h-full flex-col">
-        {/* Logo */}
+        {/* Logo with dropdown */}
         <div className="flex h-16 items-center border-b border-sidebar-border px-6">
-          <div className="flex items-center gap-3">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
-              <Package className="h-4 w-4 text-primary-foreground" />
-            </div>
-            <span className="text-lg font-semibold text-foreground">DermoAdmin</span>
-          </div>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="flex items-center gap-3 p-0 h-auto hover:bg-transparent">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
+                  <Package className="h-4 w-4 text-primary-foreground" />
+                </div>
+                <span className="text-lg font-semibold text-foreground">DermoAdmin</span>
+                <ChevronDown className="h-4 w-4 text-muted-foreground" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" className="w-56 bg-popover border border-border shadow-lg z-50">
+              {navItems.map((item) => (
+                <DropdownMenuItem
+                  key={item.path}
+                  onClick={() => navigate(item.path)}
+                  className="cursor-pointer"
+                >
+                  <item.icon className="mr-2 h-4 w-4" />
+                  {item.label}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
 
         {/* Navigation */}
