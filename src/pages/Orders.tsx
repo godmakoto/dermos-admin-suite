@@ -33,16 +33,6 @@ const Orders = () => {
       ),
     },
     {
-      key: "customer",
-      label: "Cliente",
-      render: (order: Order) => (
-        <div>
-          <p className="font-medium">{order.customerName}</p>
-          <p className="text-sm text-muted-foreground">{order.customerEmail}</p>
-        </div>
-      ),
-    },
-    {
       key: "items",
       label: "Productos",
       render: (order: Order) => (
@@ -56,10 +46,10 @@ const Orders = () => {
       label: "Total",
       render: (order: Order) => (
         <div>
-          <span className="font-medium">S/ {order.total.toFixed(2)}</span>
+          <span className="font-medium">Bs {order.total.toFixed(1)}</span>
           {order.discount > 0 && (
             <p className="text-xs text-destructive">
-              -S/ {order.discount.toFixed(2)} desc.
+              -Bs {order.discount.toFixed(1)} desc.
             </p>
           )}
         </div>
