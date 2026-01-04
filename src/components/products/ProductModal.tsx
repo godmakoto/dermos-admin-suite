@@ -44,6 +44,8 @@ export const ProductModal = ({ open, onClose, product }: ProductModalProps) => {
     usage: "",
     ingredients: "",
     images: [] as string[],
+    stock: "",
+    status: "Activo" as "Activo" | "Inactivo" | "Agotado",
   });
 
   const [imageUrl, setImageUrl] = useState("");
@@ -62,6 +64,8 @@ export const ProductModal = ({ open, onClose, product }: ProductModalProps) => {
         usage: product.usage,
         ingredients: product.ingredients,
         images: [...product.images],
+        stock: product.stock.toString(),
+        status: product.status,
       });
     } else {
       setFormData({
@@ -76,6 +80,8 @@ export const ProductModal = ({ open, onClose, product }: ProductModalProps) => {
         usage: "",
         ingredients: "",
         images: [],
+        stock: "",
+        status: "Activo",
       });
     }
   }, [product, open]);
@@ -103,6 +109,8 @@ export const ProductModal = ({ open, onClose, product }: ProductModalProps) => {
       usage: formData.usage,
       ingredients: formData.ingredients,
       images: formData.images,
+      stock: parseInt(formData.stock) || 0,
+      status: formData.status,
       createdAt: product?.createdAt || new Date(),
       updatedAt: new Date(),
     };
@@ -259,6 +267,36 @@ export const ProductModal = ({ open, onClose, product }: ProductModalProps) => {
                           {label.name}
                         </SelectItem>
                       ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="stock">Stock</Label>
+                  <Input
+                    id="stock"
+                    type="number"
+                    min="0"
+                    value={formData.stock}
+                    onChange={(e) => setFormData({ ...formData, stock: e.target.value })}
+                    placeholder="0"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Estado</Label>
+                  <Select
+                    value={formData.status}
+                    onValueChange={(value: "Activo" | "Inactivo" | "Agotado") => setFormData({ ...formData, status: value })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Seleccionar estado" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Activo">Activo</SelectItem>
+                      <SelectItem value="Inactivo">Inactivo</SelectItem>
+                      <SelectItem value="Agotado">Agotado</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
