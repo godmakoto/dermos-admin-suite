@@ -75,15 +75,8 @@ export const ProductCard = ({ product, onClick, onDelete, onDuplicate }: Product
       </div>
 
       {/* Stock Badge & Actions */}
-      <div className="ml-auto flex items-center gap-2">
-        <Badge
-          variant="outline"
-          className={`rounded-full border-2 px-3 py-1 text-sm font-medium ${stockLevel.color}`}
-        >
-          {product.stock} • {stockLevel.label}
-        </Badge>
-        
-        <div className="flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+      <div className="ml-auto flex flex-col items-end gap-2">
+        <div className="flex items-center gap-1">
           <Button
             variant="ghost"
             size="icon"
@@ -101,6 +94,13 @@ export const ProductCard = ({ product, onClick, onDelete, onDuplicate }: Product
             <Trash2 className="h-4 w-4 text-destructive" />
           </Button>
         </div>
+        
+        <Badge
+          variant="outline"
+          className={`rounded-full border-2 px-3 py-1 text-sm font-medium ${stockLevel.color}`}
+        >
+          {product.stock} • {stockLevel.label}
+        </Badge>
       </div>
     </div>
   );
