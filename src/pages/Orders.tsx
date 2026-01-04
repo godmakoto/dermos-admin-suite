@@ -34,7 +34,7 @@ const Orders = () => {
   // Filter states
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
-  const [dateFilter, setDateFilter] = useState("all");
+  const [dateFilter, setDateFilter] = useState("today");
   const [selectedDate, setSelectedDate] = useState<Date | undefined>();
   const [dateRange, setDateRange] = useState<{ from: Date | undefined; to: Date | undefined }>({ from: undefined, to: undefined });
 
@@ -48,12 +48,37 @@ const Orders = () => {
     setModalOpen(true);
   };
 
-  // Summary counts
-  const pendingCount = orders.filter((o) => o.status === "Pendiente").length;
-  const completedCount = orders.filter((o) => o.status === "Finalizado").length;
-  const cancelledCount = orders.filter((o) => o.status === "Cancelado").length;
-  const totalOrders = orders.length;
-  const totalRevenue = orders.reduce((sum, o) => sum + o.total, 0);
+  // Get date-filtered orders for indicators (based on date filter only, not status)
+  const dateFilteredOrders = useMemo(() => {
+    let result = [...orders];
+
+    if (dateFilter === "today") {
+      result = result.filter((o) => isToday(o.createdAt));
+    } else if (dateFilter === "yesterday") {
+      result = result.filter((o) => isYesterday(o.createdAt));
+    } else if (dateFilter === "thisWeek") {
+      result = result.filter((o) => isThisWeek(o.createdAt, { weekStartsOn: 1 }));
+    } else if (dateFilter === "thisMonth") {
+      result = result.filter((o) => isThisMonth(o.createdAt));
+    } else if (dateFilter === "selectDate" && selectedDate) {
+      result = result.filter((o) => 
+        format(o.createdAt, "yyyy-MM-dd") === format(selectedDate, "yyyy-MM-dd")
+      );
+    } else if (dateFilter === "selectRange" && dateRange.from && dateRange.to) {
+      result = result.filter((o) => 
+        isWithinInterval(o.createdAt, { start: dateRange.from!, end: dateRange.to! })
+      );
+    }
+
+    return result;
+  }, [orders, dateFilter, selectedDate, dateRange]);
+
+  // Summary counts based on date filter
+  const pendingCount = dateFilteredOrders.filter((o) => o.status === "Pendiente").length;
+  const completedCount = dateFilteredOrders.filter((o) => o.status === "Finalizado").length;
+  const cancelledCount = dateFilteredOrders.filter((o) => o.status === "Cancelado").length;
+  const totalOrders = dateFilteredOrders.length;
+  const totalRevenue = dateFilteredOrders.reduce((sum, o) => sum + o.total, 0);
 
   // Filtered orders
   const filteredOrders = useMemo(() => {
