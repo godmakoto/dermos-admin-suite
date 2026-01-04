@@ -3,18 +3,11 @@ import { MainLayout } from "@/components/layout/MainLayout";
 import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { DataTable } from "@/components/ui/data-table";
-import { StatusBadge } from "@/components/ui/status-badge";
 import { ProductModal } from "@/components/products/ProductModal";
+import { ProductCard } from "@/components/products/ProductCard";
 import { useApp } from "@/contexts/AppContext";
 import { Product } from "@/types";
-import { Plus, Copy, Trash2, MoreHorizontal, Search } from "lucide-react";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { Plus, Search } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -25,7 +18,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 
 const Products = () => {
-  const { products, labels, categories, brands, duplicateProduct, deleteProduct } = useApp();
+  const { products, categories, brands, deleteProduct } = useApp();
   const { toast } = useToast();
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
@@ -37,24 +30,6 @@ const Products = () => {
   const [stockFilter, setStockFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
   const [sortOrder, setSortOrder] = useState("default");
-
-  const getLabelColor = (labelName: string) => {
-    const label = labels.find((l) => l.name === labelName);
-    return label?.color || "#6b7280";
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "Activo":
-        return "#22c55e";
-      case "Inactivo":
-        return "#6b7280";
-      case "Agotado":
-        return "#ef4444";
-      default:
-        return "#6b7280";
-    }
-  };
 
   const filteredProducts = useMemo(() => {
     let result = [...products];
@@ -119,113 +94,11 @@ const Products = () => {
     setModalOpen(true);
   };
 
-  const handleDuplicate = (id: string, e: React.MouseEvent) => {
-    e.stopPropagation();
-    duplicateProduct(id);
-    toast({ title: "Producto duplicado", description: "Se ha creado una copia del producto." });
-  };
-
   const handleDelete = (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
     deleteProduct(id);
     toast({ title: "Producto eliminado", description: "El producto se ha eliminado correctamente." });
   };
-
-  const columns = [
-    {
-      key: "image",
-      label: "",
-      className: "w-14",
-      render: (product: Product) =>
-        product.images[0] ? (
-          <img
-            src={product.images[0]}
-            alt={product.name}
-            className="h-10 w-10 rounded-lg object-cover"
-          />
-        ) : (
-          <div className="h-10 w-10 rounded-lg bg-muted" />
-        ),
-    },
-    {
-      key: "name",
-      label: "Producto",
-      render: (product: Product) => (
-        <div>
-          <p className="font-medium">{product.name}</p>
-          <p className="text-sm text-muted-foreground">{product.brand}</p>
-        </div>
-      ),
-    },
-    {
-      key: "category",
-      label: "Categoría",
-      render: (product: Product) => (
-        <div>
-          <p className="text-sm">{product.category}</p>
-          <p className="text-xs text-muted-foreground">{product.subcategory}</p>
-        </div>
-      ),
-    },
-    {
-      key: "price",
-      label: "Precio",
-      render: (product: Product) => (
-        <span className="font-medium">Bs {product.price.toFixed(1)}</span>
-      ),
-    },
-    {
-      key: "stock",
-      label: "Stock",
-      render: (product: Product) => (
-        <span className={`text-sm ${product.stock === 0 ? "text-destructive" : ""}`}>
-          {product.stock}
-        </span>
-      ),
-    },
-    {
-      key: "status",
-      label: "Estado",
-      render: (product: Product) => (
-        <StatusBadge label={product.status} color={getStatusColor(product.status)} />
-      ),
-    },
-    {
-      key: "label",
-      label: "Etiqueta",
-      render: (product: Product) =>
-        product.label ? (
-          <StatusBadge label={product.label} color={getLabelColor(product.label)} />
-        ) : null,
-    },
-    {
-      key: "actions",
-      label: "",
-      className: "w-12",
-      render: (product: Product) => (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-            <Button variant="ghost" size="icon" className="h-8 w-8">
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={(e) => handleDuplicate(product.id, e)}>
-              <Copy className="mr-2 h-4 w-4" />
-              Duplicar
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={(e) => handleDelete(product.id, e)}
-              className="text-destructive focus:text-destructive"
-            >
-              <Trash2 className="mr-2 h-4 w-4" />
-              Eliminar
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      ),
-    },
-  ];
 
   return (
     <MainLayout>
@@ -318,12 +191,23 @@ const Products = () => {
         </div>
       </div>
 
-      <DataTable
-        columns={columns}
-        data={filteredProducts}
-        onRowClick={handleEdit}
-        emptyMessage="No hay productos. Crea tu primer producto para comenzar."
-      />
+      {/* Product Cards */}
+      <div className="space-y-3">
+        {filteredProducts.length > 0 ? (
+          filteredProducts.map((product) => (
+            <ProductCard
+              key={product.id}
+              product={product}
+              onClick={() => handleEdit(product)}
+              onDelete={(e) => handleDelete(product.id, e)}
+            />
+          ))
+        ) : (
+          <div className="rounded-lg border border-border bg-card p-8 text-center text-muted-foreground">
+            No hay productos. Crea tu primer producto para comenzar.
+          </div>
+        )}
+      </div>
 
       <ProductModal
         open={modalOpen}
