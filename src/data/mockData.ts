@@ -34,10 +34,8 @@ export const mockLabels: Label[] = [
 
 export const mockOrderStatuses: OrderStatus[] = [
   { id: "1", name: "Pendiente", color: "#f59e0b" },
-  { id: "2", name: "Procesando", color: "#3b82f6" },
-  { id: "3", name: "Enviado", color: "#8b5cf6" },
-  { id: "4", name: "Entregado", color: "#22c55e" },
-  { id: "5", name: "Cancelado", color: "#ef4444" },
+  { id: "2", name: "Finalizado", color: "#22c55e" },
+  { id: "3", name: "Cancelado", color: "#ef4444" },
 ];
 
 export const mockProducts: Product[] = [
@@ -99,7 +97,7 @@ export const mockProducts: Product[] = [
 
 export const mockOrders: Order[] = [
   {
-    id: "ORD-001",
+    id: "#1000",
     customerName: "",
     customerEmail: "",
     items: [
@@ -114,7 +112,7 @@ export const mockOrders: Order[] = [
     updatedAt: new Date("2024-03-01"),
   },
   {
-    id: "ORD-002",
+    id: "#1001",
     customerName: "",
     customerEmail: "",
     items: [
@@ -123,12 +121,12 @@ export const mockOrders: Order[] = [
     subtotal: 285.0,
     discount: 28.5,
     total: 256.5,
-    status: "Enviado",
+    status: "Finalizado",
     createdAt: new Date("2024-02-28"),
     updatedAt: new Date("2024-03-02"),
   },
   {
-    id: "ORD-003",
+    id: "#1002",
     customerName: "",
     customerEmail: "",
     items: [
@@ -137,7 +135,7 @@ export const mockOrders: Order[] = [
     subtotal: 185.5,
     discount: 0,
     total: 185.5,
-    status: "Entregado",
+    status: "Cancelado",
     createdAt: new Date("2024-02-25"),
     updatedAt: new Date("2024-03-01"),
   },
