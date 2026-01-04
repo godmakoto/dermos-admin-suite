@@ -8,7 +8,7 @@ import { useApp } from "@/contexts/AppContext";
 import { Order } from "@/types";
 import { format, isToday, isYesterday, isThisWeek, isThisMonth, isWithinInterval } from "date-fns";
 import { es } from "date-fns/locale";
-import { Search, CalendarIcon } from "lucide-react";
+import { Search, CalendarIcon, SlidersHorizontal } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -144,118 +144,182 @@ const Orders = () => {
       <PageHeader title="Gestión de Pedidos" description="Click en cualquier pedido para ver detalles y editar" />
 
       {/* Search and Filters */}
-      <div className="mb-6 flex flex-col gap-3 rounded-lg border border-border bg-card p-4 sm:flex-row sm:items-center">
-        {/* Search */}
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            placeholder="Buscar por número de pedido..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10"
-          />
+      <div className="mb-6 rounded-lg border border-border bg-card p-4">
+        <div className="flex gap-2">
+          {/* Search */}
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              placeholder="Buscar por número de pedido..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10"
+            />
+          </div>
+
+          {/* Mobile filter button */}
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline" size="icon" className="lg:hidden shrink-0">
+                <SlidersHorizontal className="h-4 w-4" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-72 p-4" align="end">
+              <div className="space-y-4">
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Estado</label>
+                  <Select value={statusFilter} onValueChange={setStatusFilter}>
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Todos los estados" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Todos los estados</SelectItem>
+                      <SelectItem value="Pendiente">Pendiente</SelectItem>
+                      <SelectItem value="Finalizado">Finalizado</SelectItem>
+                      <SelectItem value="Cancelado">Cancelado</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Fecha</label>
+                  <Select value={dateFilter} onValueChange={setDateFilter}>
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Todos los días" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Todos los días</SelectItem>
+                      <SelectItem value="today">Hoy</SelectItem>
+                      <SelectItem value="yesterday">Ayer</SelectItem>
+                      <SelectItem value="thisWeek">Esta semana</SelectItem>
+                      <SelectItem value="thisMonth">Este mes</SelectItem>
+                      <SelectItem value="selectDate">Seleccionar fecha</SelectItem>
+                      <SelectItem value="selectRange">Seleccionar rango</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  {dateFilter === "selectDate" && (
+                    <Calendar
+                      mode="single"
+                      selected={selectedDate}
+                      onSelect={setSelectedDate}
+                      className="pointer-events-auto mt-2"
+                    />
+                  )}
+                  {dateFilter === "selectRange" && (
+                    <Calendar
+                      mode="range"
+                      selected={{ from: dateRange.from, to: dateRange.to }}
+                      onSelect={(range) => setDateRange({ from: range?.from, to: range?.to })}
+                      className="pointer-events-auto mt-2"
+                      numberOfMonths={1}
+                    />
+                  )}
+                </div>
+              </div>
+            </PopoverContent>
+          </Popover>
+
+          {/* Desktop filters */}
+          <div className="hidden lg:flex lg:gap-2">
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger className="w-48">
+                <SelectValue placeholder="Todos los estados" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos los estados</SelectItem>
+                <SelectItem value="Pendiente">Pendiente</SelectItem>
+                <SelectItem value="Finalizado">Finalizado</SelectItem>
+                <SelectItem value="Cancelado">Cancelado</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" className="w-48 justify-between">
+                  <span>
+                    {dateFilter === "all" && "Todos los días"}
+                    {dateFilter === "today" && "Hoy"}
+                    {dateFilter === "yesterday" && "Ayer"}
+                    {dateFilter === "thisWeek" && "Esta semana"}
+                    {dateFilter === "thisMonth" && "Este mes"}
+                    {dateFilter === "selectDate" && selectedDate && format(selectedDate, "dd/MM/yyyy")}
+                    {dateFilter === "selectRange" && dateRange.from && dateRange.to && 
+                      `${format(dateRange.from, "dd/MM")} - ${format(dateRange.to, "dd/MM")}`}
+                    {dateFilter === "selectDate" && !selectedDate && "Seleccionar fecha"}
+                    {dateFilter === "selectRange" && (!dateRange.from || !dateRange.to) && "Seleccionar rango"}
+                  </span>
+                  <CalendarIcon className="h-4 w-4 text-muted-foreground" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="end">
+                <div className="flex flex-col">
+                  <button
+                    className={cn("px-4 py-2 text-left text-sm hover:bg-muted", dateFilter === "all" && "bg-muted")}
+                    onClick={() => setDateFilter("all")}
+                  >
+                    Todos los días
+                  </button>
+                  <button
+                    className={cn("px-4 py-2 text-left text-sm hover:bg-muted", dateFilter === "today" && "bg-muted")}
+                    onClick={() => setDateFilter("today")}
+                  >
+                    Hoy
+                  </button>
+                  <button
+                    className={cn("px-4 py-2 text-left text-sm hover:bg-muted", dateFilter === "yesterday" && "bg-muted")}
+                    onClick={() => setDateFilter("yesterday")}
+                  >
+                    Ayer
+                  </button>
+                  <button
+                    className={cn("px-4 py-2 text-left text-sm hover:bg-muted", dateFilter === "thisWeek" && "bg-muted")}
+                    onClick={() => setDateFilter("thisWeek")}
+                  >
+                    Esta semana
+                  </button>
+                  <button
+                    className={cn("px-4 py-2 text-left text-sm hover:bg-muted", dateFilter === "thisMonth" && "bg-muted")}
+                    onClick={() => setDateFilter("thisMonth")}
+                  >
+                    Este mes
+                  </button>
+                  <div className="border-t border-border">
+                    <button
+                      className={cn("w-full px-4 py-2 text-left text-sm hover:bg-muted", dateFilter === "selectDate" && "bg-muted")}
+                      onClick={() => setDateFilter("selectDate")}
+                    >
+                      Seleccionar fecha
+                    </button>
+                    {dateFilter === "selectDate" && (
+                      <Calendar
+                        mode="single"
+                        selected={selectedDate}
+                        onSelect={setSelectedDate}
+                        className="pointer-events-auto"
+                      />
+                    )}
+                  </div>
+                  <div className="border-t border-border">
+                    <button
+                      className={cn("w-full px-4 py-2 text-left text-sm hover:bg-muted", dateFilter === "selectRange" && "bg-muted")}
+                      onClick={() => setDateFilter("selectRange")}
+                    >
+                      Seleccionar rango
+                    </button>
+                    {dateFilter === "selectRange" && (
+                      <Calendar
+                        mode="range"
+                        selected={{ from: dateRange.from, to: dateRange.to }}
+                        onSelect={(range) => setDateRange({ from: range?.from, to: range?.to })}
+                        className="pointer-events-auto"
+                        numberOfMonths={1}
+                      />
+                    )}
+                  </div>
+                </div>
+              </PopoverContent>
+            </Popover>
+          </div>
         </div>
-
-        {/* Status Filter */}
-        <Select value={statusFilter} onValueChange={setStatusFilter}>
-          <SelectTrigger className="w-full sm:w-48">
-            <SelectValue placeholder="Todos los estados" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Todos los estados</SelectItem>
-            <SelectItem value="Pendiente">Pendiente</SelectItem>
-            <SelectItem value="Finalizado">Finalizado</SelectItem>
-            <SelectItem value="Cancelado">Cancelado</SelectItem>
-          </SelectContent>
-        </Select>
-
-        {/* Date Filter */}
-        <Popover>
-          <PopoverTrigger asChild>
-            <Button variant="outline" className="w-full justify-between sm:w-48">
-              <span>
-                {dateFilter === "all" && "Todos los días"}
-                {dateFilter === "today" && "Hoy"}
-                {dateFilter === "yesterday" && "Ayer"}
-                {dateFilter === "thisWeek" && "Esta semana"}
-                {dateFilter === "thisMonth" && "Este mes"}
-                {dateFilter === "selectDate" && selectedDate && format(selectedDate, "dd/MM/yyyy")}
-                {dateFilter === "selectRange" && dateRange.from && dateRange.to && 
-                  `${format(dateRange.from, "dd/MM")} - ${format(dateRange.to, "dd/MM")}`}
-                {dateFilter === "selectDate" && !selectedDate && "Seleccionar fecha"}
-                {dateFilter === "selectRange" && (!dateRange.from || !dateRange.to) && "Seleccionar rango"}
-              </span>
-              <CalendarIcon className="h-4 w-4 text-muted-foreground" />
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-auto p-0" align="end">
-            <div className="flex flex-col">
-              <button
-                className={cn("px-4 py-2 text-left text-sm hover:bg-muted", dateFilter === "all" && "bg-muted")}
-                onClick={() => setDateFilter("all")}
-              >
-                Todos los días
-              </button>
-              <button
-                className={cn("px-4 py-2 text-left text-sm hover:bg-muted", dateFilter === "today" && "bg-muted")}
-                onClick={() => setDateFilter("today")}
-              >
-                Hoy
-              </button>
-              <button
-                className={cn("px-4 py-2 text-left text-sm hover:bg-muted", dateFilter === "yesterday" && "bg-muted")}
-                onClick={() => setDateFilter("yesterday")}
-              >
-                Ayer
-              </button>
-              <button
-                className={cn("px-4 py-2 text-left text-sm hover:bg-muted", dateFilter === "thisWeek" && "bg-muted")}
-                onClick={() => setDateFilter("thisWeek")}
-              >
-                Esta semana
-              </button>
-              <button
-                className={cn("px-4 py-2 text-left text-sm hover:bg-muted", dateFilter === "thisMonth" && "bg-muted")}
-                onClick={() => setDateFilter("thisMonth")}
-              >
-                Este mes
-              </button>
-              <div className="border-t border-border">
-                <button
-                  className={cn("w-full px-4 py-2 text-left text-sm hover:bg-muted", dateFilter === "selectDate" && "bg-muted")}
-                  onClick={() => setDateFilter("selectDate")}
-                >
-                  Seleccionar fecha
-                </button>
-                {dateFilter === "selectDate" && (
-                  <Calendar
-                    mode="single"
-                    selected={selectedDate}
-                    onSelect={setSelectedDate}
-                    className="pointer-events-auto"
-                  />
-                )}
-              </div>
-              <div className="border-t border-border">
-                <button
-                  className={cn("w-full px-4 py-2 text-left text-sm hover:bg-muted", dateFilter === "selectRange" && "bg-muted")}
-                  onClick={() => setDateFilter("selectRange")}
-                >
-                  Seleccionar rango
-                </button>
-                {dateFilter === "selectRange" && (
-                  <Calendar
-                    mode="range"
-                    selected={{ from: dateRange.from, to: dateRange.to }}
-                    onSelect={(range) => setDateRange({ from: range?.from, to: range?.to })}
-                    className="pointer-events-auto"
-                    numberOfMonths={1}
-                  />
-                )}
-              </div>
-            </div>
-          </PopoverContent>
-        </Popover>
       </div>
 
       <DataTable
