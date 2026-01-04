@@ -23,7 +23,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 
 const Products = () => {
-  const { products, categories, brands, deleteProduct } = useApp();
+  const { products, categories, brands, deleteProduct, duplicateProduct } = useApp();
   const { toast } = useToast();
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
@@ -103,6 +103,12 @@ const Products = () => {
     e.stopPropagation();
     deleteProduct(id);
     toast({ title: "Producto eliminado", description: "El producto se ha eliminado correctamente." });
+  };
+
+  const handleDuplicate = (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    duplicateProduct(id);
+    toast({ title: "Producto duplicado", description: "Se ha creado una copia del producto." });
   };
 
   return (
@@ -285,6 +291,7 @@ const Products = () => {
               product={product}
               onClick={() => handleEdit(product)}
               onDelete={(e) => handleDelete(product.id, e)}
+              onDuplicate={(e) => handleDuplicate(product.id, e)}
             />
           ))
         ) : (
