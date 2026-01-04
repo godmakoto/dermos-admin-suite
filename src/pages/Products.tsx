@@ -7,7 +7,7 @@ import { ProductModal } from "@/components/products/ProductModal";
 import { ProductCard } from "@/components/products/ProductCard";
 import { useApp } from "@/contexts/AppContext";
 import { Product } from "@/types";
-import { Plus, Search } from "lucide-react";
+import { Plus, Search, SlidersHorizontal } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -15,6 +15,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { useToast } from "@/hooks/use-toast";
 
 const Products = () => {
@@ -114,19 +119,99 @@ const Products = () => {
 
       {/* Search and Filters */}
       <div className="mb-6 rounded-lg border border-border bg-card p-4">
-        <div className="relative mb-4">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            placeholder="Buscar por nombre, marca o SKU..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10"
-          />
+        {/* Search bar with mobile filter button */}
+        <div className="flex gap-2">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              placeholder="Buscar por nombre, marca o SKU..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10"
+            />
+          </div>
+          
+          {/* Mobile filter button */}
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline" size="icon" className="lg:hidden shrink-0">
+                <SlidersHorizontal className="h-4 w-4" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-64 p-4" align="end">
+              <div className="flex flex-col gap-3">
+                <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Todas las categorías" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todas las categorías</SelectItem>
+                    {categories.map((cat) => (
+                      <SelectItem key={cat.id} value={cat.name}>
+                        {cat.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+
+                <Select value={brandFilter} onValueChange={setBrandFilter}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Todas las marcas" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todas las marcas</SelectItem>
+                    {brands.map((brand) => (
+                      <SelectItem key={brand.id} value={brand.name}>
+                        {brand.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+
+                <Select value={stockFilter} onValueChange={setStockFilter}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Todo el stock" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todo el stock</SelectItem>
+                    <SelectItem value="inStock">En stock</SelectItem>
+                    <SelectItem value="outOfStock">Sin stock</SelectItem>
+                  </SelectContent>
+                </Select>
+
+                <Select value={statusFilter} onValueChange={setStatusFilter}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Todos los estados" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todos los estados</SelectItem>
+                    <SelectItem value="Activo">Activo</SelectItem>
+                    <SelectItem value="Inactivo">Inactivo</SelectItem>
+                    <SelectItem value="Agotado">Agotado</SelectItem>
+                  </SelectContent>
+                </Select>
+
+                <Select value={sortOrder} onValueChange={setSortOrder}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Ordenar por..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="default">Por defecto</SelectItem>
+                    <SelectItem value="aToZ">Nombre A-Z</SelectItem>
+                    <SelectItem value="zToA">Nombre Z-A</SelectItem>
+                    <SelectItem value="priceAsc">Precio menor</SelectItem>
+                    <SelectItem value="priceDesc">Precio mayor</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </PopoverContent>
+          </Popover>
         </div>
 
-        <div className="flex flex-wrap gap-3">
+        {/* Desktop filters - hidden on mobile */}
+        <div className="hidden lg:grid lg:grid-cols-5 gap-3 mt-4">
           <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-            <SelectTrigger className="w-[180px]">
+            <SelectTrigger className="w-full">
               <SelectValue placeholder="Todas las categorías" />
             </SelectTrigger>
             <SelectContent>
@@ -140,7 +225,7 @@ const Products = () => {
           </Select>
 
           <Select value={brandFilter} onValueChange={setBrandFilter}>
-            <SelectTrigger className="w-[180px]">
+            <SelectTrigger className="w-full">
               <SelectValue placeholder="Todas las marcas" />
             </SelectTrigger>
             <SelectContent>
@@ -154,7 +239,7 @@ const Products = () => {
           </Select>
 
           <Select value={stockFilter} onValueChange={setStockFilter}>
-            <SelectTrigger className="w-[150px]">
+            <SelectTrigger className="w-full">
               <SelectValue placeholder="Todo el stock" />
             </SelectTrigger>
             <SelectContent>
@@ -165,7 +250,7 @@ const Products = () => {
           </Select>
 
           <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="w-[160px]">
+            <SelectTrigger className="w-full">
               <SelectValue placeholder="Todos los estados" />
             </SelectTrigger>
             <SelectContent>
@@ -177,7 +262,7 @@ const Products = () => {
           </Select>
 
           <Select value={sortOrder} onValueChange={setSortOrder}>
-            <SelectTrigger className="w-[150px]">
+            <SelectTrigger className="w-full">
               <SelectValue placeholder="Ordenar por..." />
             </SelectTrigger>
             <SelectContent>
