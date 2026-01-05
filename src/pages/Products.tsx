@@ -512,14 +512,14 @@ const Products = () => {
             <div className="space-y-2">
               <Label htmlFor="bulk-category">Categoría</Label>
               <Select
-                value={bulkEditData.category}
-                onValueChange={(value) => setBulkEditData({ ...bulkEditData, category: value })}
+                value={bulkEditData.category || "no-change"}
+                onValueChange={(value) => setBulkEditData({ ...bulkEditData, category: value === "no-change" ? "" : value })}
               >
                 <SelectTrigger id="bulk-category">
                   <SelectValue placeholder="Seleccionar categoría (opcional)" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Sin cambios</SelectItem>
+                  <SelectItem value="no-change">Sin cambios</SelectItem>
                   {categories.map((cat) => (
                     <SelectItem key={cat.id} value={cat.name}>
                       {cat.name}
@@ -545,14 +545,14 @@ const Products = () => {
             <div className="space-y-2">
               <Label htmlFor="bulk-brand">Marca</Label>
               <Select
-                value={bulkEditData.brand}
-                onValueChange={(value) => setBulkEditData({ ...bulkEditData, brand: value })}
+                value={bulkEditData.brand || "no-change"}
+                onValueChange={(value) => setBulkEditData({ ...bulkEditData, brand: value === "no-change" ? "" : value })}
               >
                 <SelectTrigger id="bulk-brand">
                   <SelectValue placeholder="Seleccionar marca (opcional)" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Sin cambios</SelectItem>
+                  <SelectItem value="no-change">Sin cambios</SelectItem>
                   {brands.map((brand) => (
                     <SelectItem key={brand.id} value={brand.name}>
                       {brand.name}
