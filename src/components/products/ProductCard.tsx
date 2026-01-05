@@ -2,12 +2,16 @@ import { Product } from "@/types";
 import { Copy, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 
 interface ProductCardProps {
   product: Product;
   onClick: () => void;
   onDelete: (e: React.MouseEvent) => void;
   onDuplicate: (e: React.MouseEvent) => void;
+  isSelected?: boolean;
+  onSelect?: (checked: boolean) => void;
+  isSelectionMode?: boolean;
 }
 
 const getStockLevel = (stock: number) => {
@@ -30,14 +34,51 @@ const getStatusColor = (status: string) => {
   }
 };
 
-export const ProductCard = ({ product, onClick, onDelete, onDuplicate }: ProductCardProps) => {
+export const ProductCard = ({
+  product,
+  onClick,
+  onDelete,
+  onDuplicate,
+  isSelected = false,
+  onSelect,
+  isSelectionMode = false
+}: ProductCardProps) => {
   const stockLevel = getStockLevel(product.stock);
+
+  const handleCardClick = () => {
+    if (isSelectionMode && onSelect) {
+      onSelect(!isSelected);
+    } else {
+      onClick();
+    }
+  };
+
+  const handleCheckboxChange = (checked: boolean) => {
+    if (onSelect) {
+      onSelect(checked);
+    }
+  };
 
   return (
     <div
-      onClick={onClick}
-      className="group relative flex cursor-pointer items-start gap-3 rounded-xl border border-border bg-card p-3 transition-all hover:shadow-lg active:scale-[0.99] duration-200 md:items-center md:gap-4 md:p-4"
+      onClick={handleCardClick}
+      className={`group relative flex cursor-pointer items-start gap-3 rounded-xl border transition-all hover:shadow-lg active:scale-[0.99] duration-200 md:items-center md:gap-4 ${
+        isSelected
+          ? 'border-primary bg-primary/5 p-3 md:p-4'
+          : 'border-border bg-card p-3 md:p-4'
+      }`}
     >
+      {/* Checkbox - Visible en modo selección */}
+      {isSelectionMode && onSelect && (
+        <div className="flex-shrink-0" onClick={(e) => e.stopPropagation()}>
+          <Checkbox
+            checked={isSelected}
+            onCheckedChange={handleCheckboxChange}
+            className="h-5 w-5"
+          />
+        </div>
+      )}
+
       {/* Image - Perfect Square */}
       <div className="h-20 w-20 flex-shrink-0 overflow-hidden rounded-lg bg-muted border border-border md:h-16 md:w-16">
         {product.images[0] ? (

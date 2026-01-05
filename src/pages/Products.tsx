@@ -7,7 +7,7 @@ import { ProductModal } from "@/components/products/ProductModal";
 import { ProductCard } from "@/components/products/ProductCard";
 import { useApp } from "@/contexts/AppContext";
 import { Product } from "@/types";
-import { Plus, Search, SlidersHorizontal } from "lucide-react";
+import { Plus, Search, SlidersHorizontal, X } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -20,14 +20,33 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 
 const Products = () => {
-  const { products, categories, brands, deleteProduct, duplicateProduct } = useApp();
+  const { products, categories, brands, deleteProduct, duplicateProduct, updateProduct } = useApp();
   const { toast } = useToast();
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [filterPopoverOpen, setFilterPopoverOpen] = useState(false);
+
+  // Multi-selection states
+  const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
+  const [bulkEditModalOpen, setBulkEditModalOpen] = useState(false);
+  const [bulkEditData, setBulkEditData] = useState({
+    category: "",
+    subcategory: "",
+    brand: "",
+  });
 
   // Filter states
   const [searchQuery, setSearchQuery] = useState("");
@@ -36,6 +55,8 @@ const Products = () => {
   const [stockFilter, setStockFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
   const [sortOrder, setSortOrder] = useState("default");
+
+  const isSelectionMode = selectedProducts.length > 0;
 
   // Handlers that close the popover after changing filter
   const handleCategoryChange = (value: string) => {
@@ -138,11 +159,84 @@ const Products = () => {
     toast({ title: "Producto duplicado", description: "Se ha creado una copia del producto." });
   };
 
+  // Multi-selection handlers
+  const handleSelectProduct = (productId: string, checked: boolean) => {
+    if (checked) {
+      setSelectedProducts([...selectedProducts, productId]);
+    } else {
+      setSelectedProducts(selectedProducts.filter(id => id !== productId));
+    }
+  };
+
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      setSelectedProducts(filteredProducts.map(p => p.id));
+    } else {
+      setSelectedProducts([]);
+    }
+  };
+
+  const handleClearSelection = () => {
+    setSelectedProducts([]);
+  };
+
+  const handleBulkEdit = () => {
+    setBulkEditModalOpen(true);
+  };
+
+  const handleApplyBulkEdit = () => {
+    let updatedCount = 0;
+
+    selectedProducts.forEach(productId => {
+      const product = products.find(p => p.id === productId);
+      if (product) {
+        const updates: Partial<Product> = {};
+
+        if (bulkEditData.category) {
+          updates.category = bulkEditData.category;
+        }
+        if (bulkEditData.subcategory) {
+          updates.subcategory = bulkEditData.subcategory;
+        }
+        if (bulkEditData.brand) {
+          updates.brand = bulkEditData.brand;
+        }
+
+        if (Object.keys(updates).length > 0) {
+          updateProduct({ ...product, ...updates });
+          updatedCount++;
+        }
+      }
+    });
+
+    setBulkEditModalOpen(false);
+    setSelectedProducts([]);
+    setBulkEditData({ category: "", subcategory: "", brand: "" });
+
+    toast({
+      title: "Productos actualizados",
+      description: `${updatedCount} ${updatedCount === 1 ? 'producto actualizado' : 'productos actualizados'} correctamente.`,
+    });
+  };
+
   return (
     <MainLayout>
       <PageHeader
         title="Productos"
-        description={`${filteredProducts.length} productos encontrados`}
+        description={
+          <div className="flex items-center gap-4">
+            <span>{filteredProducts.length} productos encontrados</span>
+            {filteredProducts.length > 0 && (
+              <label className="flex items-center gap-2 cursor-pointer">
+                <Checkbox
+                  checked={selectedProducts.length === filteredProducts.length && filteredProducts.length > 0}
+                  onCheckedChange={handleSelectAll}
+                />
+                <span className="text-sm text-muted-foreground">Seleccionar todos</span>
+              </label>
+            )}
+          </div>
+        }
       >
         <Button onClick={handleCreate}>
           <Plus className="mr-2 h-4 w-4" />
@@ -316,9 +410,12 @@ const Products = () => {
             <ProductCard
               key={product.id}
               product={product}
-              onClick={() => handleEdit(product)}
+              onClick={() => !isSelectionMode && handleEdit(product)}
               onDelete={(e) => handleDelete(product.id, e)}
               onDuplicate={(e) => handleDuplicate(product.id, e)}
+              isSelected={selectedProducts.includes(product.id)}
+              onSelect={(checked) => handleSelectProduct(product.id, checked)}
+              isSelectionMode={isSelectionMode}
             />
           ))
         ) : (
@@ -327,6 +424,33 @@ const Products = () => {
           </div>
         )}
       </div>
+
+      {/* Floating action bar for bulk actions */}
+      {selectedProducts.length > 0 && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-primary text-primary-foreground rounded-full shadow-lg px-6 py-3 flex items-center gap-4">
+          <span className="text-sm font-medium">
+            {selectedProducts.length} {selectedProducts.length === 1 ? 'producto seleccionado' : 'productos seleccionados'}
+          </span>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={handleBulkEdit}
+              className="rounded-full"
+            >
+              Editar selección
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleClearSelection}
+              className="rounded-full text-primary-foreground hover:bg-primary-foreground/20"
+            >
+              Cancelar
+            </Button>
+          </div>
+        </div>
+      )}
 
       {/* Stock Indicators */}
       {(() => {
@@ -387,6 +511,88 @@ const Products = () => {
         onClose={() => setModalOpen(false)}
         product={selectedProduct}
       />
+
+      {/* Bulk Edit Modal */}
+      <Dialog open={bulkEditModalOpen} onOpenChange={setBulkEditModalOpen}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>Editar {selectedProducts.length} productos</DialogTitle>
+            <DialogDescription>
+              Los campos que dejes vacíos no se modificarán. Solo se actualizarán los campos que selecciones.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="bulk-category">Categoría</Label>
+              <Select
+                value={bulkEditData.category}
+                onValueChange={(value) => setBulkEditData({ ...bulkEditData, category: value })}
+              >
+                <SelectTrigger id="bulk-category">
+                  <SelectValue placeholder="Seleccionar categoría (opcional)" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">Sin cambios</SelectItem>
+                  {categories.map((cat) => (
+                    <SelectItem key={cat.id} value={cat.name}>
+                      {cat.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="bulk-subcategory">Subcategoría</Label>
+              <Input
+                id="bulk-subcategory"
+                placeholder="Subcategoría (opcional)"
+                value={bulkEditData.subcategory}
+                onChange={(e) => setBulkEditData({ ...bulkEditData, subcategory: e.target.value })}
+              />
+              <p className="text-xs text-muted-foreground">
+                Escribe la subcategoría o déjalo vacío para no modificar
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="bulk-brand">Marca</Label>
+              <Select
+                value={bulkEditData.brand}
+                onValueChange={(value) => setBulkEditData({ ...bulkEditData, brand: value })}
+              >
+                <SelectTrigger id="bulk-brand">
+                  <SelectValue placeholder="Seleccionar marca (opcional)" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">Sin cambios</SelectItem>
+                  {brands.map((brand) => (
+                    <SelectItem key={brand.id} value={brand.name}>
+                      {brand.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setBulkEditModalOpen(false);
+                setBulkEditData({ category: "", subcategory: "", brand: "" });
+              }}
+            >
+              Cancelar
+            </Button>
+            <Button onClick={handleApplyBulkEdit}>
+              Aplicar cambios
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </MainLayout>
   );
 };
