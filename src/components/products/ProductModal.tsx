@@ -35,6 +35,7 @@ export const ProductModal = ({ open, onClose, product }: ProductModalProps) => {
   const [formData, setFormData] = useState({
     name: "",
     price: "",
+    salePrice: "",
     category: "",
     subcategory: "",
     brand: "",
@@ -55,6 +56,7 @@ export const ProductModal = ({ open, onClose, product }: ProductModalProps) => {
       setFormData({
         name: product.name,
         price: product.price.toString(),
+        salePrice: product.salePrice?.toString() || "",
         category: product.category,
         subcategory: product.subcategory,
         brand: product.brand,
@@ -71,6 +73,7 @@ export const ProductModal = ({ open, onClose, product }: ProductModalProps) => {
       setFormData({
         name: "",
         price: "",
+        salePrice: "",
         category: "",
         subcategory: "",
         brand: "",
@@ -100,6 +103,7 @@ export const ProductModal = ({ open, onClose, product }: ProductModalProps) => {
       id: product?.id || `${Date.now()}`,
       name: formData.name,
       price: parseFloat(formData.price) || 0,
+      salePrice: formData.salePrice ? parseFloat(formData.salePrice) : undefined,
       category: formData.category,
       subcategory: formData.subcategory,
       brand: formData.brand,
@@ -189,6 +193,17 @@ export const ProductModal = ({ open, onClose, product }: ProductModalProps) => {
                     value={formData.price}
                     onChange={(e) => setFormData({ ...formData, price: e.target.value })}
                     placeholder="0.00"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="salePrice">Precio de oferta</Label>
+                  <Input
+                    id="salePrice"
+                    type="number"
+                    step="0.01"
+                    value={formData.salePrice}
+                    onChange={(e) => setFormData({ ...formData, salePrice: e.target.value })}
+                    placeholder="Dejar vacío si no hay oferta"
                   />
                 </div>
               </div>
