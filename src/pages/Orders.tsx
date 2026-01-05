@@ -122,7 +122,12 @@ const Orders = () => {
       key: "id",
       label: "Pedido",
       render: (order: Order) => (
-        <span className="font-medium">{order.id}</span>
+        <div>
+          <span className="font-medium">{order.id}</span>
+          <p className="text-xs text-muted-foreground">
+            {format(order.createdAt, "dd MMM yyyy", { locale: es })}
+          </p>
+        </div>
       ),
     },
     {
@@ -153,15 +158,6 @@ const Orders = () => {
       label: "Estado",
       render: (order: Order) => (
         <StatusBadge label={order.status} color={getStatusColor(order.status)} />
-      ),
-    },
-    {
-      key: "date",
-      label: "Fecha",
-      render: (order: Order) => (
-        <span className="text-sm text-muted-foreground">
-          {format(order.createdAt, "dd MMM yyyy", { locale: es })}
-        </span>
       ),
     },
   ];
