@@ -17,6 +17,8 @@ interface AppContextType {
   updateProduct: (product: Product) => void;
   deleteProduct: (id: string) => void;
   duplicateProduct: (id: string) => void;
+  deleteAllProducts: () => void;
+  importProducts: (products: Product[]) => void;
 
   // Orders
   orders: Order[];
@@ -26,11 +28,13 @@ interface AppContextType {
   categories: Category[];
   addCategory: (category: Category) => void;
   deleteCategory: (id: string) => void;
+  deleteAllCategories: () => void;
 
   // Subcategories
   subcategories: Subcategory[];
   addSubcategory: (subcategory: Subcategory) => void;
   deleteSubcategory: (id: string) => void;
+  deleteAllSubcategories: () => void;
 
   // Brands
   brands: Brand[];
@@ -41,6 +45,7 @@ interface AppContextType {
   labels: Label[];
   addLabel: (label: Label) => void;
   deleteLabel: (id: string) => void;
+  deleteAllLabels: () => void;
 
   // Order Statuses
   orderStatuses: OrderStatus[];
@@ -99,6 +104,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setProducts((prev) => prev.filter((p) => p.id !== id));
   };
 
+  const deleteAllProducts = () => {
+    setProducts([]);
+  };
+
+  const importProducts = (newProducts: Product[]) => {
+    setProducts((prev) => [...prev, ...newProducts]);
+  };
+
   const duplicateProduct = (id: string) => {
     const product = products.find((p) => p.id === id);
     if (product) {
@@ -127,6 +140,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setCategories((prev) => prev.filter((c) => c.id !== id));
   };
 
+  const deleteAllCategories = () => {
+    setCategories([]);
+  };
+
   // Subcategories
   const addSubcategory = (subcategory: Subcategory) => {
     setSubcategories((prev) => [...prev, subcategory]);
@@ -134,6 +151,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const deleteSubcategory = (id: string) => {
     setSubcategories((prev) => prev.filter((s) => s.id !== id));
+  };
+
+  const deleteAllSubcategories = () => {
+    setSubcategories([]);
   };
 
   // Brands
@@ -154,6 +175,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setLabels((prev) => prev.filter((l) => l.id !== id));
   };
 
+  const deleteAllLabels = () => {
+    setLabels([]);
+  };
+
   // Order Statuses
   const addOrderStatus = (status: OrderStatus) => {
     setOrderStatuses((prev) => [...prev, status]);
@@ -171,20 +196,25 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         updateProduct,
         deleteProduct,
         duplicateProduct,
+        deleteAllProducts,
+        importProducts,
         orders,
         updateOrder,
         categories,
         addCategory,
         deleteCategory,
+        deleteAllCategories,
         subcategories,
         addSubcategory,
         deleteSubcategory,
+        deleteAllSubcategories,
         brands,
         addBrand,
         deleteBrand,
         labels,
         addLabel,
         deleteLabel,
+        deleteAllLabels,
         orderStatuses,
         addOrderStatus,
         deleteOrderStatus,
