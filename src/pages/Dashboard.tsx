@@ -61,7 +61,7 @@ const Dashboard = () => {
         ))}
       </div>
 
-      <div className="mt-8 grid gap-6 lg:grid-cols-2">
+      <div className="mt-8">
         {/* Recent Orders */}
         <Card className="border-border">
           <CardHeader>
@@ -82,36 +82,6 @@ const Dashboard = () => {
                     <p className="text-sm font-medium">Bs {order.total.toFixed(1)}</p>
                     <p className="text-xs text-muted-foreground">{order.status}</p>
                   </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Top Products */}
-        <Card className="border-border">
-          <CardHeader>
-            <CardTitle className="text-base font-semibold">Productos Destacados</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {products.slice(0, 5).map((product) => (
-                <div
-                  key={product.id}
-                  className="flex items-center gap-3 border-b border-border pb-3 last:border-0 last:pb-0"
-                >
-                  {product.images[0] && (
-                    <img
-                      src={product.images[0]}
-                      alt={product.name}
-                      className="h-10 w-10 rounded-lg object-cover"
-                    />
-                  )}
-                  <div className="flex-1">
-                    <p className="text-sm font-medium">{product.name}</p>
-                    <p className="text-xs text-muted-foreground">{product.brand}</p>
-                  </div>
-                  <p className="text-sm font-medium">Bs {product.price.toFixed(1)}</p>
                 </div>
               ))}
             </div>
