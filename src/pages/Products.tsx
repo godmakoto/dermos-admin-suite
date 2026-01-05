@@ -27,6 +27,7 @@ const Products = () => {
   const { toast } = useToast();
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [filterPopoverOpen, setFilterPopoverOpen] = useState(false);
 
   // Filter states
   const [searchQuery, setSearchQuery] = useState("");
@@ -35,6 +36,32 @@ const Products = () => {
   const [stockFilter, setStockFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
   const [sortOrder, setSortOrder] = useState("default");
+
+  // Handlers that close the popover after changing filter
+  const handleCategoryChange = (value: string) => {
+    setCategoryFilter(value);
+    setFilterPopoverOpen(false);
+  };
+
+  const handleBrandChange = (value: string) => {
+    setBrandFilter(value);
+    setFilterPopoverOpen(false);
+  };
+
+  const handleStockChange = (value: string) => {
+    setStockFilter(value);
+    setFilterPopoverOpen(false);
+  };
+
+  const handleStatusChange = (value: string) => {
+    setStatusFilter(value);
+    setFilterPopoverOpen(false);
+  };
+
+  const handleSortChange = (value: string) => {
+    setSortOrder(value);
+    setFilterPopoverOpen(false);
+  };
 
   const filteredProducts = useMemo(() => {
     let result = [...products];
@@ -138,7 +165,7 @@ const Products = () => {
           </div>
           
           {/* Mobile filter button */}
-          <Popover>
+          <Popover open={filterPopoverOpen} onOpenChange={setFilterPopoverOpen}>
             <PopoverTrigger asChild>
               <Button variant="outline" size="icon" className="lg:hidden shrink-0">
                 <SlidersHorizontal className="h-4 w-4" />
@@ -146,7 +173,7 @@ const Products = () => {
             </PopoverTrigger>
             <PopoverContent className="w-64 p-4" align="end">
               <div className="flex flex-col gap-3">
-                <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+                <Select value={categoryFilter} onValueChange={handleCategoryChange}>
                   <SelectTrigger className="w-full">
                     <SelectValue placeholder="Todas las categorías" />
                   </SelectTrigger>
@@ -160,7 +187,7 @@ const Products = () => {
                   </SelectContent>
                 </Select>
 
-                <Select value={brandFilter} onValueChange={setBrandFilter}>
+                <Select value={brandFilter} onValueChange={handleBrandChange}>
                   <SelectTrigger className="w-full">
                     <SelectValue placeholder="Todas las marcas" />
                   </SelectTrigger>
@@ -174,7 +201,7 @@ const Products = () => {
                   </SelectContent>
                 </Select>
 
-                <Select value={stockFilter} onValueChange={setStockFilter}>
+                <Select value={stockFilter} onValueChange={handleStockChange}>
                   <SelectTrigger className="w-full">
                     <SelectValue placeholder="Todo el stock" />
                   </SelectTrigger>
@@ -185,7 +212,7 @@ const Products = () => {
                   </SelectContent>
                 </Select>
 
-                <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <Select value={statusFilter} onValueChange={handleStatusChange}>
                   <SelectTrigger className="w-full">
                     <SelectValue placeholder="Todos los estados" />
                   </SelectTrigger>
@@ -197,7 +224,7 @@ const Products = () => {
                   </SelectContent>
                 </Select>
 
-                <Select value={sortOrder} onValueChange={setSortOrder}>
+                <Select value={sortOrder} onValueChange={handleSortChange}>
                   <SelectTrigger className="w-full">
                     <SelectValue placeholder="Ordenar por..." />
                   </SelectTrigger>

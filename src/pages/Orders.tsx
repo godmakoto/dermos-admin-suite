@@ -30,7 +30,8 @@ const Orders = () => {
   const { orders, orderStatuses, updateOrder } = useApp();
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
-  
+  const [filterPopoverOpen, setFilterPopoverOpen] = useState(false);
+
   // Filter states
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
@@ -39,11 +40,21 @@ const Orders = () => {
   const [dateRange, setDateRange] = useState<{ from: Date | undefined; to: Date | undefined }>({ from: undefined, to: undefined });
   const [datePopoverOpen, setDatePopoverOpen] = useState(false);
 
+  // Handlers that close the mobile filter popover after changing filter
+  const handleStatusFilterChange = (value: string) => {
+    setStatusFilter(value);
+    setFilterPopoverOpen(false);
+  };
+
   const handleDateFilterChange = (filter: string) => {
     setDateFilter(filter);
-    // Close popover for quick filters (not calendar selections)
+    // Close desktop date popover for quick filters (not calendar selections)
     if (filter !== "selectDate" && filter !== "selectRange") {
       setDatePopoverOpen(false);
+    }
+    // Close mobile filter popover for quick filters (not calendar selections)
+    if (filter !== "selectDate" && filter !== "selectRange") {
+      setFilterPopoverOpen(false);
     }
   };
 
@@ -232,7 +243,7 @@ const Orders = () => {
           </div>
 
           {/* Mobile filter button */}
-          <Popover>
+          <Popover open={filterPopoverOpen} onOpenChange={setFilterPopoverOpen}>
             <PopoverTrigger asChild>
               <Button variant="outline" size="icon" className="lg:hidden shrink-0">
                 <SlidersHorizontal className="h-4 w-4" />
@@ -242,7 +253,7 @@ const Orders = () => {
               <div className="space-y-4">
                 <div>
                   <label className="text-sm font-medium mb-2 block">Estado</label>
-                  <Select value={statusFilter} onValueChange={setStatusFilter}>
+                  <Select value={statusFilter} onValueChange={handleStatusFilterChange}>
                     <SelectTrigger className="w-full">
                       <SelectValue placeholder="Todos los estados" />
                     </SelectTrigger>
@@ -256,7 +267,7 @@ const Orders = () => {
                 </div>
                 <div>
                   <label className="text-sm font-medium mb-2 block">Fecha</label>
-                  <Select value={dateFilter} onValueChange={setDateFilter}>
+                  <Select value={dateFilter} onValueChange={handleDateFilterChange}>
                     <SelectTrigger className="w-full">
                       <SelectValue placeholder="Todos los días" />
                     </SelectTrigger>
