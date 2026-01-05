@@ -28,7 +28,7 @@ import {
 import { useApp } from "@/contexts/AppContext";
 import { useToast } from "@/hooks/use-toast";
 import { Plus, X, Tag, Layers, Bookmark, Flag, Moon, Trash2, Upload, Database } from "lucide-react";
-import { Product } from "@/types";
+import { Product, ProductCarouselState } from "@/types";
 
 const Settings = () => {
   const {
@@ -36,7 +36,7 @@ const Settings = () => {
     subcategories,
     brands,
     labels,
-    orderStatuses,
+    productCarouselStates,
     addCategory,
     deleteCategory,
     deleteAllCategories,
@@ -49,8 +49,8 @@ const Settings = () => {
     deleteLabel,
     deleteAllLabels,
     resetStore,
-    addOrderStatus,
-    deleteOrderStatus,
+    addProductCarouselState,
+    deleteProductCarouselState,
     deleteAllProducts,
     importProducts,
     isDarkMode,
@@ -63,7 +63,7 @@ const Settings = () => {
   const [newSubcategory, setNewSubcategory] = useState({ name: "", categoryId: "" });
   const [newBrand, setNewBrand] = useState("");
   const [newLabel, setNewLabel] = useState({ name: "", color: "#3b82f6" });
-  const [newStatus, setNewStatus] = useState({ name: "", color: "#3b82f6" });
+  const [newCarouselState, setNewCarouselState] = useState({ name: "", type: "carousel" as "carousel" | "banner", color: "#3b82f6" });
 
   const handleAddCategory = () => {
     if (newCategory.trim()) {
@@ -101,11 +101,11 @@ const Settings = () => {
     }
   };
 
-  const handleAddStatus = () => {
-    if (newStatus.name.trim()) {
-      addOrderStatus({ id: `${Date.now()}`, ...newStatus });
-      setNewStatus({ name: "", color: "#3b82f6" });
-      toast({ title: "Estado agregado" });
+  const handleAddCarouselState = () => {
+    if (newCarouselState.name.trim()) {
+      addProductCarouselState({ id: `${Date.now()}`, ...newCarouselState });
+      setNewCarouselState({ name: "", type: "carousel", color: "#3b82f6" });
+      toast({ title: "Estado de carrusel agregado" });
     }
   };
 
@@ -421,46 +421,63 @@ const Settings = () => {
           </Card>
         </TabsContent>
 
-        {/* Order Statuses */}
+        {/* Product Carousel States */}
         <TabsContent value="statuses">
           <Card>
             <CardHeader>
-              <CardTitle>Estados de Pedido</CardTitle>
-              <CardDescription>Gestiona los estados de los pedidos</CardDescription>
+              <CardTitle>Estados de Carruseles</CardTitle>
+              <CardDescription>Gestiona los estados para carruseles y banners de productos en tu web</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="flex gap-2">
+              <div className="flex gap-2 flex-wrap">
+                <Select
+                  value={newCarouselState.type}
+                  onValueChange={(value: "carousel" | "banner") =>
+                    setNewCarouselState({ ...newCarouselState, type: value })
+                  }
+                >
+                  <SelectTrigger className="w-32">
+                    <SelectValue placeholder="Tipo" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="carousel">Carrusel</SelectItem>
+                    <SelectItem value="banner">Banner</SelectItem>
+                  </SelectContent>
+                </Select>
                 <Input
-                  placeholder="Nuevo estado"
-                  value={newStatus.name}
-                  onChange={(e) => setNewStatus({ ...newStatus, name: e.target.value })}
-                  onKeyDown={(e) => e.key === "Enter" && handleAddStatus()}
-                  className="flex-1"
+                  placeholder="Nombre del estado"
+                  value={newCarouselState.name}
+                  onChange={(e) => setNewCarouselState({ ...newCarouselState, name: e.target.value })}
+                  onKeyDown={(e) => e.key === "Enter" && handleAddCarouselState()}
+                  className="flex-1 min-w-40"
                 />
                 <Input
                   type="color"
-                  value={newStatus.color}
-                  onChange={(e) => setNewStatus({ ...newStatus, color: e.target.value })}
+                  value={newCarouselState.color}
+                  onChange={(e) => setNewCarouselState({ ...newCarouselState, color: e.target.value })}
                   className="w-14 p-1"
                 />
-                <Button onClick={handleAddStatus}>
+                <Button onClick={handleAddCarouselState}>
                   <Plus className="h-4 w-4" />
                 </Button>
               </div>
               <div className="flex flex-wrap gap-2">
-                {orderStatuses.map((status) => (
+                {productCarouselStates.map((state) => (
                   <div
-                    key={status.id}
+                    key={state.id}
                     className="flex items-center gap-2 rounded-lg border border-border px-3 py-1.5"
-                    style={{ backgroundColor: `${status.color}20` }}
+                    style={{ backgroundColor: `${state.color}20` }}
                   >
                     <span
                       className="h-2 w-2 rounded-full"
-                      style={{ backgroundColor: status.color }}
+                      style={{ backgroundColor: state.color }}
                     />
-                    <span className="text-sm">{status.name}</span>
+                    <span className="text-sm">{state.name}</span>
+                    <span className="text-xs text-muted-foreground">
+                      ({state.type === "carousel" ? "Carrusel" : "Banner"})
+                    </span>
                     <button
-                      onClick={() => deleteOrderStatus(status.id)}
+                      onClick={() => deleteProductCarouselState(state.id)}
                       className="text-muted-foreground hover:text-destructive"
                     >
                       <X className="h-3 w-3" />
