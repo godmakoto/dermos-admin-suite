@@ -14,6 +14,7 @@ export interface Product {
   usage: string;
   ingredients: string;
   images: string[];
+  trackStock: boolean;
   stock: number;
   status: ProductStatus;
   createdAt: Date;

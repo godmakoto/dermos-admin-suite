@@ -165,6 +165,7 @@ const Settings = () => {
             usage: values[headers.indexOf("usage")] || values[headers.indexOf("uso")] || "",
             ingredients: values[headers.indexOf("ingredients")] || values[headers.indexOf("ingredientes")] || "",
             images: [values[headers.indexOf("image")] || values[headers.indexOf("imagen")] || "/placeholder.svg"],
+            trackStock: false,
             stock: parseInt(values[headers.indexOf("stock")] || "0"),
             status: validStatus,
             createdAt: new Date(),

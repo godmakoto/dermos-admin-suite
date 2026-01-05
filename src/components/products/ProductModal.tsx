@@ -17,6 +17,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Checkbox } from "@/components/ui/checkbox";
 import { X, Plus, GripVertical, Link as LinkIcon } from "lucide-react";
 import { Product } from "@/types";
 import { useApp } from "@/contexts/AppContext";
@@ -45,6 +46,7 @@ export const ProductModal = ({ open, onClose, product }: ProductModalProps) => {
     usage: "",
     ingredients: "",
     images: [] as string[],
+    trackStock: false,
     stock: "",
     status: "Activo" as "Activo" | "Inactivo" | "Agotado",
   });
@@ -66,6 +68,7 @@ export const ProductModal = ({ open, onClose, product }: ProductModalProps) => {
         usage: product.usage,
         ingredients: product.ingredients,
         images: [...product.images],
+        trackStock: product.trackStock,
         stock: product.stock.toString(),
         status: product.status,
       });
@@ -83,6 +86,7 @@ export const ProductModal = ({ open, onClose, product }: ProductModalProps) => {
         usage: "",
         ingredients: "",
         images: [],
+        trackStock: false,
         stock: "",
         status: "Activo",
       });
@@ -113,6 +117,7 @@ export const ProductModal = ({ open, onClose, product }: ProductModalProps) => {
       usage: formData.usage,
       ingredients: formData.ingredients,
       images: formData.images,
+      trackStock: formData.trackStock,
       stock: parseInt(formData.stock) || 0,
       status: formData.status,
       createdAt: product?.createdAt || new Date(),
@@ -287,34 +292,48 @@ export const ProductModal = ({ open, onClose, product }: ProductModalProps) => {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="stock">Stock</Label>
-                  <Input
-                    id="stock"
-                    type="number"
-                    min="0"
-                    value={formData.stock}
-                    onChange={(e) => setFormData({ ...formData, stock: e.target.value })}
-                    placeholder="0"
-                  />
+              <div className="flex items-center space-x-2 py-2">
+                <Checkbox
+                  id="trackStock"
+                  checked={formData.trackStock}
+                  onCheckedChange={(checked) => setFormData({ ...formData, trackStock: checked === true })}
+                />
+                <Label htmlFor="trackStock" className="cursor-pointer">
+                  Controlar stock de este producto
+                </Label>
+              </div>
+
+              {formData.trackStock && (
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="stock">Stock</Label>
+                    <Input
+                      id="stock"
+                      type="number"
+                      min="0"
+                      value={formData.stock}
+                      onChange={(e) => setFormData({ ...formData, stock: e.target.value })}
+                      placeholder="0"
+                    />
+                  </div>
                 </div>
-                <div className="space-y-2">
-                  <Label>Estado</Label>
-                  <Select
-                    value={formData.status}
-                    onValueChange={(value: "Activo" | "Inactivo" | "Agotado") => setFormData({ ...formData, status: value })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Seleccionar estado" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Activo">Activo</SelectItem>
-                      <SelectItem value="Inactivo">Inactivo</SelectItem>
-                      <SelectItem value="Agotado">Agotado</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+              )}
+
+              <div className="space-y-2">
+                <Label>Estado</Label>
+                <Select
+                  value={formData.status}
+                  onValueChange={(value: "Activo" | "Inactivo" | "Agotado") => setFormData({ ...formData, status: value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Seleccionar estado" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Activo">Activo</SelectItem>
+                    <SelectItem value="Inactivo">Inactivo</SelectItem>
+                    <SelectItem value="Agotado">Agotado</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
 
               <div className="space-y-2">
