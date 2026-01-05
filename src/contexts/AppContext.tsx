@@ -22,6 +22,7 @@ interface AppContextType {
 
   // Orders
   orders: Order[];
+  addOrder: (order: Order) => void;
   updateOrder: (order: Order) => void;
 
   // Categories
@@ -130,6 +131,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   // Orders
+  const addOrder = (order: Order) => {
+    setOrders((prev) => [...prev, order]);
+  };
+
   const updateOrder = (order: Order) => {
     setOrders((prev) => prev.map((o) => (o.id === order.id ? order : o)));
   };
@@ -213,6 +218,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         deleteAllProducts,
         importProducts,
         orders,
+        addOrder,
         updateOrder,
         categories,
         addCategory,

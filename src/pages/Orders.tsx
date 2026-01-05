@@ -8,7 +8,7 @@ import { useApp } from "@/contexts/AppContext";
 import { Order } from "@/types";
 import { format, isToday, isYesterday, isThisWeek, isThisMonth, isWithinInterval } from "date-fns";
 import { es } from "date-fns/locale";
-import { Search, CalendarIcon, SlidersHorizontal } from "lucide-react";
+import { Search, CalendarIcon, SlidersHorizontal, Plus } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -54,6 +54,11 @@ const Orders = () => {
 
   const handleEdit = (order: Order) => {
     setSelectedOrder(order);
+    setModalOpen(true);
+  };
+
+  const handleCreateOrder = () => {
+    setSelectedOrder(null);
     setModalOpen(true);
   };
 
@@ -205,7 +210,12 @@ const Orders = () => {
 
   return (
     <MainLayout>
-      <PageHeader title="Gestión de Pedidos" description="Click en cualquier pedido para ver detalles y editar" />
+      <PageHeader title="Gestión de Pedidos" description="Click en cualquier pedido para ver detalles y editar">
+        <Button onClick={handleCreateOrder}>
+          <Plus className="mr-2 h-4 w-4" />
+          Crear Pedido
+        </Button>
+      </PageHeader>
 
       {/* Search and Filters */}
       <div className="mb-6 rounded-lg border border-border bg-card p-4">
