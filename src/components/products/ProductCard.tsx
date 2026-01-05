@@ -3,6 +3,7 @@ import { Copy, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import { useRef } from "react";
 
 interface ProductCardProps {
   product: Product;
@@ -11,6 +12,7 @@ interface ProductCardProps {
   onDuplicate: (e: React.MouseEvent) => void;
   isSelected?: boolean;
   onSelect?: (checked: boolean) => void;
+  onLongPress?: () => void;
   isSelectionMode?: boolean;
 }
 
@@ -41,15 +43,45 @@ export const ProductCard = ({
   onDuplicate,
   isSelected = false,
   onSelect,
+  onLongPress,
   isSelectionMode = false
 }: ProductCardProps) => {
   const stockLevel = getStockLevel(product.stock);
+  const longPressTimer = useRef<NodeJS.Timeout | null>(null);
+  const isLongPress = useRef(false);
 
   const handleCardClick = () => {
+    // Si fue long press, no hacer nada
+    if (isLongPress.current) {
+      isLongPress.current = false;
+      return;
+    }
+
     if (isSelectionMode && onSelect) {
       onSelect(!isSelected);
     } else {
       onClick();
+    }
+  };
+
+  const handlePressStart = () => {
+    isLongPress.current = false;
+    if (!isSelectionMode && onLongPress) {
+      longPressTimer.current = setTimeout(() => {
+        isLongPress.current = true;
+        onLongPress();
+        // Vibración opcional en dispositivos móviles
+        if (navigator.vibrate) {
+          navigator.vibrate(50);
+        }
+      }, 1500);
+    }
+  };
+
+  const handlePressEnd = () => {
+    if (longPressTimer.current) {
+      clearTimeout(longPressTimer.current);
+      longPressTimer.current = null;
     }
   };
 
@@ -62,6 +94,12 @@ export const ProductCard = ({
   return (
     <div
       onClick={handleCardClick}
+      onMouseDown={handlePressStart}
+      onMouseUp={handlePressEnd}
+      onMouseLeave={handlePressEnd}
+      onTouchStart={handlePressStart}
+      onTouchEnd={handlePressEnd}
+      onTouchCancel={handlePressEnd}
       className={`group relative flex cursor-pointer items-start gap-3 rounded-xl border transition-all hover:shadow-lg active:scale-[0.99] duration-200 md:items-center md:gap-4 ${
         isSelected
           ? 'border-primary bg-primary/5 p-3 md:p-4'

@@ -29,7 +29,6 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 
 const Products = () => {
@@ -168,11 +167,10 @@ const Products = () => {
     }
   };
 
-  const handleSelectAll = (checked: boolean) => {
-    if (checked) {
-      setSelectedProducts(filteredProducts.map(p => p.id));
-    } else {
-      setSelectedProducts([]);
+  const handleLongPress = (productId: string) => {
+    // Activar modo selección y seleccionar el producto
+    if (!isSelectionMode) {
+      setSelectedProducts([productId]);
     }
   };
 
@@ -223,20 +221,7 @@ const Products = () => {
     <MainLayout>
       <PageHeader
         title="Productos"
-        description={
-          <div className="flex items-center gap-4">
-            <span>{filteredProducts.length} productos encontrados</span>
-            {filteredProducts.length > 0 && (
-              <label className="flex items-center gap-2 cursor-pointer">
-                <Checkbox
-                  checked={selectedProducts.length === filteredProducts.length && filteredProducts.length > 0}
-                  onCheckedChange={handleSelectAll}
-                />
-                <span className="text-sm text-muted-foreground">Seleccionar todos</span>
-              </label>
-            )}
-          </div>
-        }
+        description={`${filteredProducts.length} productos encontrados`}
       >
         <Button onClick={handleCreate}>
           <Plus className="mr-2 h-4 w-4" />
@@ -415,6 +400,7 @@ const Products = () => {
               onDuplicate={(e) => handleDuplicate(product.id, e)}
               isSelected={selectedProducts.includes(product.id)}
               onSelect={(checked) => handleSelectProduct(product.id, checked)}
+              onLongPress={() => handleLongPress(product.id)}
               isSelectionMode={isSelectionMode}
             />
           ))
