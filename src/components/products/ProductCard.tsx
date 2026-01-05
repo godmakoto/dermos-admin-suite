@@ -74,7 +74,7 @@ export const ProductCard = ({
         if (navigator.vibrate) {
           navigator.vibrate(50);
         }
-      }, 1500);
+      }, 1000);
     }
   };
 
