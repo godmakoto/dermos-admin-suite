@@ -36,10 +36,10 @@ export const ProductCard = ({ product, onClick, onDelete, onDuplicate }: Product
   return (
     <div
       onClick={onClick}
-      className="group relative flex cursor-pointer items-start gap-4 rounded-xl border border-border bg-card p-4 transition-all hover:shadow-md md:items-center md:gap-6"
+      className="group relative flex cursor-pointer items-start gap-3 rounded-xl border border-border bg-card p-3 transition-all hover:shadow-lg active:scale-[0.99] duration-200 md:items-center md:gap-4 md:p-4"
     >
-      {/* Image */}
-      <div className="h-24 w-24 flex-shrink-0 overflow-hidden rounded-lg bg-muted md:h-16 md:w-16">
+      {/* Image - Perfect Square */}
+      <div className="h-20 w-20 flex-shrink-0 overflow-hidden rounded-lg bg-muted border border-border md:h-16 md:w-16">
         {product.images[0] ? (
           <img
             src={product.images[0]}
@@ -53,45 +53,47 @@ export const ProductCard = ({ product, onClick, onDelete, onDuplicate }: Product
         )}
       </div>
 
-      {/* Info - Mobile layout compacto */}
-      <div className="min-w-0 flex-1 pr-10 md:pr-0">
-        {/* Nombre y Marca */}
-        <div className="mb-2">
-          <h3 className="text-base font-semibold text-foreground leading-tight mb-1">
-            {product.name}
-          </h3>
-          <p className="text-sm text-muted-foreground">
-            {product.brand}
-          </p>
+      {/* Info */}
+      <div className="min-w-0 flex-1 flex flex-col">
+        {/* Top: Nombre y Marca */}
+        <div className="flex items-start justify-between gap-2 mb-1.5">
+          <div className="min-w-0 flex-1">
+            <h3 className="text-foreground truncate leading-tight mb-0.5">
+              {product.name}
+            </h3>
+            <p className="text-sm text-muted-foreground">
+              {product.brand}
+            </p>
+          </div>
         </div>
 
-        {/* Badges - Solo categoría horizontal */}
-        <div className="mb-3 flex flex-wrap gap-2">
+        {/* Badges - Horizontal scroll */}
+        <div className="mb-2 flex gap-1.5 overflow-x-auto scrollbar-hide pb-1">
           <Badge
-            variant="secondary"
-            className="rounded-md bg-primary/10 text-primary border-0 text-xs font-normal px-3 py-1"
+            variant="outline"
+            className="flex-shrink-0 rounded-md bg-primary/10 text-primary border-primary/20 text-xs font-normal px-2.5 py-0.5"
           >
             {product.category}
           </Badge>
           {product.subcategory && (
             <Badge
-              variant="secondary"
-              className="rounded-md bg-primary/10 text-primary border-0 text-xs font-normal px-3 py-1"
+              variant="outline"
+              className="flex-shrink-0 rounded-md bg-primary/10 text-primary border-primary/20 text-xs font-normal px-2.5 py-0.5"
             >
               {product.subcategory}
             </Badge>
           )}
         </div>
 
-        {/* Price and Stock */}
-        <div className="flex items-center justify-between gap-3">
-          <p className="text-lg font-bold text-foreground">
+        {/* Bottom: Price and Stock */}
+        <div className="flex items-center justify-between gap-3 mt-auto">
+          <p className="text-foreground font-medium">
             {product.price.toFixed(1)} Bs
           </p>
 
           <Badge
             variant="outline"
-            className={`rounded-full bg-background px-3 py-1 text-xs font-medium ${stockLevel.color} md:hidden`}
+            className={`flex-shrink-0 rounded-lg text-xs border whitespace-nowrap px-2.5 py-1 md:hidden ${stockLevel.color}`}
           >
             {product.stock} • {stockLevel.label}
           </Badge>
@@ -102,10 +104,10 @@ export const ProductCard = ({ product, onClick, onDelete, onDuplicate }: Product
       <Button
         variant="ghost"
         size="icon"
-        className="absolute right-2 top-2 h-9 w-9 flex-shrink-0 md:hidden"
+        className="absolute right-2 top-2 h-8 w-8 flex-shrink-0 md:hidden touch-manipulation"
         onClick={onDelete}
       >
-        <Trash2 className="h-4 w-4 text-destructive" />
+        <Trash2 className="h-5 w-5 text-destructive" />
       </Button>
 
       {/* Desktop: Stock Badge & Actions */}
