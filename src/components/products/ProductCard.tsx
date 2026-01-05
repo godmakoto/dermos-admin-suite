@@ -36,10 +36,10 @@ export const ProductCard = ({ product, onClick, onDelete, onDuplicate }: Product
   return (
     <div
       onClick={onClick}
-      className="group flex cursor-pointer items-center gap-4 rounded-xl border border-border bg-card p-4 transition-all hover:shadow-md"
+      className="group flex cursor-pointer items-start gap-4 rounded-xl border border-border bg-card p-4 transition-all hover:shadow-md md:items-center"
     >
       {/* Image */}
-      <div className="h-16 w-16 flex-shrink-0 overflow-hidden rounded-lg bg-muted">
+      <div className="h-20 w-20 flex-shrink-0 overflow-hidden rounded-lg bg-muted md:h-16 md:w-16">
         {product.images[0] ? (
           <img
             src={product.images[0]}
@@ -53,29 +53,54 @@ export const ProductCard = ({ product, onClick, onDelete, onDuplicate }: Product
         )}
       </div>
 
-      {/* Info */}
+      {/* Info - Mobile layout más espaciado */}
       <div className="min-w-0 flex-1">
-        <h3 className="font-medium text-foreground truncate">{product.name}</h3>
-        <p className="text-sm text-muted-foreground">{product.brand}</p>
+        <div className="flex items-start justify-between gap-2">
+          <div className="min-w-0 flex-1">
+            <h3 className="font-semibold text-foreground leading-tight">{product.name}</h3>
+            <p className="text-sm text-muted-foreground mt-0.5">{product.brand}</p>
+          </div>
+          
+          {/* Delete button - visible siempre en móvil */}
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 flex-shrink-0 md:hidden"
+            onClick={onDelete}
+          >
+            <Trash2 className="h-4 w-4 text-destructive" />
+          </Button>
+        </div>
         
-        <div className="mt-2 flex flex-wrap gap-1.5">
-          <Badge variant="outline" className="text-xs font-normal">
+        {/* Badges */}
+        <div className="mt-2.5 flex flex-wrap gap-2">
+          <Badge variant="outline" className="text-xs font-normal px-2.5 py-1">
             {product.category}
           </Badge>
           {product.label && (
-            <Badge variant="outline" className="text-xs font-normal">
+            <Badge variant="outline" className="text-xs font-normal px-2.5 py-1">
               {product.label}
             </Badge>
           )}
         </div>
 
-        <p className="mt-2 text-lg font-semibold text-foreground">
-          {product.price.toFixed(1)} Bs
-        </p>
+        {/* Price and Stock - En móvil en la misma línea */}
+        <div className="mt-3 flex items-center justify-between gap-3">
+          <p className="text-lg font-bold text-foreground">
+            {product.price.toFixed(1)} Bs
+          </p>
+          
+          <Badge
+            variant="outline"
+            className={`rounded-full border-2 px-3 py-1 text-sm font-medium ${stockLevel.color} md:hidden`}
+          >
+            {product.stock} • {stockLevel.label}
+          </Badge>
+        </div>
       </div>
 
-      {/* Stock Badge & Actions */}
-      <div className="ml-auto flex flex-col items-end gap-2">
+      {/* Desktop: Stock Badge & Actions */}
+      <div className="ml-auto hidden flex-col items-end gap-2 md:flex">
         <div className="flex items-center gap-1">
           <Button
             variant="ghost"
