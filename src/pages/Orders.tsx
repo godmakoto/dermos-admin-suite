@@ -37,6 +37,15 @@ const Orders = () => {
   const [dateFilter, setDateFilter] = useState("today");
   const [selectedDate, setSelectedDate] = useState<Date | undefined>();
   const [dateRange, setDateRange] = useState<{ from: Date | undefined; to: Date | undefined }>({ from: undefined, to: undefined });
+  const [datePopoverOpen, setDatePopoverOpen] = useState(false);
+
+  const handleDateFilterChange = (filter: string) => {
+    setDateFilter(filter);
+    // Close popover for quick filters (not calendar selections)
+    if (filter !== "selectDate" && filter !== "selectRange") {
+      setDatePopoverOpen(false);
+    }
+  };
 
   const getStatusColor = (statusName: string) => {
     const status = orderStatuses.find((s) => s.name === statusName);
@@ -287,7 +296,7 @@ const Orders = () => {
               </SelectContent>
             </Select>
 
-            <Popover>
+            <Popover open={datePopoverOpen} onOpenChange={setDatePopoverOpen}>
               <PopoverTrigger asChild>
                 <Button variant="outline" className="w-48 justify-between">
                   <span>
@@ -309,38 +318,38 @@ const Orders = () => {
                 <div className="flex flex-col">
                   <button
                     className={cn("px-4 py-2 text-left text-sm hover:bg-muted", dateFilter === "all" && "bg-muted")}
-                    onClick={() => setDateFilter("all")}
+                    onClick={() => handleDateFilterChange("all")}
                   >
                     Todos los días
                   </button>
                   <button
                     className={cn("px-4 py-2 text-left text-sm hover:bg-muted", dateFilter === "today" && "bg-muted")}
-                    onClick={() => setDateFilter("today")}
+                    onClick={() => handleDateFilterChange("today")}
                   >
                     Hoy
                   </button>
                   <button
                     className={cn("px-4 py-2 text-left text-sm hover:bg-muted", dateFilter === "yesterday" && "bg-muted")}
-                    onClick={() => setDateFilter("yesterday")}
+                    onClick={() => handleDateFilterChange("yesterday")}
                   >
                     Ayer
                   </button>
                   <button
                     className={cn("px-4 py-2 text-left text-sm hover:bg-muted", dateFilter === "thisWeek" && "bg-muted")}
-                    onClick={() => setDateFilter("thisWeek")}
+                    onClick={() => handleDateFilterChange("thisWeek")}
                   >
                     Esta semana
                   </button>
                   <button
                     className={cn("px-4 py-2 text-left text-sm hover:bg-muted", dateFilter === "thisMonth" && "bg-muted")}
-                    onClick={() => setDateFilter("thisMonth")}
+                    onClick={() => handleDateFilterChange("thisMonth")}
                   >
                     Este mes
                   </button>
                   <div className="border-t border-border">
                     <button
                       className={cn("w-full px-4 py-2 text-left text-sm hover:bg-muted", dateFilter === "selectDate" && "bg-muted")}
-                      onClick={() => setDateFilter("selectDate")}
+                      onClick={() => handleDateFilterChange("selectDate")}
                     >
                       Seleccionar fecha
                     </button>
@@ -348,7 +357,10 @@ const Orders = () => {
                       <Calendar
                         mode="single"
                         selected={selectedDate}
-                        onSelect={setSelectedDate}
+                        onSelect={(date) => {
+                          setSelectedDate(date);
+                          if (date) setDatePopoverOpen(false);
+                        }}
                         className="pointer-events-auto"
                       />
                     )}
@@ -356,7 +368,7 @@ const Orders = () => {
                   <div className="border-t border-border">
                     <button
                       className={cn("w-full px-4 py-2 text-left text-sm hover:bg-muted", dateFilter === "selectRange" && "bg-muted")}
-                      onClick={() => setDateFilter("selectRange")}
+                      onClick={() => handleDateFilterChange("selectRange")}
                     >
                       Seleccionar rango
                     </button>
@@ -364,7 +376,10 @@ const Orders = () => {
                       <Calendar
                         mode="range"
                         selected={{ from: dateRange.from, to: dateRange.to }}
-                        onSelect={(range) => setDateRange({ from: range?.from, to: range?.to })}
+                        onSelect={(range) => {
+                          setDateRange({ from: range?.from, to: range?.to });
+                          if (range?.from && range?.to) setDatePopoverOpen(false);
+                        }}
                         className="pointer-events-auto"
                         numberOfMonths={1}
                       />
