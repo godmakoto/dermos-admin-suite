@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { Package, ShoppingCart, Settings, LayoutDashboard, PanelLeftClose, PanelLeft } from "lucide-react";
+import { Package, ShoppingCart, Settings, LayoutDashboard, Menu } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useSidebar } from "@/contexts/SidebarContext";
 
@@ -29,7 +29,7 @@ export const Sidebar = () => {
               onClick={toggleSidebar}
               className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary hover:bg-primary/90 transition-colors cursor-pointer"
             >
-              <PanelLeftClose className="h-4 w-4 text-primary-foreground" />
+              <Menu className="h-4 w-4 text-primary-foreground" />
             </button>
             <span className="text-lg font-semibold text-foreground whitespace-nowrap">DermoAdmin</span>
           </div>
