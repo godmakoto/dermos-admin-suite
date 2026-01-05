@@ -301,6 +301,60 @@ const Products = () => {
         )}
       </div>
 
+      {/* Stock Indicators */}
+      {(() => {
+        const totalProducts = products.length;
+        const stockBajo = products.filter((p) => p.stock >= 1 && p.stock <= 10).length;
+        const stockMedio = products.filter((p) => p.stock >= 11 && p.stock <= 30).length;
+        const agotados = products.filter((p) => p.stock === 0).length;
+
+        return (
+          <div className="mt-6 rounded-lg border border-border bg-card p-4">
+            <h3 className="text-sm font-medium text-muted-foreground mb-4">Indicadores de Stock</h3>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              {/* Total Productos */}
+              <div className="rounded-lg border-2 border-primary bg-primary/5 p-4">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm text-muted-foreground">Total Productos</span>
+                  <div className="h-2 w-2 rounded-full bg-primary"></div>
+                </div>
+                <span className="text-3xl font-bold text-foreground">{totalProducts}</span>
+              </div>
+
+              {/* Stock Bajo */}
+              <div className="rounded-lg border border-border bg-card p-4">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm text-muted-foreground">Stock Bajo</span>
+                  <div className="h-2 w-2 rounded-full bg-muted"></div>
+                </div>
+                <span className="text-3xl font-bold text-amber-500">{stockBajo}</span>
+                <p className="text-xs text-muted-foreground mt-1">1-10 unidades</p>
+              </div>
+
+              {/* Stock Medio */}
+              <div className="rounded-lg border border-border bg-card p-4">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm text-muted-foreground">Stock Medio</span>
+                  <div className="h-2 w-2 rounded-full bg-muted"></div>
+                </div>
+                <span className="text-3xl font-bold text-green-500">{stockMedio}</span>
+                <p className="text-xs text-muted-foreground mt-1">11-30 unidades</p>
+              </div>
+
+              {/* Agotados */}
+              <div className="rounded-lg border border-border bg-card p-4">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm text-muted-foreground">Agotados</span>
+                  <div className="h-2 w-2 rounded-full bg-muted"></div>
+                </div>
+                <span className="text-3xl font-bold text-red-500">{agotados}</span>
+                <p className="text-xs text-muted-foreground mt-1">0 unidades</p>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+
       <ProductModal
         open={modalOpen}
         onClose={() => setModalOpen(false)}
