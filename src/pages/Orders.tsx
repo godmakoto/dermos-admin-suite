@@ -27,7 +27,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
 
 const Orders = () => {
-  const { orders, orderStatuses } = useApp();
+  const { orders, orderStatuses, updateOrder } = useApp();
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   
@@ -46,6 +46,14 @@ const Orders = () => {
   const handleEdit = (order: Order) => {
     setSelectedOrder(order);
     setModalOpen(true);
+  };
+
+  const handleStatusChange = (orderId: string, newStatus: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    const order = orders.find((o) => o.id === orderId);
+    if (order) {
+      updateOrder({ ...order, status: newStatus });
+    }
   };
 
   // Get date-filtered orders for indicators (based on date filter only, not status)
@@ -121,6 +129,7 @@ const Orders = () => {
     {
       key: "id",
       label: "Pedido",
+      className: "w-[25%]",
       render: (order: Order) => (
         <div>
           <span className="font-medium">{order.id}</span>
@@ -133,6 +142,7 @@ const Orders = () => {
     {
       key: "items",
       label: "Item",
+      className: "w-[20%]",
       render: (order: Order) => (
         <span className="text-sm">
           {order.items.length} {order.items.length === 1 ? "item" : "items"}
@@ -142,6 +152,7 @@ const Orders = () => {
     {
       key: "total",
       label: "Total",
+      className: "w-[25%]",
       render: (order: Order) => (
         <div>
           <span className="font-medium">Bs {order.total.toFixed(1)}</span>
@@ -156,8 +167,29 @@ const Orders = () => {
     {
       key: "status",
       label: "Estado",
+      className: "w-[30%]",
       render: (order: Order) => (
-        <StatusBadge label={order.status} color={getStatusColor(order.status)} />
+        <div onClick={(e) => e.stopPropagation()}>
+          <Select
+            value={order.status}
+            onValueChange={(value) => handleStatusChange(order.id, value, { stopPropagation: () => {} } as React.MouseEvent)}
+          >
+            <SelectTrigger className="w-32 h-8 border-0 bg-transparent p-0 focus:ring-0">
+              <StatusBadge label={order.status} color={getStatusColor(order.status)} />
+            </SelectTrigger>
+            <SelectContent className="bg-popover z-50">
+              <SelectItem value="Pendiente">
+                <StatusBadge label="Pendiente" color={getStatusColor("Pendiente")} />
+              </SelectItem>
+              <SelectItem value="Finalizado">
+                <StatusBadge label="Finalizado" color={getStatusColor("Finalizado")} />
+              </SelectItem>
+              <SelectItem value="Cancelado">
+                <StatusBadge label="Cancelado" color={getStatusColor("Cancelado")} />
+              </SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
       ),
     },
   ];
