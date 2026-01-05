@@ -36,10 +36,10 @@ export const ProductCard = ({ product, onClick, onDelete, onDuplicate }: Product
   return (
     <div
       onClick={onClick}
-      className="group relative flex cursor-pointer items-start gap-4 rounded-xl border border-border bg-card p-4 transition-all hover:shadow-md md:items-center md:gap-6"
+      className="group relative flex cursor-pointer items-start gap-5 rounded-xl border border-border bg-card p-5 transition-all hover:shadow-md md:items-center md:gap-6 md:p-4"
     >
       {/* Image - Más grande en móvil */}
-      <div className="h-24 w-24 flex-shrink-0 overflow-hidden rounded-xl bg-muted md:h-16 md:w-16">
+      <div className="h-28 w-28 flex-shrink-0 overflow-hidden rounded-xl bg-muted md:h-16 md:w-16">
         {product.images[0] ? (
           <img
             src={product.images[0]}
@@ -54,10 +54,10 @@ export const ProductCard = ({ product, onClick, onDelete, onDuplicate }: Product
       </div>
 
       {/* Info - Mobile layout espaciado */}
-      <div className="min-w-0 flex-1 pr-8 md:pr-0">
+      <div className="min-w-0 flex-1 pr-10 md:pr-0">
         {/* Nombre y Marca */}
-        <div className="mb-2.5">
-          <h3 className="text-base font-semibold text-foreground leading-snug mb-1">
+        <div className="mb-4">
+          <h3 className="text-lg font-semibold text-foreground leading-tight mb-2">
             {product.name}
           </h3>
           <p className="text-sm text-muted-foreground">
@@ -65,18 +65,18 @@ export const ProductCard = ({ product, onClick, onDelete, onDuplicate }: Product
           </p>
         </div>
 
-        {/* Badges - Espaciados horizontalmente */}
-        <div className="mb-3 flex flex-wrap gap-2">
+        {/* Badges - Espaciados verticalmente en móvil */}
+        <div className="mb-5 flex flex-col gap-2 md:flex-row md:flex-wrap">
           <Badge
             variant="secondary"
-            className="rounded-full bg-primary/10 text-primary border-0 text-xs font-medium px-3 py-1"
+            className="w-fit rounded-full bg-muted/80 text-foreground border-0 text-sm font-normal px-4 py-1.5"
           >
             {product.category}
           </Badge>
           {product.label && (
             <Badge
               variant="secondary"
-              className="rounded-full bg-secondary/50 text-secondary-foreground border-0 text-xs font-medium px-3 py-1"
+              className="w-fit rounded-full bg-foreground text-background border-0 text-sm font-medium px-4 py-1.5"
             >
               {product.label}
             </Badge>
@@ -84,14 +84,14 @@ export const ProductCard = ({ product, onClick, onDelete, onDuplicate }: Product
         </div>
 
         {/* Price and Stock - Espaciados */}
-        <div className="flex items-center justify-between gap-3">
-          <p className="text-xl font-bold text-foreground">
+        <div className="flex items-center justify-between gap-4">
+          <p className="text-2xl font-bold text-foreground">
             {product.price.toFixed(1)} Bs
           </p>
 
           <Badge
             variant="outline"
-            className={`rounded-full bg-background px-3 py-1.5 text-xs font-medium ${stockLevel.color} md:hidden`}
+            className={`rounded-full bg-background px-4 py-2 text-sm font-medium ${stockLevel.color} md:hidden`}
           >
             {product.stock} • {stockLevel.label}
           </Badge>
