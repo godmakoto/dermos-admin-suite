@@ -15,7 +15,20 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { X, Plus, Minus } from "lucide-react";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import { X, Plus, Minus, ChevronDown, Search } from "lucide-react";
 import { Order, OrderItem } from "@/types";
 import { useApp } from "@/contexts/AppContext";
 import { useToast } from "@/hooks/use-toast";
@@ -35,6 +48,7 @@ export const OrderModal = ({ open, onClose, order }: OrderModalProps) => {
     discount: 0,
     items: [] as OrderItem[],
   });
+  const [productSearchOpen, setProductSearchOpen] = useState(false);
 
   useEffect(() => {
     if (order) {
@@ -112,6 +126,7 @@ export const OrderModal = ({ open, onClose, order }: OrderModalProps) => {
         items: [...prev.items, newItem],
       }));
     }
+    setProductSearchOpen(false);
   };
 
   if (!order) return null;
@@ -157,18 +172,39 @@ export const OrderModal = ({ open, onClose, order }: OrderModalProps) => {
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <Label>Productos</Label>
-              <Select onValueChange={addProduct}>
-                <SelectTrigger className="w-48">
-                  <SelectValue placeholder="Agregar producto" />
-                </SelectTrigger>
-                <SelectContent>
-                  {products.map((product) => (
-                    <SelectItem key={product.id} value={product.id}>
-                      {product.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Popover open={productSearchOpen} onOpenChange={setProductSearchOpen}>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" className="w-48 justify-between">
+                    <span className="text-muted-foreground">Agregar producto</span>
+                    <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-64 p-0" align="end">
+                  <Command>
+                    <CommandInput placeholder="Buscar producto..." />
+                    <CommandList>
+                      <CommandEmpty>No se encontraron productos.</CommandEmpty>
+                      <CommandGroup>
+                        {products.map((product) => (
+                          <CommandItem
+                            key={product.id}
+                            value={product.name}
+                            onSelect={() => addProduct(product.id)}
+                            className="cursor-pointer"
+                          >
+                            <div className="flex flex-col">
+                              <span>{product.name}</span>
+                              <span className="text-xs text-muted-foreground">
+                                Bs {product.price.toFixed(1)}
+                              </span>
+                            </div>
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
             </div>
 
             <div className="space-y-2">
