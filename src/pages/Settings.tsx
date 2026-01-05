@@ -195,7 +195,7 @@ const Settings = () => {
       />
 
       <Tabs defaultValue="categories" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-6 lg:w-auto lg:inline-grid">
+        <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger value="categories" className="gap-2">
             <Layers className="h-4 w-4" />
             <span className="hidden sm:inline">Categorías</span>
