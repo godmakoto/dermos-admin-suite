@@ -40,11 +40,13 @@ interface OrderModalProps {
 }
 
 export const OrderModal = ({ open, onClose, order }: OrderModalProps) => {
-  const { products, orderStatuses, updateOrder } = useApp();
+  const { products, orderStatuses, updateOrder, addOrder, orders } = useApp();
   const { toast } = useToast();
   
+  const isEditing = !!order;
+  
   const [formData, setFormData] = useState({
-    status: "",
+    status: "Pendiente",
     discount: 0,
     items: [] as OrderItem[],
   });
@@ -56,6 +58,12 @@ export const OrderModal = ({ open, onClose, order }: OrderModalProps) => {
         status: order.status,
         discount: order.discount,
         items: [...order.items],
+      });
+    } else {
+      setFormData({
+        status: "Pendiente",
+        discount: 0,
+        items: [],
       });
     }
   }, [order, open]);
@@ -71,20 +79,45 @@ export const OrderModal = ({ open, onClose, order }: OrderModalProps) => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!order) return;
+    if (formData.items.length === 0) {
+      toast({ title: "Error", description: "Agrega al menos un producto al pedido.", variant: "destructive" });
+      return;
+    }
 
-    const updatedOrder: Order = {
-      ...order,
-      status: formData.status,
-      discount: formData.discount,
-      items: formData.items,
-      subtotal: calculateSubtotal(),
-      total: calculateTotal(),
-      updatedAt: new Date(),
-    };
+    if (isEditing && order) {
+      const updatedOrder: Order = {
+        ...order,
+        status: formData.status,
+        discount: formData.discount,
+        items: formData.items,
+        subtotal: calculateSubtotal(),
+        total: calculateTotal(),
+        updatedAt: new Date(),
+      };
+      updateOrder(updatedOrder);
+      toast({ title: "Pedido actualizado", description: "Los cambios se han guardado correctamente." });
+    } else {
+      // Generate new order ID
+      const lastOrderId = orders.length > 0 
+        ? Math.max(...orders.map(o => parseInt(o.id.replace('#', '')) || 0))
+        : 999;
+      const newOrderId = `#${lastOrderId + 1}`;
 
-    updateOrder(updatedOrder);
-    toast({ title: "Pedido actualizado", description: "Los cambios se han guardado correctamente." });
+      const newOrder: Order = {
+        id: newOrderId,
+        customerName: "",
+        customerEmail: "",
+        status: formData.status,
+        discount: formData.discount,
+        items: formData.items,
+        subtotal: calculateSubtotal(),
+        total: calculateTotal(),
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+      addOrder(newOrder);
+      toast({ title: "Pedido creado", description: `El pedido ${newOrderId} se ha creado correctamente.` });
+    }
     onClose();
   };
 
@@ -129,14 +162,12 @@ export const OrderModal = ({ open, onClose, order }: OrderModalProps) => {
     setProductSearchOpen(false);
   };
 
-  if (!order) return null;
-
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto scrollbar-thin">
         <DialogHeader>
           <DialogTitle className="text-lg font-semibold">
-            Editar Pedido #{order.id}
+            {isEditing ? `Editar Pedido ${order.id}` : "Crear Nuevo Pedido"}
           </DialogTitle>
         </DialogHeader>
 
@@ -292,7 +323,7 @@ export const OrderModal = ({ open, onClose, order }: OrderModalProps) => {
             <Button type="button" variant="outline" onClick={onClose}>
               Cancelar
             </Button>
-            <Button type="submit">Guardar Cambios</Button>
+            <Button type="submit">{isEditing ? "Guardar Cambios" : "Crear Pedido"}</Button>
           </div>
         </form>
       </DialogContent>
