@@ -500,7 +500,7 @@ const Products = () => {
 
       {/* Bulk Edit Modal */}
       <Dialog open={bulkEditModalOpen} onOpenChange={setBulkEditModalOpen}>
-        <DialogContent className="sm:max-w-[500px]">
+        <DialogContent className="sm:max-w-[500px] z-[100]">
           <DialogHeader>
             <DialogTitle>Editar {selectedProducts.length} productos</DialogTitle>
             <DialogDescription>
