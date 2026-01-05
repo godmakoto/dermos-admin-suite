@@ -210,7 +210,7 @@ export const OrderModal = ({ open, onClose, order }: OrderModalProps) => {
                     <ChevronDown className="h-4 w-4 text-muted-foreground" />
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-64 p-0" align="end">
+                <PopoverContent className="w-72 p-0" align="end">
                   <Command>
                     <CommandInput placeholder="Buscar producto..." />
                     <CommandList>
@@ -223,11 +223,26 @@ export const OrderModal = ({ open, onClose, order }: OrderModalProps) => {
                             onSelect={() => addProduct(product.id)}
                             className="cursor-pointer"
                           >
-                            <div className="flex flex-col">
-                              <span>{product.name}</span>
-                              <span className="text-xs text-muted-foreground">
-                                Bs {product.price.toFixed(1)}
-                              </span>
+                            <div className="flex items-center gap-3">
+                              <div className="h-10 w-10 rounded-md overflow-hidden bg-muted flex-shrink-0">
+                                {product.images && product.images.length > 0 ? (
+                                  <img
+                                    src={product.images[0]}
+                                    alt={product.name}
+                                    className="h-full w-full object-cover"
+                                  />
+                                ) : (
+                                  <div className="h-full w-full flex items-center justify-center text-muted-foreground text-xs">
+                                    Sin img
+                                  </div>
+                                )}
+                              </div>
+                              <div className="flex flex-col min-w-0">
+                                <span className="truncate">{product.name}</span>
+                                <span className="text-xs text-muted-foreground">
+                                  Bs {product.price.toFixed(1)}
+                                </span>
+                              </div>
                             </div>
                           </CommandItem>
                         ))}
