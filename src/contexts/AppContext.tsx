@@ -52,6 +52,9 @@ interface AppContextType {
   addOrderStatus: (status: OrderStatus) => void;
   deleteOrderStatus: (id: string) => void;
 
+  // Reset Store
+  resetStore: () => void;
+
   // Theme
   isDarkMode: boolean;
   toggleDarkMode: () => void;
@@ -188,6 +191,17 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setOrderStatuses((prev) => prev.filter((s) => s.id !== id));
   };
 
+  // Reset Store
+  const resetStore = () => {
+    setProducts([]);
+    setOrders([]);
+    setCategories([]);
+    setSubcategories([]);
+    setBrands([]);
+    setLabels([]);
+    setOrderStatuses([]);
+  };
+
   return (
     <AppContext.Provider
       value={{
@@ -218,6 +232,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         orderStatuses,
         addOrderStatus,
         deleteOrderStatus,
+        resetStore,
         isDarkMode,
         toggleDarkMode,
       }}

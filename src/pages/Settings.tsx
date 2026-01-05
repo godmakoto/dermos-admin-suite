@@ -48,6 +48,7 @@ const Settings = () => {
     addLabel,
     deleteLabel,
     deleteAllLabels,
+    resetStore,
     addOrderStatus,
     deleteOrderStatus,
     deleteAllProducts,
@@ -123,9 +124,9 @@ const Settings = () => {
     toast({ title: "Subcategorías eliminadas", description: "Todas las subcategorías han sido eliminadas." });
   };
 
-  const handleDeleteAllLabels = () => {
-    deleteAllLabels();
-    toast({ title: "Etiquetas eliminadas", description: "Todas las etiquetas han sido eliminadas." });
+  const handleResetStore = () => {
+    resetStore();
+    toast({ title: "Tienda reiniciada", description: "Todos los datos han sido eliminados." });
   };
 
   const handleImportCSV = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -579,25 +580,25 @@ const Settings = () => {
                   </AlertDialogContent>
                 </AlertDialog>
 
-                {/* Delete All Labels */}
+                {/* Reset Store */}
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
                     <Button variant="destructive" className="w-full justify-start">
                       <Trash2 className="h-4 w-4 mr-2" />
-                      Eliminar todas las etiquetas
+                      Reiniciar tienda
                     </Button>
                   </AlertDialogTrigger>
                   <AlertDialogContent>
                     <AlertDialogHeader>
-                      <AlertDialogTitle>¿Eliminar todas las etiquetas?</AlertDialogTitle>
+                      <AlertDialogTitle>¿Reiniciar toda la tienda?</AlertDialogTitle>
                       <AlertDialogDescription>
-                        Esta acción no se puede deshacer. Se eliminarán permanentemente todas las etiquetas.
+                        Esta acción no se puede deshacer. Se eliminarán permanentemente TODOS los datos: productos, pedidos, categorías, subcategorías, marcas, etiquetas y estados de pedido.
                       </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                       <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                      <AlertDialogAction onClick={handleDeleteAllLabels} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-                        Eliminar todo
+                      <AlertDialogAction onClick={handleResetStore} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                        Reiniciar todo
                       </AlertDialogAction>
                     </AlertDialogFooter>
                   </AlertDialogContent>
