@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { PageHeader } from "@/components/ui/page-header";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -14,9 +14,21 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { useApp } from "@/contexts/AppContext";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, X, Tag, Layers, Bookmark, Flag, Moon } from "lucide-react";
+import { Plus, X, Tag, Layers, Bookmark, Flag, Moon, Trash2, Upload, Database } from "lucide-react";
+import { Product } from "@/types";
 
 const Settings = () => {
   const {
@@ -27,18 +39,24 @@ const Settings = () => {
     orderStatuses,
     addCategory,
     deleteCategory,
+    deleteAllCategories,
     addSubcategory,
     deleteSubcategory,
+    deleteAllSubcategories,
     addBrand,
     deleteBrand,
     addLabel,
     deleteLabel,
+    deleteAllLabels,
     addOrderStatus,
     deleteOrderStatus,
+    deleteAllProducts,
+    importProducts,
     isDarkMode,
     toggleDarkMode,
   } = useApp();
   const { toast } = useToast();
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [newCategory, setNewCategory] = useState("");
   const [newSubcategory, setNewSubcategory] = useState({ name: "", categoryId: "" });
@@ -90,6 +108,84 @@ const Settings = () => {
     }
   };
 
+  const handleDeleteAllProducts = () => {
+    deleteAllProducts();
+    toast({ title: "Productos eliminados", description: "Todos los productos han sido eliminados." });
+  };
+
+  const handleDeleteAllCategories = () => {
+    deleteAllCategories();
+    toast({ title: "Categorías eliminadas", description: "Todas las categorías han sido eliminadas." });
+  };
+
+  const handleDeleteAllSubcategories = () => {
+    deleteAllSubcategories();
+    toast({ title: "Subcategorías eliminadas", description: "Todas las subcategorías han sido eliminadas." });
+  };
+
+  const handleDeleteAllLabels = () => {
+    deleteAllLabels();
+    toast({ title: "Etiquetas eliminadas", description: "Todas las etiquetas han sido eliminadas." });
+  };
+
+  const handleImportCSV = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const text = e.target?.result as string;
+        const lines = text.split("\n").filter((line) => line.trim());
+        
+        if (lines.length < 2) {
+          toast({ title: "Error", description: "El archivo CSV está vacío o no tiene datos.", variant: "destructive" });
+          return;
+        }
+
+        const headers = lines[0].split(",").map((h) => h.trim().toLowerCase());
+        const products: Product[] = [];
+
+        for (let i = 1; i < lines.length; i++) {
+          const values = lines[i].split(",").map((v) => v.trim());
+          const statusValue = values[headers.indexOf("status")] || values[headers.indexOf("estado")] || "Activo";
+          const validStatus = ["Activo", "Inactivo", "Agotado"].includes(statusValue) ? statusValue as Product["status"] : "Activo";
+          
+          const product: Product = {
+            id: `imported-${Date.now()}-${i}`,
+            name: values[headers.indexOf("name")] || values[headers.indexOf("nombre")] || `Producto ${i}`,
+            price: parseFloat(values[headers.indexOf("price")] || values[headers.indexOf("precio")] || "0"),
+            category: values[headers.indexOf("category")] || values[headers.indexOf("categoria")] || "Sin categoría",
+            subcategory: values[headers.indexOf("subcategory")] || values[headers.indexOf("subcategoria")] || "",
+            brand: values[headers.indexOf("brand")] || values[headers.indexOf("marca")] || "Sin marca",
+            label: values[headers.indexOf("label")] || values[headers.indexOf("etiqueta")] || "",
+            shortDescription: values[headers.indexOf("shortdescription")] || values[headers.indexOf("descripcion_corta")] || "",
+            longDescription: values[headers.indexOf("longdescription")] || values[headers.indexOf("descripcion_larga")] || "",
+            usage: values[headers.indexOf("usage")] || values[headers.indexOf("uso")] || "",
+            ingredients: values[headers.indexOf("ingredients")] || values[headers.indexOf("ingredientes")] || "",
+            images: [values[headers.indexOf("image")] || values[headers.indexOf("imagen")] || "/placeholder.svg"],
+            stock: parseInt(values[headers.indexOf("stock")] || "0"),
+            status: validStatus,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          };
+          products.push(product);
+        }
+
+        importProducts(products);
+        toast({ title: "Productos importados", description: `Se importaron ${products.length} productos correctamente.` });
+      } catch {
+        toast({ title: "Error", description: "No se pudo procesar el archivo CSV.", variant: "destructive" });
+      }
+    };
+    reader.readAsText(file);
+    
+    // Reset file input
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
+
   return (
     <MainLayout>
       <PageHeader
@@ -98,7 +194,7 @@ const Settings = () => {
       />
 
       <Tabs defaultValue="categories" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-5 lg:w-auto lg:inline-grid">
+        <TabsList className="grid w-full grid-cols-6 lg:w-auto lg:inline-grid">
           <TabsTrigger value="categories" className="gap-2">
             <Layers className="h-4 w-4" />
             <span className="hidden sm:inline">Categorías</span>
@@ -114,6 +210,10 @@ const Settings = () => {
           <TabsTrigger value="statuses" className="gap-2">
             <Flag className="h-4 w-4" />
             <span className="hidden sm:inline">Estados</span>
+          </TabsTrigger>
+          <TabsTrigger value="data" className="gap-2">
+            <Database className="h-4 w-4" />
+            <span className="hidden sm:inline">Datos</span>
           </TabsTrigger>
           <TabsTrigger value="appearance" className="gap-2">
             <Moon className="h-4 w-4" />
@@ -365,6 +465,143 @@ const Settings = () => {
                     </button>
                   </div>
                 ))}
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Data Management */}
+        <TabsContent value="data" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Importar Datos</CardTitle>
+              <CardDescription>Importa productos desde un archivo CSV</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label>Importar Productos (CSV)</Label>
+                <p className="text-sm text-muted-foreground mb-2">
+                  El archivo CSV debe tener columnas: name/nombre, price/precio, category/categoria, brand/marca, stock, status/estado
+                </p>
+                <div className="flex gap-2">
+                  <Input
+                    ref={fileInputRef}
+                    type="file"
+                    accept=".csv"
+                    onChange={handleImportCSV}
+                    className="flex-1"
+                  />
+                  <Button variant="outline" onClick={() => fileInputRef.current?.click()}>
+                    <Upload className="h-4 w-4 mr-2" />
+                    Importar CSV
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="border-destructive/50">
+            <CardHeader>
+              <CardTitle className="text-destructive">Zona de Peligro</CardTitle>
+              <CardDescription>Estas acciones son irreversibles. Procede con precaución.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid gap-4 sm:grid-cols-2">
+                {/* Delete All Products */}
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="destructive" className="w-full justify-start">
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      Eliminar todos los productos
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>¿Eliminar todos los productos?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Esta acción no se puede deshacer. Se eliminarán permanentemente todos los productos de tu tienda.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                      <AlertDialogAction onClick={handleDeleteAllProducts} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                        Eliminar todo
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+
+                {/* Delete All Categories */}
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="destructive" className="w-full justify-start">
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      Eliminar todas las categorías
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>¿Eliminar todas las categorías?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Esta acción no se puede deshacer. Se eliminarán permanentemente todas las categorías.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                      <AlertDialogAction onClick={handleDeleteAllCategories} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                        Eliminar todo
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+
+                {/* Delete All Subcategories */}
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="destructive" className="w-full justify-start">
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      Eliminar todas las subcategorías
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>¿Eliminar todas las subcategorías?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Esta acción no se puede deshacer. Se eliminarán permanentemente todas las subcategorías.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                      <AlertDialogAction onClick={handleDeleteAllSubcategories} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                        Eliminar todo
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+
+                {/* Delete All Labels */}
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="destructive" className="w-full justify-start">
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      Eliminar todas las etiquetas
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>¿Eliminar todas las etiquetas?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Esta acción no se puede deshacer. Se eliminarán permanentemente todas las etiquetas.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                      <AlertDialogAction onClick={handleDeleteAllLabels} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                        Eliminar todo
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
               </div>
             </CardContent>
           </Card>
