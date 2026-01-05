@@ -12,11 +12,22 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
 
   return (
     <div className="min-h-screen bg-background">
+      {/* Overlay para móvil cuando el sidebar está abierto */}
+      {!isCollapsed && (
+        <div 
+          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+          onClick={toggleSidebar}
+        />
+      )}
+      
       <Sidebar />
+      
       <main
         className={cn(
           "min-h-screen transition-all duration-300",
-          isCollapsed ? "ml-0" : "ml-64"
+          // En desktop: margen cuando sidebar abierto
+          // En móvil: siempre sin margen (sidebar se superpone)
+          isCollapsed ? "ml-0" : "lg:ml-64 ml-0"
         )}
       >
         {/* Header with toggle button when collapsed */}

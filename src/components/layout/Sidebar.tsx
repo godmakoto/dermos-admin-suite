@@ -14,10 +14,17 @@ export const Sidebar = () => {
   const location = useLocation();
   const { isCollapsed, toggleSidebar } = useSidebar();
 
+  const handleNavClick = () => {
+    // Cerrar sidebar en móvil al hacer clic en un link
+    if (window.innerWidth < 1024 && !isCollapsed) {
+      toggleSidebar();
+    }
+  };
+
   return (
     <aside
       className={cn(
-        "fixed left-0 top-0 z-40 h-screen border-r border-sidebar-border bg-sidebar transition-all duration-300 overflow-hidden",
+        "fixed left-0 top-0 z-50 h-screen border-r border-sidebar-border bg-sidebar transition-all duration-300 overflow-hidden",
         isCollapsed ? "w-0" : "w-64"
       )}
     >
@@ -43,6 +50,7 @@ export const Sidebar = () => {
               <Link
                 key={item.path}
                 to={item.path}
+                onClick={handleNavClick}
                 className={cn(
                   "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200 whitespace-nowrap",
                   isActive
