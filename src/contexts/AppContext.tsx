@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
-import { Product, Order, Category, Subcategory, Brand, Label, OrderStatus } from "@/types";
+import { Product, Order, Category, Subcategory, Brand, Label, OrderStatus, ProductCarouselState } from "@/types";
 import {
   mockProducts,
   mockOrders,
@@ -8,6 +8,7 @@ import {
   mockBrands,
   mockLabels,
   mockOrderStatuses,
+  mockProductCarouselStates,
 } from "@/data/mockData";
 
 interface AppContextType {
@@ -53,6 +54,11 @@ interface AppContextType {
   addOrderStatus: (status: OrderStatus) => void;
   deleteOrderStatus: (id: string) => void;
 
+  // Product Carousel States
+  productCarouselStates: ProductCarouselState[];
+  addProductCarouselState: (state: ProductCarouselState) => void;
+  deleteProductCarouselState: (id: string) => void;
+
   // Reset Store
   resetStore: () => void;
 
@@ -71,6 +77,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [brands, setBrands] = useState<Brand[]>(mockBrands);
   const [labels, setLabels] = useState<Label[]>(mockLabels);
   const [orderStatuses, setOrderStatuses] = useState<OrderStatus[]>(mockOrderStatuses);
+  const [productCarouselStates, setProductCarouselStates] = useState<ProductCarouselState[]>(mockProductCarouselStates);
   const [isDarkMode, setIsDarkMode] = useState(false);
 
   useEffect(() => {
@@ -196,6 +203,15 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setOrderStatuses((prev) => prev.filter((s) => s.id !== id));
   };
 
+  // Product Carousel States
+  const addProductCarouselState = (state: ProductCarouselState) => {
+    setProductCarouselStates((prev) => [...prev, state]);
+  };
+
+  const deleteProductCarouselState = (id: string) => {
+    setProductCarouselStates((prev) => prev.filter((s) => s.id !== id));
+  };
+
   // Reset Store
   const resetStore = () => {
     setProducts([]);
@@ -205,6 +221,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setBrands([]);
     setLabels([]);
     setOrderStatuses([]);
+    setProductCarouselStates([]);
   };
 
   return (
@@ -238,6 +255,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         orderStatuses,
         addOrderStatus,
         deleteOrderStatus,
+        productCarouselStates,
+        addProductCarouselState,
+        deleteProductCarouselState,
         resetStore,
         isDarkMode,
         toggleDarkMode,

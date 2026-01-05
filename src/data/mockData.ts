@@ -1,4 +1,4 @@
-import { Product, Order, Category, Subcategory, Brand, Label, OrderStatus } from "@/types";
+import { Product, Order, Category, Subcategory, Brand, Label, OrderStatus, ProductCarouselState } from "@/types";
 
 export const mockCategories: Category[] = [
   { id: "1", name: "Cuidado Facial" },
@@ -36,6 +36,13 @@ export const mockOrderStatuses: OrderStatus[] = [
   { id: "1", name: "Pendiente", color: "#f59e0b" },
   { id: "2", name: "Finalizado", color: "#22c55e" },
   { id: "3", name: "Cancelado", color: "#ef4444" },
+];
+
+export const mockProductCarouselStates: ProductCarouselState[] = [
+  { id: "1", name: "Destacados", type: "carousel", color: "#3b82f6" },
+  { id: "2", name: "De vuelta en stock", type: "carousel", color: "#22c55e" },
+  { id: "3", name: "Más vendidos", type: "carousel", color: "#8b5cf6" },
+  { id: "4", name: "Ofertas", type: "banner", color: "#ef4444" },
 ];
 
 export const mockProducts: Product[] = [

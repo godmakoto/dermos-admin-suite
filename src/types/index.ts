@@ -69,3 +69,10 @@ export interface OrderStatus {
   name: string;
   color: string;
 }
+
+export interface ProductCarouselState {
+  id: string;
+  name: string;
+  type: "carousel" | "banner";
+  color: string;
+}
