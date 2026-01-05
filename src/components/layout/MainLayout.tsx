@@ -42,7 +42,7 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
             <span className="ml-3 text-lg font-semibold text-foreground">DermoAdmin</span>
           </div>
         )}
-        <div className="p-8">{children}</div>
+        <div className="p-4 md:p-8">{children}</div>
       </main>
     </div>
   );

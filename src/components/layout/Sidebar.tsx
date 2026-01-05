@@ -1,10 +1,9 @@
 import { Link, useLocation } from "react-router-dom";
-import { Package, ShoppingCart, Settings, LayoutDashboard, Menu } from "lucide-react";
+import { Package, ShoppingCart, Settings, Menu } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useSidebar } from "@/contexts/SidebarContext";
 
 const navItems = [
-  { icon: LayoutDashboard, label: "Dashboard", path: "/" },
   { icon: Package, label: "Productos", path: "/products" },
   { icon: ShoppingCart, label: "Pedidos", path: "/orders" },
   { icon: Settings, label: "Configuración", path: "/settings" },
