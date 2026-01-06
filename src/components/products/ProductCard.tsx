@@ -23,10 +23,10 @@ interface ProductCardProps {
 }
 
 const getStockLevel = (stock: number) => {
-  if (stock === 0) return { label: "Agotado", color: "border-destructive text-destructive bg-destructive/5" };
-  if (stock <= 10) return { label: "Bajo", color: "border-destructive text-destructive bg-destructive/5" };
-  if (stock <= 30) return { label: "Medio", color: "border-yellow-500 text-yellow-600 bg-yellow-500/5" };
-  return { label: "Alto", color: "border-green-500 text-green-600 bg-green-500/5" };
+  if (stock === 0) return { label: "Agotado", color: "bg-gray-100 text-gray-700 border-gray-200" };
+  if (stock <= 10) return { label: "Bajo", color: "bg-red-50 text-red-700 border-red-200" };
+  if (stock <= 30) return { label: "Medio", color: "bg-yellow-50 text-yellow-700 border-yellow-200" };
+  return { label: "Alto", color: "bg-green-50 text-green-700 border-green-200" };
 };
 
 export const ProductCard = ({
@@ -95,7 +95,7 @@ export const ProductCard = ({
       onTouchStart={handlePressStart}
       onTouchEnd={handlePressEnd}
       onTouchCancel={handlePressEnd}
-      className={`group relative flex cursor-pointer items-start gap-3 rounded-xl border transition-all hover:shadow-md active:scale-[0.995] duration-200 p-3 md:p-4 md:min-h-[120px] ${
+      className={`group relative flex cursor-pointer items-start gap-3 rounded-xl border transition-all hover:shadow-md active:scale-[0.995] duration-200 p-3 lg:gap-4 lg:p-4 md:min-h-[120px] ${
         isSelected
           ? 'border-primary bg-primary/5'
           : 'border-border bg-card'
@@ -113,7 +113,7 @@ export const ProductCard = ({
       )}
 
       {/* Image */}
-      <div className="h-16 w-16 flex-shrink-0 overflow-hidden rounded-lg bg-muted border border-border md:h-[72px] md:w-[72px]">
+      <div className="h-16 w-16 flex-shrink-0 overflow-hidden rounded-lg bg-muted border border-border lg:h-20 lg:w-20">
         {product.images[0] ? (
           <img
             src={product.images[0]}
@@ -167,21 +167,24 @@ export const ProductCard = ({
           </DropdownMenu>
         </div>
 
-        {/* Chips - Secondary, compact */}
-        <div className="flex items-center gap-1 overflow-hidden md:mt-1">
+        {/* Chips - Categorías y subcategorías */}
+        <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-hide pb-1">
           {visibleChips.map((chip, index) => (
             <Badge
               key={index}
               variant="outline"
-              className="flex-shrink-0 rounded-md bg-muted/50 text-muted-foreground border-transparent text-[10px] font-normal px-1.5 py-0 h-[18px]"
+              className="flex-shrink-0 rounded-full bg-blue-50 text-blue-700 border-blue-200 text-xs font-normal px-2 py-0.5 whitespace-nowrap"
             >
               {chip}
             </Badge>
           ))}
           {extraChipsCount > 0 && (
-            <span className="text-[10px] text-muted-foreground/60 flex-shrink-0">
+            <Badge
+              variant="outline"
+              className="flex-shrink-0 rounded-full bg-gray-50 text-gray-600 border-gray-200 text-xs font-normal px-2 py-0.5"
+            >
               +{extraChipsCount}
-            </span>
+            </Badge>
           )}
         </div>
 
@@ -192,7 +195,7 @@ export const ProductCard = ({
           </p>
           <Badge
             variant="outline"
-            className={`flex-shrink-0 rounded-md text-[10px] border px-1.5 py-0 h-[18px] font-medium ${stockLevel.color}`}
+            className={`flex-shrink-0 rounded-lg text-xs border px-2.5 py-1 font-normal whitespace-nowrap ${stockLevel.color}`}
           >
             {product.stock} • {stockLevel.label}
           </Badge>
