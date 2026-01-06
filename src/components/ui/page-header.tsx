@@ -9,14 +9,25 @@ interface PageHeaderProps {
 
 export const PageHeader = ({ title, description, children, className }: PageHeaderProps) => {
   return (
-    <div className={cn("mb-8 flex items-center justify-between", className)}>
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight text-foreground">{title}</h1>
+    <div className={cn(
+      "mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between",
+      className
+    )}>
+      <div className="space-y-1">
+        <h1 className="text-2xl font-semibold tracking-tight text-foreground">
+          {title}
+        </h1>
         {description && (
-          <p className="mt-1 text-sm text-muted-foreground">{description}</p>
+          <p className="text-sm text-muted-foreground/70">
+            {description}
+          </p>
         )}
       </div>
-      {children && <div className="flex items-center gap-3">{children}</div>}
+      {children && (
+        <div className="flex items-center gap-3 shrink-0">
+          {children}
+        </div>
+      )}
     </div>
   );
 };
