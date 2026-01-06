@@ -36,7 +36,7 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
           isCollapsed ? "ml-0" : "lg:ml-64 ml-0"
         )}
       >
-        {/* Header móvil siempre visible */}
+        {/* Header móvil siempre visible - solo hamburguesa + DermoAdmin */}
         <div className="sticky top-0 z-30 flex h-16 items-center border-b border-border bg-background px-4 lg:hidden">
           <button
             onClick={toggleSidebar}
@@ -44,21 +44,7 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
           >
             <Menu className="h-4 w-4 text-primary-foreground" />
           </button>
-          
-          {/* Mostrar usuario cuando sidebar abierto, título cuando cerrado */}
-          {!isCollapsed ? (
-            <div className="ml-3 flex items-center gap-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-muted">
-                <User className="h-4 w-4 text-muted-foreground" />
-              </div>
-              <div className="flex flex-col">
-                <span className="text-sm font-medium text-foreground leading-tight">{mockUser.name}</span>
-                <span className="text-xs text-muted-foreground leading-tight">{mockUser.email}</span>
-              </div>
-            </div>
-          ) : (
-            <span className="ml-3 text-lg font-semibold text-foreground">DermoAdmin</span>
-          )}
+          <span className="ml-3 text-lg font-semibold text-foreground">DermoAdmin</span>
         </div>
 
         {/* Header desktop cuando sidebar colapsado */}
