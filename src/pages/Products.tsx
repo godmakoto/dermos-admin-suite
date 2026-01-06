@@ -389,7 +389,7 @@ const Products = () => {
       </div>
 
       {/* Product Cards */}
-      <div className="space-y-3">
+      <div className="space-y-3 md:space-y-4">
         {filteredProducts.length > 0 ? (
           filteredProducts.map((product) => (
             <ProductCard
