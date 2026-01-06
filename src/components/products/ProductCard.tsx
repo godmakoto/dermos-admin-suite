@@ -1,8 +1,14 @@
 import { Product } from "@/types";
-import { Copy, Trash2 } from "lucide-react";
+import { Copy, Trash2, MoreVertical } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { useRef } from "react";
 
 interface ProductCardProps {
@@ -17,23 +23,10 @@ interface ProductCardProps {
 }
 
 const getStockLevel = (stock: number) => {
-  if (stock === 0) return { label: "Agotado", color: "border-destructive text-destructive" };
-  if (stock <= 10) return { label: "Bajo", color: "border-destructive text-destructive" };
-  if (stock <= 30) return { label: "Medio", color: "border-yellow-500 text-yellow-600" };
-  return { label: "Alto", color: "border-green-500 text-green-600" };
-};
-
-const getStatusColor = (status: string) => {
-  switch (status) {
-    case "Activo":
-      return "text-green-500";
-    case "Inactivo":
-      return "text-muted-foreground";
-    case "Agotado":
-      return "text-destructive";
-    default:
-      return "text-muted-foreground";
-  }
+  if (stock === 0) return { label: "Agotado", color: "border-destructive text-destructive bg-destructive/5" };
+  if (stock <= 10) return { label: "Bajo", color: "border-destructive text-destructive bg-destructive/5" };
+  if (stock <= 30) return { label: "Medio", color: "border-yellow-500 text-yellow-600 bg-yellow-500/5" };
+  return { label: "Alto", color: "border-green-500 text-green-600 bg-green-500/5" };
 };
 
 export const ProductCard = ({
@@ -50,13 +43,16 @@ export const ProductCard = ({
   const longPressTimer = useRef<NodeJS.Timeout | null>(null);
   const isLongPress = useRef(false);
 
+  // Chips: max 2 visible
+  const allChips = [product.category, product.subcategory].filter(Boolean);
+  const visibleChips = allChips.slice(0, 2);
+  const extraChipsCount = allChips.length - 2;
+
   const handleCardClick = () => {
-    // Si fue long press, no hacer nada
     if (isLongPress.current) {
       isLongPress.current = false;
       return;
     }
-
     if (isSelectionMode && onSelect) {
       onSelect(!isSelected);
     } else {
@@ -70,7 +66,6 @@ export const ProductCard = ({
       longPressTimer.current = setTimeout(() => {
         isLongPress.current = true;
         onLongPress();
-        // Vibración opcional en dispositivos móviles
         if (navigator.vibrate) {
           navigator.vibrate(50);
         }
@@ -100,15 +95,15 @@ export const ProductCard = ({
       onTouchStart={handlePressStart}
       onTouchEnd={handlePressEnd}
       onTouchCancel={handlePressEnd}
-      className={`group relative flex cursor-pointer items-start gap-3 rounded-xl border transition-all hover:shadow-lg active:scale-[0.99] duration-200 md:items-center md:gap-4 ${
+      className={`group relative flex cursor-pointer items-start gap-3 rounded-xl border transition-all hover:shadow-md active:scale-[0.995] duration-200 ${
         isSelected
-          ? 'border-primary bg-primary/5 p-3 md:p-4'
-          : 'border-border bg-card p-3 md:p-4'
+          ? 'border-primary bg-primary/5 p-3'
+          : 'border-border bg-card p-3'
       }`}
     >
       {/* Checkbox - Visible en modo selección */}
       {isSelectionMode && onSelect && (
-        <div className="flex-shrink-0" onClick={(e) => e.stopPropagation()}>
+        <div className="flex-shrink-0 self-center" onClick={(e) => e.stopPropagation()}>
           <Checkbox
             checked={isSelected}
             onCheckedChange={handleCheckboxChange}
@@ -117,8 +112,8 @@ export const ProductCard = ({
         </div>
       )}
 
-      {/* Image - Perfect Square */}
-      <div className="h-20 w-20 flex-shrink-0 overflow-hidden rounded-lg bg-muted border border-border md:h-16 md:w-16">
+      {/* Image */}
+      <div className="h-16 w-16 flex-shrink-0 overflow-hidden rounded-lg bg-muted border border-border md:h-14 md:w-14">
         {product.images[0] ? (
           <img
             src={product.images[0]}
@@ -132,90 +127,76 @@ export const ProductCard = ({
         )}
       </div>
 
-      {/* Info */}
-      <div className="min-w-0 flex-1 flex flex-col">
-        {/* Top: Nombre y Marca */}
-        <div className="flex items-start justify-between gap-2 mb-1.5">
+      {/* Content */}
+      <div className="min-w-0 flex-1 flex flex-col gap-1">
+        {/* Header: Nombre + Marca */}
+        <div className="flex items-start justify-between gap-2">
           <div className="min-w-0 flex-1">
-            <h3 className="text-foreground truncate leading-tight mb-0.5">
+            <h3 className="text-[15px] font-semibold text-foreground truncate leading-tight">
               {product.name}
             </h3>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-xs text-muted-foreground/70 truncate">
               {product.brand}
             </p>
           </div>
+
+          {/* Actions Menu */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-7 w-7 flex-shrink-0 opacity-60 hover:opacity-100 transition-opacity"
+              >
+                <MoreVertical className="h-4 w-4 text-muted-foreground" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-40">
+              <DropdownMenuItem onClick={onDuplicate} className="gap-2">
+                <Copy className="h-4 w-4" />
+                Duplicar
+              </DropdownMenuItem>
+              <DropdownMenuItem 
+                onClick={onDelete} 
+                className="gap-2 text-destructive focus:text-destructive"
+              >
+                <Trash2 className="h-4 w-4" />
+                Eliminar
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
 
-        {/* Badges - Horizontal scroll */}
-        <div className="mb-2 flex gap-1.5 overflow-x-auto scrollbar-hide pb-1">
-          <Badge
-            variant="outline"
-            className="flex-shrink-0 rounded-md bg-primary/10 text-primary border-primary/20 text-xs font-normal px-2.5 py-0.5"
-          >
-            {product.category}
-          </Badge>
-          {product.subcategory && (
+        {/* Chips - Secondary, compact */}
+        <div className="flex items-center gap-1 overflow-hidden">
+          {visibleChips.map((chip, index) => (
             <Badge
+              key={index}
               variant="outline"
-              className="flex-shrink-0 rounded-md bg-primary/10 text-primary border-primary/20 text-xs font-normal px-2.5 py-0.5"
+              className="flex-shrink-0 rounded-md bg-muted/50 text-muted-foreground border-transparent text-[10px] font-normal px-1.5 py-0 h-[18px]"
             >
-              {product.subcategory}
+              {chip}
             </Badge>
+          ))}
+          {extraChipsCount > 0 && (
+            <span className="text-[10px] text-muted-foreground/60 flex-shrink-0">
+              +{extraChipsCount}
+            </span>
           )}
         </div>
 
-        {/* Bottom: Price and Stock */}
-        <div className="flex items-center justify-between gap-3 mt-auto">
-          <p className="text-foreground font-medium">
+        {/* Footer: Precio + Stock */}
+        <div className="flex items-center justify-between gap-2 mt-auto pt-1">
+          <p className="text-sm font-semibold text-foreground">
             {product.price.toFixed(1)} Bs
           </p>
-
           <Badge
             variant="outline"
-            className={`flex-shrink-0 rounded-lg text-xs border whitespace-nowrap px-2.5 py-1 md:hidden ${stockLevel.color}`}
+            className={`flex-shrink-0 rounded-md text-[10px] border px-1.5 py-0 h-[18px] font-medium ${stockLevel.color}`}
           >
             {product.stock} • {stockLevel.label}
           </Badge>
         </div>
-      </div>
-
-      {/* Delete button - Posición absoluta en móvil */}
-      <Button
-        variant="ghost"
-        size="icon"
-        className="absolute right-2 top-2 h-8 w-8 flex-shrink-0 md:hidden touch-manipulation"
-        onClick={onDelete}
-      >
-        <Trash2 className="h-5 w-5 text-destructive" />
-      </Button>
-
-      {/* Desktop: Stock Badge & Actions */}
-      <div className="ml-auto hidden flex-col items-end gap-2 md:flex">
-        <div className="flex items-center gap-1">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8"
-            onClick={onDuplicate}
-          >
-            <Copy className="h-4 w-4 text-muted-foreground hover:text-primary" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8"
-            onClick={onDelete}
-          >
-            <Trash2 className="h-4 w-4 text-destructive" />
-          </Button>
-        </div>
-
-        <Badge
-          variant="outline"
-          className={`rounded-full border-2 px-3 py-1 text-sm font-medium ${stockLevel.color}`}
-        >
-          {product.stock} • {stockLevel.label}
-        </Badge>
       </div>
     </div>
   );
