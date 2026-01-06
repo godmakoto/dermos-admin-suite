@@ -223,7 +223,7 @@ const Products = () => {
         title="Productos"
         description={`${filteredProducts.length} productos encontrados`}
       >
-        <Button onClick={handleCreate}>
+        <Button onClick={handleCreate} className="h-11 px-5 rounded-lg shadow-sm">
           <Plus className="mr-2 h-4 w-4" />
           Agregar Producto
         </Button>
