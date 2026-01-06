@@ -95,10 +95,10 @@ export const ProductCard = ({
       onTouchStart={handlePressStart}
       onTouchEnd={handlePressEnd}
       onTouchCancel={handlePressEnd}
-      className={`group relative flex cursor-pointer items-start gap-3 rounded-xl border transition-all hover:shadow-md active:scale-[0.995] duration-200 ${
+      className={`group relative flex cursor-pointer items-start gap-3 rounded-xl border transition-all hover:shadow-md active:scale-[0.995] duration-200 p-3 md:p-4 md:min-h-[120px] ${
         isSelected
-          ? 'border-primary bg-primary/5 p-3'
-          : 'border-border bg-card p-3'
+          ? 'border-primary bg-primary/5'
+          : 'border-border bg-card'
       }`}
     >
       {/* Checkbox - Visible en modo selección */}
@@ -113,7 +113,7 @@ export const ProductCard = ({
       )}
 
       {/* Image */}
-      <div className="h-16 w-16 flex-shrink-0 overflow-hidden rounded-lg bg-muted border border-border md:h-14 md:w-14">
+      <div className="h-16 w-16 flex-shrink-0 overflow-hidden rounded-lg bg-muted border border-border md:h-[72px] md:w-[72px]">
         {product.images[0] ? (
           <img
             src={product.images[0]}
@@ -128,7 +128,7 @@ export const ProductCard = ({
       </div>
 
       {/* Content */}
-      <div className="min-w-0 flex-1 flex flex-col gap-1">
+      <div className="min-w-0 flex-1 flex flex-col gap-1 md:gap-2">
         {/* Header: Nombre + Marca */}
         <div className="flex items-start justify-between gap-2">
           <div className="min-w-0 flex-1">
@@ -168,7 +168,7 @@ export const ProductCard = ({
         </div>
 
         {/* Chips - Secondary, compact */}
-        <div className="flex items-center gap-1 overflow-hidden">
+        <div className="flex items-center gap-1 overflow-hidden md:mt-1">
           {visibleChips.map((chip, index) => (
             <Badge
               key={index}
@@ -186,7 +186,7 @@ export const ProductCard = ({
         </div>
 
         {/* Footer: Precio + Stock */}
-        <div className="flex items-center justify-between gap-2 mt-auto pt-1">
+        <div className="flex items-center justify-between gap-2 mt-auto pt-1 md:pt-2">
           <p className="text-sm font-semibold text-foreground">
             {product.price.toFixed(1)} Bs
           </p>
