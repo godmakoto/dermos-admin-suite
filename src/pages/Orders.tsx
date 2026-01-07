@@ -107,6 +107,29 @@ const Orders = () => {
   const completedCount = dateFilteredOrders.filter((o) => o.status === "Finalizado").length;
   const totalRevenue = dateFilteredOrders.reduce((sum, o) => sum + o.total, 0);
 
+  // Get dynamic label for the revenue indicator
+  const getDateFilterLabel = () => {
+    switch (dateFilter) {
+      case "today":
+        return "Hoy";
+      case "yesterday":
+        return "Ayer";
+      case "thisWeek":
+        return "Esta semana";
+      case "thisMonth":
+        return "Este mes";
+      case "selectDate":
+        return selectedDate ? format(selectedDate, "dd/MM", { locale: es }) : "Fecha";
+      case "selectRange":
+        return dateRange.from && dateRange.to
+          ? `${format(dateRange.from, "dd/MM")} - ${format(dateRange.to, "dd/MM")}`
+          : "Rango";
+      case "all":
+      default:
+        return "Total";
+    }
+  };
+
   // Filtered orders
   const filteredOrders = useMemo(() => {
     let result = [...orders];
@@ -205,7 +228,7 @@ const Orders = () => {
       {/* Summary - Compact */}
       <div className="flex gap-2 mb-4 overflow-x-auto scrollbar-hide pb-1">
         <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-secondary text-sm whitespace-nowrap">
-          <span className="text-muted-foreground">Hoy</span>
+          <span className="text-muted-foreground">{getDateFilterLabel()}</span>
           <span className="font-semibold">Bs {totalRevenue.toFixed(0)}</span>
         </div>
         <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-warning/10 text-warning-foreground text-sm whitespace-nowrap">
