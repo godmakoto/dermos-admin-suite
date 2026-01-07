@@ -9,7 +9,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useRef } from "react";
+import { useRef, useState, useEffect } from "react";
 
 interface ProductCardProps {
   product: Product;
@@ -42,6 +42,19 @@ export const ProductCard = ({
   const stockLevel = getStockLevel(product.stock);
   const longPressTimer = useRef<NodeJS.Timeout | null>(null);
   const isLongPress = useRef(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  // Close menu on scroll
+  useEffect(() => {
+    if (!menuOpen) return;
+    
+    const handleScroll = () => {
+      setMenuOpen(false);
+    };
+    
+    window.addEventListener('scroll', handleScroll, true);
+    return () => window.removeEventListener('scroll', handleScroll, true);
+  }, [menuOpen]);
 
   // Chips: max 2 visible
   const allChips = [product.category, product.subcategory].filter(Boolean);
@@ -141,7 +154,7 @@ export const ProductCard = ({
           </div>
 
           {/* Actions Menu */}
-          <DropdownMenu>
+          <DropdownMenu open={menuOpen} onOpenChange={setMenuOpen}>
             <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
               <Button
                 variant="ghost"
