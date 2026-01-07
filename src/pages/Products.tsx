@@ -400,7 +400,7 @@ const Products = () => {
 
       {/* Floating action bar for bulk actions */}
       {selectedProducts.length > 0 && (
-        <div className="fixed bottom-20 lg:bottom-6 left-1/2 -translate-x-1/2 z-40 bg-foreground text-background rounded-full shadow-lg px-4 py-2.5 flex items-center gap-3">
+        <div className="fixed bottom-20 lg:bottom-6 left-4 right-4 lg:left-1/2 lg:right-auto lg:-translate-x-1/2 z-40 bg-foreground text-background rounded-full shadow-lg px-4 py-2.5 flex items-center justify-between lg:justify-start gap-3">
           <span className="text-sm font-medium">
             {selectedProducts.length} seleccionados
           </span>
