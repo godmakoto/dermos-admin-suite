@@ -2,8 +2,8 @@ import { useState, useMemo } from "react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { PageHeader } from "@/components/ui/page-header";
 import { DataTable } from "@/components/ui/data-table";
-import { StatusBadge } from "@/components/ui/status-badge";
 import { OrderModal } from "@/components/orders/OrderModal";
+import { OrderStatusSelect } from "@/components/orders/OrderStatusSelect";
 import { useApp } from "@/contexts/AppContext";
 import { Order } from "@/types";
 import { format, isToday, isYesterday, isThisWeek, isThisMonth, isWithinInterval } from "date-fns";
@@ -69,8 +69,7 @@ const Orders = () => {
     setModalOpen(true);
   };
 
-  const handleStatusChange = (orderId: string, newStatus: string, e: React.MouseEvent) => {
-    e.stopPropagation();
+  const handleStatusChange = (orderId: string, newStatus: string) => {
     const order = orders.find((o) => o.id === orderId);
     if (order) {
       updateOrder({ ...order, status: newStatus });
@@ -168,7 +167,7 @@ const Orders = () => {
     {
       key: "id",
       label: "Pedido",
-      className: "w-[30%]",
+      className: "w-[35%]",
       render: (order: Order) => (
         <div>
           <span className="font-medium text-sm">{order.id}</span>
@@ -181,36 +180,22 @@ const Orders = () => {
     {
       key: "total",
       label: "Total",
-      className: "w-[25%]",
+      className: "w-auto",
       render: (order: Order) => (
-        <span className="font-medium text-sm">Bs {order.total.toFixed(0)}</span>
+        <span className="font-medium text-sm whitespace-nowrap">Bs {order.total.toFixed(0)}</span>
       ),
     },
     {
       key: "status",
       label: "Estado",
-      className: "w-[45%]",
+      className: "w-auto text-right",
       render: (order: Order) => (
-        <div onClick={(e) => e.stopPropagation()}>
-          <Select
+        <div className="flex justify-end">
+          <OrderStatusSelect
             value={order.status}
-            onValueChange={(value) => handleStatusChange(order.id, value, { stopPropagation: () => {} } as React.MouseEvent)}
-          >
-            <SelectTrigger className="w-28 h-7 border-0 bg-transparent p-0 focus:ring-0">
-              <StatusBadge label={order.status} color={getStatusColor(order.status)} />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="Pendiente">
-                <StatusBadge label="Pendiente" color={getStatusColor("Pendiente")} />
-              </SelectItem>
-              <SelectItem value="Finalizado">
-                <StatusBadge label="Finalizado" color={getStatusColor("Finalizado")} />
-              </SelectItem>
-              <SelectItem value="Cancelado">
-                <StatusBadge label="Cancelado" color={getStatusColor("Cancelado")} />
-              </SelectItem>
-            </SelectContent>
-          </Select>
+            onChange={(value) => handleStatusChange(order.id, value)}
+            statuses={orderStatuses}
+          />
         </div>
       ),
     },
