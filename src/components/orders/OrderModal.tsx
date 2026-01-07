@@ -225,10 +225,15 @@ export const OrderModal = ({ open, onClose, order }: OrderModalProps) => {
                     <ChevronDown className="h-4 w-4 text-muted-foreground" />
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-72 p-0 z-[200]" align="end">
+                <PopoverContent
+                  className="w-72 p-0 z-[200]"
+                  align="end"
+                  onWheel={(e) => e.stopPropagation()}
+                  onTouchMove={(e) => e.stopPropagation()}
+                >
                   <Command>
                     <CommandInput placeholder="Buscar producto..." />
-                    <CommandList>
+                    <CommandList className="max-h-[300px] overflow-y-auto">
                       <CommandEmpty>No se encontraron productos.</CommandEmpty>
                       <CommandGroup>
                         {products.map((product) => (
