@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { MainLayout } from "@/components/layout/MainLayout";
+import { AppLayout } from "@/components/layout/AppLayout";
 import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -217,117 +217,127 @@ const Products = () => {
     });
   };
 
+  // Stock summary
+  const totalProducts = products.length;
+  const stockBajo = products.filter((p) => p.stock >= 1 && p.stock <= 10).length;
+  const agotados = products.filter((p) => p.stock === 0).length;
+
   return (
-    <MainLayout>
+    <AppLayout>
       <PageHeader
         title="Productos"
-        description={`${filteredProducts.length} productos encontrados`}
+        description={`${filteredProducts.length} productos`}
       >
-        <Button onClick={handleCreate} className="h-11 px-5 rounded-lg shadow-sm">
-          <Plus className="mr-2 h-4 w-4" />
-          Agregar Producto
+        <Button onClick={handleCreate} size="sm" className="gap-1.5">
+          <Plus className="h-4 w-4" />
+          <span className="hidden sm:inline">Agregar</span>
         </Button>
       </PageHeader>
 
-      {/* Search and Filters */}
-      <div className="mb-6 rounded-lg border border-border bg-card p-4">
-        {/* Search bar with mobile filter button */}
-        <div className="flex gap-2">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              placeholder="Buscar por nombre, marca o SKU..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10"
-            />
-          </div>
-          
-          {/* Mobile filter button */}
-          <Popover open={filterPopoverOpen} onOpenChange={setFilterPopoverOpen}>
-            <PopoverTrigger asChild>
-              <Button variant="outline" size="icon" className="lg:hidden shrink-0">
-                <SlidersHorizontal className="h-4 w-4" />
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-64 p-4" align="end">
-              <div className="flex flex-col gap-3">
-                <Select value={categoryFilter} onValueChange={handleCategoryChange}>
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Todas las categorías" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Todas las categorías</SelectItem>
-                    {categories.map((cat) => (
-                      <SelectItem key={cat.id} value={cat.name}>
-                        {cat.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-
-                <Select value={brandFilter} onValueChange={handleBrandChange}>
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Todas las marcas" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Todas las marcas</SelectItem>
-                    {brands.map((brand) => (
-                      <SelectItem key={brand.id} value={brand.name}>
-                        {brand.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-
-                <Select value={stockFilter} onValueChange={handleStockChange}>
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Todo el stock" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Todo el stock</SelectItem>
-                    <SelectItem value="inStock">En stock</SelectItem>
-                    <SelectItem value="outOfStock">Sin stock</SelectItem>
-                  </SelectContent>
-                </Select>
-
-                <Select value={statusFilter} onValueChange={handleStatusChange}>
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Todos los estados" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Todos los estados</SelectItem>
-                    <SelectItem value="Activo">Activo</SelectItem>
-                    <SelectItem value="Inactivo">Inactivo</SelectItem>
-                    <SelectItem value="Agotado">Agotado</SelectItem>
-                  </SelectContent>
-                </Select>
-
-                <Select value={sortOrder} onValueChange={handleSortChange}>
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Ordenar por..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="default">Por defecto</SelectItem>
-                    <SelectItem value="aToZ">Nombre A-Z</SelectItem>
-                    <SelectItem value="zToA">Nombre Z-A</SelectItem>
-                    <SelectItem value="priceAsc">Precio menor</SelectItem>
-                    <SelectItem value="priceDesc">Precio mayor</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </PopoverContent>
-          </Popover>
+      {/* Stock Summary - Compact */}
+      <div className="flex gap-2 mb-4 overflow-x-auto scrollbar-hide pb-1">
+        <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-secondary text-sm whitespace-nowrap">
+          <span className="text-muted-foreground">Total</span>
+          <span className="font-semibold">{totalProducts}</span>
         </div>
+        {stockBajo > 0 && (
+          <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-warning/10 text-warning-foreground text-sm whitespace-nowrap">
+            <span>Stock bajo</span>
+            <span className="font-semibold">{stockBajo}</span>
+          </div>
+        )}
+        {agotados > 0 && (
+          <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-destructive/10 text-destructive text-sm whitespace-nowrap">
+            <span>Agotados</span>
+            <span className="font-semibold">{agotados}</span>
+          </div>
+        )}
+      </div>
 
-        {/* Desktop filters - hidden on mobile */}
-        <div className="hidden lg:grid lg:grid-cols-5 gap-3 mt-4">
+      {/* Search and Filters */}
+      <div className="flex gap-2 mb-4">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            placeholder="Buscar..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-9 h-10"
+          />
+        </div>
+        
+        {/* Mobile filter button */}
+        <Popover open={filterPopoverOpen} onOpenChange={setFilterPopoverOpen}>
+          <PopoverTrigger asChild>
+            <Button variant="outline" size="icon" className="h-10 w-10 shrink-0 lg:hidden">
+              <SlidersHorizontal className="h-4 w-4" />
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-64 p-3" align="end">
+            <div className="flex flex-col gap-2">
+              <Select value={categoryFilter} onValueChange={handleCategoryChange}>
+                <SelectTrigger className="w-full h-9 text-sm">
+                  <SelectValue placeholder="Categoría" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todas las categorías</SelectItem>
+                  {categories.map((cat) => (
+                    <SelectItem key={cat.id} value={cat.name}>
+                      {cat.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              <Select value={brandFilter} onValueChange={handleBrandChange}>
+                <SelectTrigger className="w-full h-9 text-sm">
+                  <SelectValue placeholder="Marca" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todas las marcas</SelectItem>
+                  {brands.map((brand) => (
+                    <SelectItem key={brand.id} value={brand.name}>
+                      {brand.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              <Select value={stockFilter} onValueChange={handleStockChange}>
+                <SelectTrigger className="w-full h-9 text-sm">
+                  <SelectValue placeholder="Stock" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todo el stock</SelectItem>
+                  <SelectItem value="inStock">En stock</SelectItem>
+                  <SelectItem value="outOfStock">Sin stock</SelectItem>
+                </SelectContent>
+              </Select>
+
+              <Select value={sortOrder} onValueChange={handleSortChange}>
+                <SelectTrigger className="w-full h-9 text-sm">
+                  <SelectValue placeholder="Ordenar" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="default">Por defecto</SelectItem>
+                  <SelectItem value="aToZ">A-Z</SelectItem>
+                  <SelectItem value="zToA">Z-A</SelectItem>
+                  <SelectItem value="priceAsc">Precio ↑</SelectItem>
+                  <SelectItem value="priceDesc">Precio ↓</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </PopoverContent>
+        </Popover>
+
+        {/* Desktop filters */}
+        <div className="hidden lg:flex lg:gap-2">
           <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder="Todas las categorías" />
+            <SelectTrigger className="w-40 h-10">
+              <SelectValue placeholder="Categoría" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Todas las categorías</SelectItem>
+              <SelectItem value="all">Todas</SelectItem>
               {categories.map((cat) => (
                 <SelectItem key={cat.id} value={cat.name}>
                   {cat.name}
@@ -337,11 +347,11 @@ const Products = () => {
           </Select>
 
           <Select value={brandFilter} onValueChange={setBrandFilter}>
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder="Todas las marcas" />
+            <SelectTrigger className="w-36 h-10">
+              <SelectValue placeholder="Marca" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Todas las marcas</SelectItem>
+              <SelectItem value="all">Todas</SelectItem>
               {brands.map((brand) => (
                 <SelectItem key={brand.id} value={brand.name}>
                   {brand.name}
@@ -350,46 +360,23 @@ const Products = () => {
             </SelectContent>
           </Select>
 
-          <Select value={stockFilter} onValueChange={setStockFilter}>
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder="Todo el stock" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Todo el stock</SelectItem>
-              <SelectItem value="inStock">En stock</SelectItem>
-              <SelectItem value="outOfStock">Sin stock</SelectItem>
-            </SelectContent>
-          </Select>
-
-          <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder="Todos los estados" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Todos los estados</SelectItem>
-              <SelectItem value="Activo">Activo</SelectItem>
-              <SelectItem value="Inactivo">Inactivo</SelectItem>
-              <SelectItem value="Agotado">Agotado</SelectItem>
-            </SelectContent>
-          </Select>
-
           <Select value={sortOrder} onValueChange={setSortOrder}>
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder="Ordenar por..." />
+            <SelectTrigger className="w-32 h-10">
+              <SelectValue placeholder="Ordenar" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="default">Por defecto</SelectItem>
-              <SelectItem value="aToZ">Nombre A-Z</SelectItem>
-              <SelectItem value="zToA">Nombre Z-A</SelectItem>
-              <SelectItem value="priceAsc">Precio menor</SelectItem>
-              <SelectItem value="priceDesc">Precio mayor</SelectItem>
+              <SelectItem value="default">Defecto</SelectItem>
+              <SelectItem value="aToZ">A-Z</SelectItem>
+              <SelectItem value="zToA">Z-A</SelectItem>
+              <SelectItem value="priceAsc">Precio ↑</SelectItem>
+              <SelectItem value="priceDesc">Precio ↓</SelectItem>
             </SelectContent>
           </Select>
         </div>
       </div>
 
       {/* Product Cards */}
-      <div className="space-y-3 md:space-y-4">
+      <div className="space-y-2">
         {filteredProducts.length > 0 ? (
           filteredProducts.map((product) => (
             <ProductCard
@@ -405,92 +392,36 @@ const Products = () => {
             />
           ))
         ) : (
-          <div className="rounded-lg border border-border bg-card p-8 text-center text-muted-foreground">
-            No hay productos. Crea tu primer producto para comenzar.
+          <div className="rounded-lg border border-dashed border-border p-8 text-center text-muted-foreground">
+            No hay productos
           </div>
         )}
       </div>
 
       {/* Floating action bar for bulk actions */}
       {selectedProducts.length > 0 && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-primary text-primary-foreground rounded-full shadow-lg px-6 py-3 flex items-center gap-4">
+        <div className="fixed bottom-20 lg:bottom-6 left-1/2 -translate-x-1/2 z-40 bg-foreground text-background rounded-full shadow-lg px-4 py-2.5 flex items-center gap-3">
           <span className="text-sm font-medium">
-            {selectedProducts.length} {selectedProducts.length === 1 ? 'producto seleccionado' : 'productos seleccionados'}
+            {selectedProducts.length} seleccionados
           </span>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={handleBulkEdit}
-              className="rounded-full"
-            >
-              Editar selección
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleClearSelection}
-              className="rounded-full text-primary-foreground hover:bg-primary-foreground/20"
-            >
-              Cancelar
-            </Button>
-          </div>
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={handleBulkEdit}
+            className="rounded-full h-8"
+          >
+            Editar
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleClearSelection}
+            className="rounded-full h-8 text-background hover:bg-background/20"
+          >
+            <X className="h-4 w-4" />
+          </Button>
         </div>
       )}
-
-      {/* Stock Indicators */}
-      {(() => {
-        const totalProducts = products.length;
-        const stockBajo = products.filter((p) => p.stock >= 1 && p.stock <= 10).length;
-        const stockMedio = products.filter((p) => p.stock >= 11 && p.stock <= 30).length;
-        const agotados = products.filter((p) => p.stock === 0).length;
-
-        return (
-          <div className="mt-6 rounded-lg border border-border bg-card p-4">
-            <h3 className="text-sm font-medium text-muted-foreground mb-4">Indicadores de Stock</h3>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              {/* Total Productos */}
-              <div className="rounded-lg border-2 border-primary bg-primary/5 p-4">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm text-muted-foreground">Total Productos</span>
-                  <div className="h-2 w-2 rounded-full bg-primary"></div>
-                </div>
-                <span className="text-3xl font-bold text-foreground">{totalProducts}</span>
-              </div>
-
-              {/* Stock Bajo */}
-              <div className="rounded-lg border border-border bg-card p-4">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm text-muted-foreground">Stock Bajo</span>
-                  <div className="h-2 w-2 rounded-full bg-muted"></div>
-                </div>
-                <span className="text-3xl font-bold text-amber-500">{stockBajo}</span>
-                <p className="text-xs text-muted-foreground mt-1">1-10 unidades</p>
-              </div>
-
-              {/* Stock Medio */}
-              <div className="rounded-lg border border-border bg-card p-4">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm text-muted-foreground">Stock Medio</span>
-                  <div className="h-2 w-2 rounded-full bg-muted"></div>
-                </div>
-                <span className="text-3xl font-bold text-green-500">{stockMedio}</span>
-                <p className="text-xs text-muted-foreground mt-1">11-30 unidades</p>
-              </div>
-
-              {/* Agotados */}
-              <div className="rounded-lg border border-border bg-card p-4">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm text-muted-foreground">Agotados</span>
-                  <div className="h-2 w-2 rounded-full bg-muted"></div>
-                </div>
-                <span className="text-3xl font-bold text-red-500">{agotados}</span>
-                <p className="text-xs text-muted-foreground mt-1">0 unidades</p>
-              </div>
-            </div>
-          </div>
-        );
-      })()}
 
       <ProductModal
         open={modalOpen}
@@ -500,26 +431,21 @@ const Products = () => {
 
       {/* Bulk Edit Modal */}
       <Dialog open={bulkEditModalOpen} onOpenChange={setBulkEditModalOpen}>
-        <DialogContent className="sm:max-w-[500px]">
+        <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Editar {selectedProducts.length} productos</DialogTitle>
             <DialogDescription>
-              Los campos que dejes vacíos no se modificarán. Solo se actualizarán los campos que selecciones.
+              Los campos vacíos no se modificarán
             </DialogDescription>
           </DialogHeader>
-
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="bulk-category">Categoría</Label>
-              <Select
-                value={bulkEditData.category || "no-change"}
-                onValueChange={(value) => setBulkEditData({ ...bulkEditData, category: value === "no-change" ? "" : value })}
-              >
-                <SelectTrigger id="bulk-category">
-                  <SelectValue placeholder="Seleccionar categoría (opcional)" />
+              <Label>Categoría</Label>
+              <Select value={bulkEditData.category} onValueChange={(value) => setBulkEditData({ ...bulkEditData, category: value })}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Sin cambios" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="no-change">Sin cambios</SelectItem>
                   {categories.map((cat) => (
                     <SelectItem key={cat.id} value={cat.name}>
                       {cat.name}
@@ -528,31 +454,13 @@ const Products = () => {
                 </SelectContent>
               </Select>
             </div>
-
             <div className="space-y-2">
-              <Label htmlFor="bulk-subcategory">Subcategoría</Label>
-              <Input
-                id="bulk-subcategory"
-                placeholder="Subcategoría (opcional)"
-                value={bulkEditData.subcategory}
-                onChange={(e) => setBulkEditData({ ...bulkEditData, subcategory: e.target.value })}
-              />
-              <p className="text-xs text-muted-foreground">
-                Escribe la subcategoría o déjalo vacío para no modificar
-              </p>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="bulk-brand">Marca</Label>
-              <Select
-                value={bulkEditData.brand || "no-change"}
-                onValueChange={(value) => setBulkEditData({ ...bulkEditData, brand: value === "no-change" ? "" : value })}
-              >
-                <SelectTrigger id="bulk-brand">
-                  <SelectValue placeholder="Seleccionar marca (opcional)" />
+              <Label>Marca</Label>
+              <Select value={bulkEditData.brand} onValueChange={(value) => setBulkEditData({ ...bulkEditData, brand: value })}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Sin cambios" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="no-change">Sin cambios</SelectItem>
                   {brands.map((brand) => (
                     <SelectItem key={brand.id} value={brand.name}>
                       {brand.name}
@@ -562,24 +470,17 @@ const Products = () => {
               </Select>
             </div>
           </div>
-
           <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => {
-                setBulkEditModalOpen(false);
-                setBulkEditData({ category: "", subcategory: "", brand: "" });
-              }}
-            >
+            <Button variant="outline" onClick={() => setBulkEditModalOpen(false)}>
               Cancelar
             </Button>
             <Button onClick={handleApplyBulkEdit}>
-              Aplicar cambios
+              Aplicar
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </MainLayout>
+    </AppLayout>
   );
 };
 

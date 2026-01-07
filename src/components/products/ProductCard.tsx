@@ -23,10 +23,10 @@ interface ProductCardProps {
 }
 
 const getStockLevel = (stock: number) => {
-  if (stock === 0) return { label: "Agotado", color: "bg-gray-100 text-gray-700 border-gray-200" };
-  if (stock <= 10) return { label: "Bajo", color: "bg-red-50 text-red-700 border-red-200" };
-  if (stock <= 30) return { label: "Medio", color: "bg-yellow-50 text-yellow-700 border-yellow-200" };
-  return { label: "Alto", color: "bg-green-50 text-green-700 border-green-200" };
+  if (stock === 0) return { label: "Agotado", color: "bg-muted text-muted-foreground border-border" };
+  if (stock <= 10) return { label: "Bajo", color: "bg-destructive/10 text-destructive border-destructive/20" };
+  if (stock <= 30) return { label: "Medio", color: "bg-warning/10 text-warning-foreground border-warning/20" };
+  return { label: "Alto", color: "bg-success/10 text-success border-success/20" };
 };
 
 export const ProductCard = ({
@@ -173,7 +173,7 @@ export const ProductCard = ({
             <Badge
               key={index}
               variant="outline"
-              className="flex-shrink-0 rounded-full bg-blue-50 text-blue-700 border-blue-200 text-xs font-normal px-2 py-0.5 whitespace-nowrap"
+              className="flex-shrink-0 rounded-full bg-secondary text-muted-foreground border-border text-xs font-normal px-2 py-0.5 whitespace-nowrap"
             >
               {chip}
             </Badge>
@@ -181,7 +181,7 @@ export const ProductCard = ({
           {extraChipsCount > 0 && (
             <Badge
               variant="outline"
-              className="flex-shrink-0 rounded-full bg-gray-50 text-gray-600 border-gray-200 text-xs font-normal px-2 py-0.5"
+              className="flex-shrink-0 rounded-full bg-muted text-muted-foreground border-border text-xs font-normal px-2 py-0.5"
             >
               +{extraChipsCount}
             </Badge>
