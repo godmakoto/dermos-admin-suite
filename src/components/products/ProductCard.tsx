@@ -9,7 +9,17 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useRef, useState, useEffect } from "react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { useRef, useState, useEffect, useCallback } from "react";
 
 interface ProductCardProps {
   product: Product;
@@ -43,18 +53,47 @@ export const ProductCard = ({
   const longPressTimer = useRef<NodeJS.Timeout | null>(null);
   const isLongPress = useRef(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const pendingDeleteEvent = useRef<React.MouseEvent | null>(null);
 
-  // Close menu on scroll
+  // Close menu on scroll (works on both touch and mouse scroll)
+  const handleScroll = useCallback(() => {
+    if (menuOpen) {
+      setMenuOpen(false);
+    }
+  }, [menuOpen]);
+
   useEffect(() => {
     if (!menuOpen) return;
     
-    const handleScroll = () => {
-      setMenuOpen(false);
-    };
+    // Listen to scroll on window and all scrollable containers
+    window.addEventListener('scroll', handleScroll, { capture: true, passive: true });
+    document.addEventListener('scroll', handleScroll, { capture: true, passive: true });
     
-    window.addEventListener('scroll', handleScroll, true);
-    return () => window.removeEventListener('scroll', handleScroll, true);
-  }, [menuOpen]);
+    // Also listen to touchmove for touch devices
+    window.addEventListener('touchmove', handleScroll, { capture: true, passive: true });
+    
+    return () => {
+      window.removeEventListener('scroll', handleScroll, { capture: true });
+      document.removeEventListener('scroll', handleScroll, { capture: true });
+      window.removeEventListener('touchmove', handleScroll, { capture: true });
+    };
+  }, [menuOpen, handleScroll]);
+
+  const handleDeleteClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    pendingDeleteEvent.current = e;
+    setMenuOpen(false);
+    setDeleteDialogOpen(true);
+  };
+
+  const confirmDelete = () => {
+    if (pendingDeleteEvent.current) {
+      onDelete(pendingDeleteEvent.current);
+      pendingDeleteEvent.current = null;
+    }
+    setDeleteDialogOpen(false);
+  };
 
   // Chips: max 2 visible
   const allChips = [product.category, product.subcategory].filter(Boolean);
@@ -170,7 +209,7 @@ export const ProductCard = ({
                 Duplicar
               </DropdownMenuItem>
               <DropdownMenuItem 
-                onClick={onDelete} 
+                onClick={handleDeleteClick} 
                 className="gap-2 text-destructive focus:text-destructive"
               >
                 <Trash2 className="h-4 w-4" />
@@ -178,6 +217,24 @@ export const ProductCard = ({
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
+
+          {/* Delete Confirmation Dialog */}
+          <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+            <AlertDialogContent onClick={(e) => e.stopPropagation()}>
+              <AlertDialogHeader>
+                <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Esta acción eliminará el producto "{product.name}" de forma permanente.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>No, cancelar</AlertDialogCancel>
+                <AlertDialogAction onClick={confirmDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                  Sí, eliminar
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </div>
 
         {/* Chips - Categorías y subcategorías */}
