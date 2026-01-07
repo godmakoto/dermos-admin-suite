@@ -166,7 +166,7 @@ export const ProductModal = ({ open, onClose, product }: ProductModalProps) => {
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent 
         hideCloseButton
-        className="fixed inset-0 flex h-[100dvh] w-full max-w-full flex-col translate-x-0 translate-y-0 gap-0 rounded-none border-0 p-0 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=open]:duration-300 data-[state=closed]:duration-200 data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 md:left-[50%] md:top-[50%] md:h-auto md:max-h-[90vh] md:max-w-3xl md:translate-x-[-50%] md:translate-y-[-50%] md:rounded-lg md:border md:data-[state=closed]:fade-out-0 md:data-[state=open]:fade-in-0 md:data-[state=closed]:zoom-out-95 md:data-[state=open]:zoom-in-95"
+        className="fixed inset-0 flex h-[100dvh] w-full max-w-full flex-col translate-x-0 translate-y-0 gap-0 rounded-none border-0 p-0 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=open]:duration-200 data-[state=closed]:duration-150 data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 md:left-[50%] md:top-[50%] md:h-auto md:max-h-[90vh] md:max-w-3xl md:translate-x-[-50%] md:translate-y-[-50%] md:rounded-lg md:border"
       >
         {/* Fixed Header */}
         <div className="flex h-14 shrink-0 items-center justify-between border-b border-border bg-background px-4 md:px-6">
