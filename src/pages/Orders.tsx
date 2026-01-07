@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { MainLayout } from "@/components/layout/MainLayout";
+import { AppLayout } from "@/components/layout/AppLayout";
 import { PageHeader } from "@/components/ui/page-header";
 import { DataTable } from "@/components/ui/data-table";
 import { StatusBadge } from "@/components/ui/status-badge";
@@ -48,12 +48,8 @@ const Orders = () => {
 
   const handleDateFilterChange = (filter: string) => {
     setDateFilter(filter);
-    // Close desktop date popover for quick filters (not calendar selections)
     if (filter !== "selectDate" && filter !== "selectRange") {
       setDatePopoverOpen(false);
-    }
-    // Close mobile filter popover for quick filters (not calendar selections)
-    if (filter !== "selectDate" && filter !== "selectRange") {
       setFilterPopoverOpen(false);
     }
   };
@@ -81,7 +77,7 @@ const Orders = () => {
     }
   };
 
-  // Get date-filtered orders for indicators (based on date filter only, not status)
+  // Get date-filtered orders for indicators
   const dateFilteredOrders = useMemo(() => {
     let result = [...orders];
 
@@ -106,29 +102,24 @@ const Orders = () => {
     return result;
   }, [orders, dateFilter, selectedDate, dateRange]);
 
-  // Summary counts based on date filter
+  // Summary counts
   const pendingCount = dateFilteredOrders.filter((o) => o.status === "Pendiente").length;
   const completedCount = dateFilteredOrders.filter((o) => o.status === "Finalizado").length;
-  const cancelledCount = dateFilteredOrders.filter((o) => o.status === "Cancelado").length;
-  const totalOrders = dateFilteredOrders.length;
   const totalRevenue = dateFilteredOrders.reduce((sum, o) => sum + o.total, 0);
 
   // Filtered orders
   const filteredOrders = useMemo(() => {
     let result = [...orders];
 
-    // Search filter
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
       result = result.filter((o) => o.id.toLowerCase().includes(query));
     }
 
-    // Status filter
     if (statusFilter !== "all") {
       result = result.filter((o) => o.status === statusFilter);
     }
 
-    // Date filter
     if (dateFilter === "today") {
       result = result.filter((o) => isToday(o.createdAt));
     } else if (dateFilter === "yesterday") {
@@ -154,24 +145,14 @@ const Orders = () => {
     {
       key: "id",
       label: "Pedido",
-      className: "w-[25%]",
+      className: "w-[30%]",
       render: (order: Order) => (
         <div>
-          <span className="font-medium">{order.id}</span>
+          <span className="font-medium text-sm">{order.id}</span>
           <p className="text-xs text-muted-foreground">
-            {format(order.createdAt, "dd MMM yyyy", { locale: es })}
+            {format(order.createdAt, "dd MMM", { locale: es })}
           </p>
         </div>
-      ),
-    },
-    {
-      key: "items",
-      label: "Item",
-      className: "w-[20%]",
-      render: (order: Order) => (
-        <span className="text-sm">
-          {order.items.length} {order.items.length === 1 ? "item" : "items"}
-        </span>
       ),
     },
     {
@@ -179,30 +160,23 @@ const Orders = () => {
       label: "Total",
       className: "w-[25%]",
       render: (order: Order) => (
-        <div>
-          <span className="font-medium">Bs {order.total.toFixed(1)}</span>
-          {order.discount > 0 && (
-            <p className="text-xs text-destructive">
-              -Bs {order.discount.toFixed(1)} desc.
-            </p>
-          )}
-        </div>
+        <span className="font-medium text-sm">Bs {order.total.toFixed(0)}</span>
       ),
     },
     {
       key: "status",
       label: "Estado",
-      className: "w-[30%]",
+      className: "w-[45%]",
       render: (order: Order) => (
         <div onClick={(e) => e.stopPropagation()}>
           <Select
             value={order.status}
             onValueChange={(value) => handleStatusChange(order.id, value, { stopPropagation: () => {} } as React.MouseEvent)}
           >
-            <SelectTrigger className="w-32 h-8 border-0 bg-transparent p-0 focus:ring-0">
+            <SelectTrigger className="w-28 h-7 border-0 bg-transparent p-0 focus:ring-0">
               <StatusBadge label={order.status} color={getStatusColor(order.status)} />
             </SelectTrigger>
-            <SelectContent className="bg-popover z-50">
+            <SelectContent>
               <SelectItem value="Pendiente">
                 <StatusBadge label="Pendiente" color={getStatusColor("Pendiente")} />
               </SelectItem>
@@ -220,196 +194,130 @@ const Orders = () => {
   ];
 
   return (
-    <MainLayout>
-      <PageHeader title="Gestión de Pedidos" description="Click en cualquier pedido para ver detalles y editar">
-        <Button onClick={handleCreateOrder}>
-          <Plus className="mr-2 h-4 w-4" />
-          Crear Pedido
+    <AppLayout>
+      <PageHeader title="Pedidos" description={`${filteredOrders.length} pedidos`}>
+        <Button onClick={handleCreateOrder} size="sm" className="gap-1.5">
+          <Plus className="h-4 w-4" />
+          <span className="hidden sm:inline">Crear</span>
         </Button>
       </PageHeader>
 
-      {/* Search and Filters */}
-      <div className="mb-6 rounded-lg border border-border bg-card p-4">
-        <div className="flex gap-2">
-          {/* Search */}
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              placeholder="Buscar por número de pedido..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10"
-            />
-          </div>
+      {/* Summary - Compact */}
+      <div className="flex gap-2 mb-4 overflow-x-auto scrollbar-hide pb-1">
+        <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-secondary text-sm whitespace-nowrap">
+          <span className="text-muted-foreground">Hoy</span>
+          <span className="font-semibold">Bs {totalRevenue.toFixed(0)}</span>
+        </div>
+        <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-warning/10 text-warning-foreground text-sm whitespace-nowrap">
+          <span>Pendientes</span>
+          <span className="font-semibold">{pendingCount}</span>
+        </div>
+        <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-success/10 text-success text-sm whitespace-nowrap">
+          <span>Completados</span>
+          <span className="font-semibold">{completedCount}</span>
+        </div>
+      </div>
 
-          {/* Mobile filter button */}
-          <Popover open={filterPopoverOpen} onOpenChange={setFilterPopoverOpen}>
+      {/* Search and Filters */}
+      <div className="flex gap-2 mb-4">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            placeholder="Buscar pedido..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-9 h-10"
+          />
+        </div>
+
+        {/* Mobile filter button */}
+        <Popover open={filterPopoverOpen} onOpenChange={setFilterPopoverOpen}>
+          <PopoverTrigger asChild>
+            <Button variant="outline" size="icon" className="h-10 w-10 shrink-0 lg:hidden">
+              <SlidersHorizontal className="h-4 w-4" />
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-64 p-3" align="end">
+            <div className="space-y-3">
+              <div>
+                <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Estado</label>
+                <Select value={statusFilter} onValueChange={handleStatusFilterChange}>
+                  <SelectTrigger className="w-full h-9 text-sm">
+                    <SelectValue placeholder="Todos" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todos</SelectItem>
+                    <SelectItem value="Pendiente">Pendiente</SelectItem>
+                    <SelectItem value="Finalizado">Finalizado</SelectItem>
+                    <SelectItem value="Cancelado">Cancelado</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Fecha</label>
+                <Select value={dateFilter} onValueChange={handleDateFilterChange}>
+                  <SelectTrigger className="w-full h-9 text-sm">
+                    <SelectValue placeholder="Hoy" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todos</SelectItem>
+                    <SelectItem value="today">Hoy</SelectItem>
+                    <SelectItem value="yesterday">Ayer</SelectItem>
+                    <SelectItem value="thisWeek">Esta semana</SelectItem>
+                    <SelectItem value="thisMonth">Este mes</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          </PopoverContent>
+        </Popover>
+
+        {/* Desktop filters */}
+        <div className="hidden lg:flex lg:gap-2">
+          <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <SelectTrigger className="w-36 h-10">
+              <SelectValue placeholder="Estado" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todos</SelectItem>
+              <SelectItem value="Pendiente">Pendiente</SelectItem>
+              <SelectItem value="Finalizado">Finalizado</SelectItem>
+              <SelectItem value="Cancelado">Cancelado</SelectItem>
+            </SelectContent>
+          </Select>
+
+          <Popover open={datePopoverOpen} onOpenChange={setDatePopoverOpen}>
             <PopoverTrigger asChild>
-              <Button variant="outline" size="icon" className="lg:hidden shrink-0">
-                <SlidersHorizontal className="h-4 w-4" />
+              <Button variant="outline" className="w-36 h-10 justify-between">
+                <span className="text-sm truncate">
+                  {dateFilter === "all" && "Todos"}
+                  {dateFilter === "today" && "Hoy"}
+                  {dateFilter === "yesterday" && "Ayer"}
+                  {dateFilter === "thisWeek" && "Semana"}
+                  {dateFilter === "thisMonth" && "Mes"}
+                  {dateFilter === "selectDate" && selectedDate && format(selectedDate, "dd/MM")}
+                </span>
+                <CalendarIcon className="h-4 w-4 text-muted-foreground shrink-0" />
               </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-72 p-4" align="end">
-              <div className="space-y-4">
-                <div>
-                  <label className="text-sm font-medium mb-2 block">Estado</label>
-                  <Select value={statusFilter} onValueChange={handleStatusFilterChange}>
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Todos los estados" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">Todos los estados</SelectItem>
-                      <SelectItem value="Pendiente">Pendiente</SelectItem>
-                      <SelectItem value="Finalizado">Finalizado</SelectItem>
-                      <SelectItem value="Cancelado">Cancelado</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <label className="text-sm font-medium mb-2 block">Fecha</label>
-                  <Select value={dateFilter} onValueChange={handleDateFilterChange}>
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Todos los días" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">Todos los días</SelectItem>
-                      <SelectItem value="today">Hoy</SelectItem>
-                      <SelectItem value="yesterday">Ayer</SelectItem>
-                      <SelectItem value="thisWeek">Esta semana</SelectItem>
-                      <SelectItem value="thisMonth">Este mes</SelectItem>
-                      <SelectItem value="selectDate">Seleccionar fecha</SelectItem>
-                      <SelectItem value="selectRange">Seleccionar rango</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  {dateFilter === "selectDate" && (
-                    <Calendar
-                      mode="single"
-                      selected={selectedDate}
-                      onSelect={setSelectedDate}
-                      className="pointer-events-auto mt-2"
-                    />
-                  )}
-                  {dateFilter === "selectRange" && (
-                    <Calendar
-                      mode="range"
-                      selected={{ from: dateRange.from, to: dateRange.to }}
-                      onSelect={(range) => setDateRange({ from: range?.from, to: range?.to })}
-                      className="pointer-events-auto mt-2"
-                      numberOfMonths={1}
-                    />
-                  )}
-                </div>
+            <PopoverContent className="w-auto p-0" align="end">
+              <div className="flex flex-col">
+                {["all", "today", "yesterday", "thisWeek", "thisMonth"].map((filter) => (
+                  <button
+                    key={filter}
+                    className={cn("px-4 py-2 text-left text-sm hover:bg-muted", dateFilter === filter && "bg-muted")}
+                    onClick={() => handleDateFilterChange(filter)}
+                  >
+                    {filter === "all" && "Todos"}
+                    {filter === "today" && "Hoy"}
+                    {filter === "yesterday" && "Ayer"}
+                    {filter === "thisWeek" && "Esta semana"}
+                    {filter === "thisMonth" && "Este mes"}
+                  </button>
+                ))}
               </div>
             </PopoverContent>
           </Popover>
-
-          {/* Desktop filters */}
-          <div className="hidden lg:flex lg:gap-2">
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-48">
-                <SelectValue placeholder="Todos los estados" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todos los estados</SelectItem>
-                <SelectItem value="Pendiente">Pendiente</SelectItem>
-                <SelectItem value="Finalizado">Finalizado</SelectItem>
-                <SelectItem value="Cancelado">Cancelado</SelectItem>
-              </SelectContent>
-            </Select>
-
-            <Popover open={datePopoverOpen} onOpenChange={setDatePopoverOpen}>
-              <PopoverTrigger asChild>
-                <Button variant="outline" className="w-48 justify-between">
-                  <span>
-                    {dateFilter === "all" && "Todos los días"}
-                    {dateFilter === "today" && "Hoy"}
-                    {dateFilter === "yesterday" && "Ayer"}
-                    {dateFilter === "thisWeek" && "Esta semana"}
-                    {dateFilter === "thisMonth" && "Este mes"}
-                    {dateFilter === "selectDate" && selectedDate && format(selectedDate, "dd/MM/yyyy")}
-                    {dateFilter === "selectRange" && dateRange.from && dateRange.to && 
-                      `${format(dateRange.from, "dd/MM")} - ${format(dateRange.to, "dd/MM")}`}
-                    {dateFilter === "selectDate" && !selectedDate && "Seleccionar fecha"}
-                    {dateFilter === "selectRange" && (!dateRange.from || !dateRange.to) && "Seleccionar rango"}
-                  </span>
-                  <CalendarIcon className="h-4 w-4 text-muted-foreground" />
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="end">
-                <div className="flex flex-col">
-                  <button
-                    className={cn("px-4 py-2 text-left text-sm hover:bg-muted", dateFilter === "all" && "bg-muted")}
-                    onClick={() => handleDateFilterChange("all")}
-                  >
-                    Todos los días
-                  </button>
-                  <button
-                    className={cn("px-4 py-2 text-left text-sm hover:bg-muted", dateFilter === "today" && "bg-muted")}
-                    onClick={() => handleDateFilterChange("today")}
-                  >
-                    Hoy
-                  </button>
-                  <button
-                    className={cn("px-4 py-2 text-left text-sm hover:bg-muted", dateFilter === "yesterday" && "bg-muted")}
-                    onClick={() => handleDateFilterChange("yesterday")}
-                  >
-                    Ayer
-                  </button>
-                  <button
-                    className={cn("px-4 py-2 text-left text-sm hover:bg-muted", dateFilter === "thisWeek" && "bg-muted")}
-                    onClick={() => handleDateFilterChange("thisWeek")}
-                  >
-                    Esta semana
-                  </button>
-                  <button
-                    className={cn("px-4 py-2 text-left text-sm hover:bg-muted", dateFilter === "thisMonth" && "bg-muted")}
-                    onClick={() => handleDateFilterChange("thisMonth")}
-                  >
-                    Este mes
-                  </button>
-                  <div className="border-t border-border">
-                    <button
-                      className={cn("w-full px-4 py-2 text-left text-sm hover:bg-muted", dateFilter === "selectDate" && "bg-muted")}
-                      onClick={() => handleDateFilterChange("selectDate")}
-                    >
-                      Seleccionar fecha
-                    </button>
-                    {dateFilter === "selectDate" && (
-                      <Calendar
-                        mode="single"
-                        selected={selectedDate}
-                        onSelect={(date) => {
-                          setSelectedDate(date);
-                          if (date) setDatePopoverOpen(false);
-                        }}
-                        className="pointer-events-auto"
-                      />
-                    )}
-                  </div>
-                  <div className="border-t border-border">
-                    <button
-                      className={cn("w-full px-4 py-2 text-left text-sm hover:bg-muted", dateFilter === "selectRange" && "bg-muted")}
-                      onClick={() => handleDateFilterChange("selectRange")}
-                    >
-                      Seleccionar rango
-                    </button>
-                    {dateFilter === "selectRange" && (
-                      <Calendar
-                        mode="range"
-                        selected={{ from: dateRange.from, to: dateRange.to }}
-                        onSelect={(range) => {
-                          setDateRange({ from: range?.from, to: range?.to });
-                          if (range?.from && range?.to) setDatePopoverOpen(false);
-                        }}
-                        className="pointer-events-auto"
-                        numberOfMonths={1}
-                      />
-                    )}
-                  </div>
-                </div>
-              </PopoverContent>
-            </Popover>
-          </div>
         </div>
       </div>
 
@@ -417,46 +325,15 @@ const Orders = () => {
         columns={columns}
         data={filteredOrders}
         onRowClick={handleEdit}
-        emptyMessage="No hay pedidos que coincidan con los filtros."
+        emptyMessage="No hay pedidos"
       />
-
-      {/* Summary Indicators */}
-      <div className="mt-6 space-y-4">
-        {/* Status indicators */}
-        <div className="grid grid-cols-3 gap-4">
-          <div className="rounded-lg border border-border bg-card p-4">
-            <p className="text-sm text-muted-foreground">Finalizados</p>
-            <p className="text-2xl font-semibold text-green-500">{completedCount}</p>
-          </div>
-          <div className="rounded-lg border border-border bg-card p-4">
-            <p className="text-sm text-muted-foreground">Pendientes</p>
-            <p className="text-2xl font-semibold text-yellow-500">{pendingCount}</p>
-          </div>
-          <div className="rounded-lg border border-border bg-card p-4">
-            <p className="text-sm text-muted-foreground">Cancelados</p>
-            <p className="text-2xl font-semibold text-destructive">{cancelledCount}</p>
-          </div>
-        </div>
-
-        {/* Totals indicators */}
-        <div className="grid grid-cols-2 gap-4">
-          <div className="rounded-lg border border-border bg-card p-4">
-            <p className="text-sm text-muted-foreground">Total de Pedidos</p>
-            <p className="text-2xl font-semibold text-foreground">{totalOrders}</p>
-          </div>
-          <div className="rounded-lg border border-border bg-card p-4">
-            <p className="text-sm text-muted-foreground">Ingresos Totales</p>
-            <p className="text-2xl font-semibold text-green-500">{totalRevenue.toFixed(1)} Bs</p>
-          </div>
-        </div>
-      </div>
 
       <OrderModal
         open={modalOpen}
         onClose={() => setModalOpen(false)}
         order={selectedOrder}
       />
-    </MainLayout>
+    </AppLayout>
   );
 };
 

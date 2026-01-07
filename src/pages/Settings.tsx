@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-import { MainLayout } from "@/components/layout/MainLayout";
+import { AppLayout } from "@/components/layout/AppLayout";
 import { PageHeader } from "@/components/ui/page-header";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -189,7 +189,7 @@ const Settings = () => {
   };
 
   return (
-    <MainLayout>
+    <AppLayout>
       <PageHeader
         title="Configuración"
         description="Administra las opciones de tu tienda"
@@ -651,7 +651,7 @@ const Settings = () => {
           </Card>
         </TabsContent>
       </Tabs>
-    </MainLayout>
+    </AppLayout>
   );
 };
 
