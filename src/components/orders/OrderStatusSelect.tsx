@@ -18,13 +18,13 @@ interface OrderStatusSelectProps {
 const getStatusStyles = (statusName: string) => {
   switch (statusName) {
     case "Pendiente":
-      return "bg-warning/10 text-warning-foreground border-warning/20";
+      return "bg-warning/10 text-warning-foreground border-transparent";
     case "Finalizado":
-      return "bg-success/10 text-success border-success/20";
+      return "bg-success/10 text-success border-transparent";
     case "Cancelado":
-      return "bg-destructive/10 text-destructive border-destructive/20";
+      return "bg-destructive/10 text-destructive border-transparent";
     default:
-      return "bg-secondary text-secondary-foreground border-border";
+      return "bg-secondary text-secondary-foreground border-transparent";
   }
 };
 
