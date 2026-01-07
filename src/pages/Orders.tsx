@@ -167,9 +167,9 @@ const Orders = () => {
     {
       key: "id",
       label: "Pedido",
-      className: "w-[35%]",
+      className: "w-[35%] text-center",
       render: (order: Order) => (
-        <div>
+        <div className="flex flex-col items-center">
           <span className="font-medium text-sm">{order.id}</span>
           <p className="text-xs text-muted-foreground">
             {format(order.createdAt, "dd MMM", { locale: es })}
@@ -180,7 +180,7 @@ const Orders = () => {
     {
       key: "total",
       label: "Total",
-      className: "w-auto",
+      className: "w-auto text-center",
       render: (order: Order) => (
         <span className="font-medium text-sm whitespace-nowrap">Bs {order.total.toFixed(0)}</span>
       ),
@@ -188,9 +188,9 @@ const Orders = () => {
     {
       key: "status",
       label: "Estado",
-      className: "w-auto text-right",
+      className: "w-auto text-center",
       render: (order: Order) => (
-        <div className="flex justify-end">
+        <div className="flex justify-center">
           <OrderStatusSelect
             value={order.status}
             onChange={(value) => handleStatusChange(order.id, value)}
