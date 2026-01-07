@@ -164,8 +164,11 @@ export const ProductModal = ({ open, onClose, product }: ProductModalProps) => {
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="fixed inset-0 flex h-[100dvh] w-full max-w-full flex-col translate-x-0 translate-y-0 rounded-none border-0 p-0 md:relative md:inset-auto md:h-auto md:max-h-[90vh] md:max-w-3xl md:translate-x-[-50%] md:translate-y-[-50%] md:rounded-lg md:border md:p-0">
-        {/* Fixed Header - consistent height */}
+      <DialogContent 
+        hideCloseButton
+        className="fixed inset-0 flex h-[100dvh] w-full max-w-full flex-col translate-x-0 translate-y-0 gap-0 rounded-none border-0 p-0 md:left-[50%] md:top-[50%] md:h-auto md:max-h-[90vh] md:max-w-3xl md:translate-x-[-50%] md:translate-y-[-50%] md:rounded-lg md:border"
+      >
+        {/* Fixed Header */}
         <div className="flex h-14 shrink-0 items-center justify-between border-b border-border bg-background px-4 md:px-6">
           <DialogTitle className="text-lg font-semibold">
             {product ? "Editar Producto" : "Nuevo Producto"}
@@ -185,13 +188,13 @@ export const ProductModal = ({ open, onClose, product }: ProductModalProps) => {
             {/* Fixed Tabs Bar */}
             <div className="shrink-0 border-b border-border bg-background px-4 md:px-6">
               <TabsList className="grid h-12 w-full grid-cols-3 bg-transparent p-0">
-                <TabsTrigger value="general" className="h-full rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none">
+                <TabsTrigger value="general" className="h-full rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:font-semibold data-[state=active]:shadow-none">
                   General
                 </TabsTrigger>
-                <TabsTrigger value="details" className="h-full rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none">
+                <TabsTrigger value="details" className="h-full rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:font-semibold data-[state=active]:shadow-none">
                   Detalles
                 </TabsTrigger>
-                <TabsTrigger value="images" className="h-full rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none">
+                <TabsTrigger value="images" className="h-full rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:font-semibold data-[state=active]:shadow-none">
                   Imágenes
                 </TabsTrigger>
               </TabsList>
