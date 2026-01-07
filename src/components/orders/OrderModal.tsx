@@ -225,7 +225,7 @@ export const OrderModal = ({ open, onClose, order }: OrderModalProps) => {
                     <ChevronDown className="h-4 w-4 text-muted-foreground" />
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-72 p-0" align="end">
+                <PopoverContent className="w-72 p-0 z-[200]" align="end">
                   <Command>
                     <CommandInput placeholder="Buscar producto..." />
                     <CommandList>
