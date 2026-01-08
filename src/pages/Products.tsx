@@ -343,17 +343,6 @@ const Products = () => {
                 </SelectContent>
               </Select>
 
-              <Select value={stockFilter} onValueChange={handleStockChange}>
-                <SelectTrigger className="w-full h-9 text-sm">
-                  <SelectValue placeholder="Stock" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todo el stock</SelectItem>
-                  <SelectItem value="inStock">En stock</SelectItem>
-                  <SelectItem value="outOfStock">Sin stock</SelectItem>
-                </SelectContent>
-              </Select>
-
               <Select value={sortOrder} onValueChange={handleSortChange}>
                 <SelectTrigger className="w-full h-9 text-sm">
                   <SelectValue placeholder="Ordenar" />
