@@ -62,7 +62,7 @@ const Settings = () => {
   const [newCategory, setNewCategory] = useState("");
   const [newSubcategory, setNewSubcategory] = useState({ name: "", categoryId: "" });
   const [newBrand, setNewBrand] = useState("");
-  const [newLabel, setNewLabel] = useState({ name: "", color: "#3b82f6" });
+  const [newLabel, setNewLabel] = useState({ name: "", color: "#6b7280" });
   const [newCarouselState, setNewCarouselState] = useState({ name: "", type: "carousel" as "carousel" | "banner", color: "#3b82f6" });
 
   const handleAddCategory = () => {
@@ -95,8 +95,8 @@ const Settings = () => {
 
   const handleAddLabel = () => {
     if (newLabel.name.trim()) {
-      addLabel({ id: `${Date.now()}`, ...newLabel });
-      setNewLabel({ name: "", color: "#3b82f6" });
+      addLabel({ id: `${Date.now()}`, name: newLabel.name.trim(), color: "#6b7280" });
+      setNewLabel({ name: "", color: "#6b7280" });
       toast({ title: "Propiedad agregada" });
     }
   };
@@ -388,12 +388,6 @@ const Settings = () => {
                   onKeyDown={(e) => e.key === "Enter" && handleAddLabel()}
                   className="flex-1"
                 />
-                <Input
-                  type="color"
-                  value={newLabel.color}
-                  onChange={(e) => setNewLabel({ ...newLabel, color: e.target.value })}
-                  className="w-14 p-1"
-                />
                 <Button onClick={handleAddLabel}>
                   <Plus className="h-4 w-4" />
                 </Button>
@@ -402,13 +396,8 @@ const Settings = () => {
                 {labels.map((label) => (
                   <div
                     key={label.id}
-                    className="flex items-center gap-2 rounded-lg border border-border px-3 py-1.5"
-                    style={{ backgroundColor: `${label.color}20` }}
+                    className="flex items-center gap-2 rounded-lg border border-border bg-secondary/50 px-3 py-1.5"
                   >
-                    <span
-                      className="h-2 w-2 rounded-full"
-                      style={{ backgroundColor: label.color }}
-                    />
                     <span className="text-sm">{label.name}</span>
                     <button
                       onClick={() => deleteLabel(label.id)}
