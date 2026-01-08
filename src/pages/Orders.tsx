@@ -104,7 +104,9 @@ const Orders = () => {
   // Summary counts
   const pendingCount = dateFilteredOrders.filter((o) => o.status === "Pendiente").length;
   const completedCount = dateFilteredOrders.filter((o) => o.status === "Finalizado").length;
-  const totalRevenue = dateFilteredOrders.reduce((sum, o) => sum + o.total, 0);
+  const totalRevenue = dateFilteredOrders
+    .filter((o) => o.status !== "Cancelado")
+    .reduce((sum, o) => sum + o.total, 0);
 
   // Get dynamic label for the revenue indicator
   const getDateFilterLabel = () => {
