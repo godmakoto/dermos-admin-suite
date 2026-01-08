@@ -241,7 +241,7 @@ const Products = () => {
           <span className="font-semibold">{totalProducts}</span>
         </div>
         {stockBajo > 0 && (
-          <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-warning/10 text-warning-foreground text-sm whitespace-nowrap">
+          <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-warning/15 text-warning text-sm whitespace-nowrap">
             <span>Stock bajo</span>
             <span className="font-semibold">{stockBajo}</span>
           </div>
