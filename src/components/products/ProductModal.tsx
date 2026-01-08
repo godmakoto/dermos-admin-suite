@@ -437,18 +437,16 @@ export const ProductModal = ({ open, onClose, product }: ProductModalProps) => {
                         formData.images.map((img, index) => (
                           <div
                             key={index}
-                            className="flex flex-col gap-3 rounded-lg border border-border bg-secondary/50 p-3 sm:flex-row sm:items-center"
+                            className="flex items-center gap-2 rounded-lg border border-border bg-secondary/50 p-3"
                           >
-                            <div className="flex items-center gap-3 min-w-0 flex-1">
-                              <GripVertical className="h-5 w-5 shrink-0 cursor-grab text-muted-foreground" />
-                              <img
-                                src={img}
-                                alt={`Imagen ${index + 1}`}
-                                className="h-14 w-14 shrink-0 rounded-md object-cover"
-                              />
-                              <span className="min-w-0 flex-1 truncate text-sm text-muted-foreground">{img}</span>
-                            </div>
-                            <div className="flex items-center justify-end gap-1 shrink-0">
+                            <GripVertical className="h-5 w-5 shrink-0 cursor-grab text-muted-foreground" />
+                            <img
+                              src={img}
+                              alt={`Imagen ${index + 1}`}
+                              className="h-14 w-14 shrink-0 rounded-md object-cover"
+                            />
+                            <span className="hidden min-w-0 flex-1 truncate text-sm text-muted-foreground sm:block">{img}</span>
+                            <div className="flex items-center gap-1 shrink-0">
                               {index > 0 && (
                                 <Button
                                   type="button"
