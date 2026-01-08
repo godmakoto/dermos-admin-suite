@@ -97,7 +97,7 @@ const Settings = () => {
     if (newLabel.name.trim()) {
       addLabel({ id: `${Date.now()}`, ...newLabel });
       setNewLabel({ name: "", color: "#3b82f6" });
-      toast({ title: "Etiqueta agregada" });
+      toast({ title: "Propiedad agregada" });
     }
   };
 
@@ -207,7 +207,7 @@ const Settings = () => {
           </TabsTrigger>
           <TabsTrigger value="labels" className="gap-2">
             <Tag className="h-4 w-4" />
-            <span className="hidden sm:inline">Etiquetas</span>
+            <span className="hidden sm:inline">Propiedades</span>
           </TabsTrigger>
           <TabsTrigger value="statuses" className="gap-2">
             <Flag className="h-4 w-4" />
@@ -376,13 +376,13 @@ const Settings = () => {
         <TabsContent value="labels">
           <Card>
             <CardHeader>
-              <CardTitle>Etiquetas</CardTitle>
-              <CardDescription>Gestiona las etiquetas de productos</CardDescription>
+              <CardTitle>Propiedades</CardTitle>
+              <CardDescription>Gestiona las propiedades de productos</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex gap-2">
                 <Input
-                  placeholder="Nueva etiqueta"
+                  placeholder="Nueva propiedad"
                   value={newLabel.name}
                   onChange={(e) => setNewLabel({ ...newLabel, name: e.target.value })}
                   onKeyDown={(e) => e.key === "Enter" && handleAddLabel()}

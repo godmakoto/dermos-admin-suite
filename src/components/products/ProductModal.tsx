@@ -298,13 +298,13 @@ export const ProductModal = ({ open, onClose, product }: ProductModalProps) => {
                       </Select>
                     </div>
                     <div className="space-y-2">
-                      <Label>Etiqueta</Label>
+                      <Label>Propiedad</Label>
                       <Select
                         value={formData.label}
                         onValueChange={(value) => setFormData({ ...formData, label: value })}
                       >
                         <SelectTrigger>
-                          <SelectValue placeholder="Seleccionar etiqueta" />
+                          <SelectValue placeholder="Seleccionar propiedad" />
                         </SelectTrigger>
                         <SelectContent>
                           {labels.map((label) => (
