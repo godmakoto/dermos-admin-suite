@@ -176,7 +176,7 @@ export const ProductModal = ({ open, onClose, product }: ProductModalProps) => {
           <button
             type="button"
             onClick={onClose}
-            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-md bg-secondary/80 text-foreground transition-colors hover:bg-secondary md:h-9 md:w-9 md:bg-muted/50 md:hover:bg-muted"
+            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-md border-0 bg-secondary/80 text-foreground transition-colors hover:bg-secondary focus:outline-none md:h-9 md:w-9 md:bg-muted/50 md:hover:bg-muted"
             aria-label="Cerrar"
           >
             <X className="h-6 w-6 md:h-5 md:w-5" />
