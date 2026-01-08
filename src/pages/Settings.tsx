@@ -420,14 +420,14 @@ const Settings = () => {
               <CardDescription>Gestiona los estados para carruseles y banners de productos en tu web</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="flex gap-2 flex-wrap">
+              <div className="flex flex-col gap-2 md:flex-row">
                 <Select
                   value={newCarouselState.type}
                   onValueChange={(value: "carousel" | "banner") =>
                     setNewCarouselState({ ...newCarouselState, type: value })
                   }
                 >
-                  <SelectTrigger className="w-32">
+                  <SelectTrigger className="w-full md:w-40">
                     <SelectValue placeholder="Tipo" />
                   </SelectTrigger>
                   <SelectContent>
@@ -435,16 +435,18 @@ const Settings = () => {
                     <SelectItem value="banner">Banner</SelectItem>
                   </SelectContent>
                 </Select>
-                <Input
-                  placeholder="Nombre del estado"
-                  value={newCarouselState.name}
-                  onChange={(e) => setNewCarouselState({ ...newCarouselState, name: e.target.value })}
-                  onKeyDown={(e) => e.key === "Enter" && handleAddCarouselState()}
-                  className="flex-1 min-w-40"
-                />
-                <Button onClick={handleAddCarouselState}>
-                  <Plus className="h-4 w-4" />
-                </Button>
+                <div className="flex gap-2 flex-1">
+                  <Input
+                    placeholder="Nombre del estado"
+                    value={newCarouselState.name}
+                    onChange={(e) => setNewCarouselState({ ...newCarouselState, name: e.target.value })}
+                    onKeyDown={(e) => e.key === "Enter" && handleAddCarouselState()}
+                    className="flex-1"
+                  />
+                  <Button onClick={handleAddCarouselState}>
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
               <div className="flex flex-wrap gap-2">
                 {productCarouselStates.map((state) => (
