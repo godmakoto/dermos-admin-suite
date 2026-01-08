@@ -321,47 +321,29 @@ export const ProductModal = ({ open, onClose, product }: ProductModalProps) => {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                    <div className="space-y-2">
-                      <Label>Estado de Carrusel</Label>
-                      <Select
-                        value={formData.carouselState}
-                        onValueChange={(value) => setFormData({ ...formData, carouselState: value })}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Seleccionar estado de carrusel" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {productCarouselStates.map((state) => (
-                            <SelectItem key={state.id} value={state.name}>
-                              <div className="flex items-center gap-2">
-                                <div
-                                  className="h-2 w-2 rounded-full shrink-0"
-                                  style={{ backgroundColor: state.color }}
-                                />
-                                <span>{state.name}</span>
-                              </div>
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Estado</Label>
-                      <Select
-                        value={formData.status}
-                        onValueChange={(value: "Activo" | "Inactivo" | "Agotado") => setFormData({ ...formData, status: value })}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Seleccionar estado" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="Activo">Activo</SelectItem>
-                          <SelectItem value="Inactivo">Inactivo</SelectItem>
-                          <SelectItem value="Agotado">Agotado</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
+                  <div className="space-y-2">
+                    <Label>Estado de Carrusel</Label>
+                    <Select
+                      value={formData.carouselState}
+                      onValueChange={(value) => setFormData({ ...formData, carouselState: value })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Seleccionar estado de carrusel" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {productCarouselStates.map((state) => (
+                          <SelectItem key={state.id} value={state.name}>
+                            <div className="flex items-center gap-2">
+                              <div
+                                className="h-2 w-2 rounded-full shrink-0"
+                                style={{ backgroundColor: state.color }}
+                              />
+                              <span>{state.name}</span>
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
 
                   <div className="flex items-center space-x-2 py-2">
