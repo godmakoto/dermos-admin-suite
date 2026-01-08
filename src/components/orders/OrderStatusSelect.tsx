@@ -47,7 +47,7 @@ export const OrderStatusSelect = ({
         <button
           className={cn(
             "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-medium transition-colors",
-            "hover:opacity-80 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1",
+            "hover:opacity-80 focus:outline-none focus-visible:outline-none",
             "disabled:opacity-50 disabled:cursor-not-allowed",
             "min-h-[36px]",
             getStatusStyles(value)
