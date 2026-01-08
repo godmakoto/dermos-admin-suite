@@ -139,11 +139,72 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   // Orders
   const addOrder = (order: Order) => {
+    // Agregar el pedido
     setOrders((prev) => [...prev, order]);
+
+    // Descontar stock de productos si tienen control de stock activado
+    setProducts((prevProducts) =>
+      prevProducts.map((product) => {
+        // Buscar si este producto está en el pedido
+        const orderItem = order.items.find((item) => item.productId === product.id);
+
+        // Si el producto está en el pedido y tiene control de stock activado
+        if (orderItem && product.trackStock) {
+          return {
+            ...product,
+            stock: Math.max(0, product.stock - orderItem.quantity), // No permitir stock negativo
+            updatedAt: new Date(),
+          };
+        }
+
+        return product;
+      })
+    );
   };
 
   const updateOrder = (order: Order) => {
+    // Encontrar el pedido original
+    const originalOrder = orders.find((o) => o.id === order.id);
+
+    // Actualizar el pedido
     setOrders((prev) => prev.map((o) => (o.id === order.id ? order : o)));
+
+    // Si no hay pedido original, no hacer cambios en el stock
+    if (!originalOrder) return;
+
+    // Ajustar stock de productos
+    setProducts((prevProducts) =>
+      prevProducts.map((product) => {
+        if (!product.trackStock) return product;
+
+        // Buscar item en pedido original y nuevo
+        const originalItem = originalOrder.items.find((item) => item.productId === product.id);
+        const newItem = order.items.find((item) => item.productId === product.id);
+
+        let stockChange = 0;
+
+        // Si estaba en el pedido original, restaurar ese stock
+        if (originalItem) {
+          stockChange += originalItem.quantity;
+        }
+
+        // Si está en el nuevo pedido, descontar ese stock
+        if (newItem) {
+          stockChange -= newItem.quantity;
+        }
+
+        // Aplicar cambio de stock si hay alguno
+        if (stockChange !== 0) {
+          return {
+            ...product,
+            stock: Math.max(0, product.stock + stockChange),
+            updatedAt: new Date(),
+          };
+        }
+
+        return product;
+      })
+    );
   };
 
   // Categories
