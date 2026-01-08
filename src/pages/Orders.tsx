@@ -216,7 +216,7 @@ const Orders = () => {
           <span className="text-muted-foreground">{getDateFilterLabel()}</span>
           <span className="font-semibold">Bs {totalRevenue.toFixed(0)}</span>
         </div>
-        <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-warning/10 text-warning-foreground text-sm whitespace-nowrap">
+        <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-warning/15 text-warning text-sm whitespace-nowrap">
           <span>Pendientes</span>
           <span className="font-semibold">{pendingCount}</span>
         </div>

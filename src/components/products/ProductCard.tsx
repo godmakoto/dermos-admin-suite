@@ -35,7 +35,7 @@ interface ProductCardProps {
 const getStockLevel = (stock: number) => {
   if (stock === 0) return { label: "Agotado", color: "bg-muted text-muted-foreground border-border" };
   if (stock <= 10) return { label: "Bajo", color: "bg-destructive/10 text-destructive border-destructive/20" };
-  if (stock <= 30) return { label: "Medio", color: "bg-warning/10 text-warning-foreground border-warning/20" };
+  if (stock <= 30) return { label: "Medio", color: "bg-warning/15 text-warning border-warning/30" };
   return { label: "Alto", color: "bg-success/10 text-success border-success/20" };
 };
 

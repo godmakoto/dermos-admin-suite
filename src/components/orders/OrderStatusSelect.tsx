@@ -18,7 +18,7 @@ interface OrderStatusSelectProps {
 const getStatusStyles = (statusName: string) => {
   switch (statusName) {
     case "Pendiente":
-      return "bg-warning/10 text-warning-foreground border-transparent";
+      return "bg-warning/15 text-warning border-warning/30";
     case "Finalizado":
       return "bg-success/10 text-success border-transparent";
     case "Cancelado":
