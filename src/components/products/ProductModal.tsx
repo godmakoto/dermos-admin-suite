@@ -29,7 +29,7 @@ interface ProductModalProps {
 }
 
 export const ProductModal = ({ open, onClose, product }: ProductModalProps) => {
-  const { categories, subcategories, brands, labels, addProduct, updateProduct } = useApp();
+  const { categories, subcategories, brands, labels, productCarouselStates, addProduct, updateProduct } = useApp();
   const { toast } = useToast();
   
   const [activeTab, setActiveTab] = useState("general");
@@ -41,6 +41,7 @@ export const ProductModal = ({ open, onClose, product }: ProductModalProps) => {
     subcategory: "",
     brand: "",
     label: "",
+    carouselState: "",
     shortDescription: "",
     longDescription: "",
     usage: "",
@@ -63,6 +64,7 @@ export const ProductModal = ({ open, onClose, product }: ProductModalProps) => {
         subcategory: product.subcategory,
         brand: product.brand,
         label: product.label,
+        carouselState: product.carouselState,
         shortDescription: product.shortDescription,
         longDescription: product.longDescription,
         usage: product.usage,
@@ -81,6 +83,7 @@ export const ProductModal = ({ open, onClose, product }: ProductModalProps) => {
         subcategory: "",
         brand: "",
         label: "",
+        carouselState: "",
         shortDescription: "",
         longDescription: "",
         usage: "",
@@ -103,7 +106,7 @@ export const ProductModal = ({ open, onClose, product }: ProductModalProps) => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     const productData: Product = {
       id: product?.id || `${Date.now()}`,
       name: formData.name,
@@ -113,6 +116,7 @@ export const ProductModal = ({ open, onClose, product }: ProductModalProps) => {
       subcategory: formData.subcategory,
       brand: formData.brand,
       label: formData.label,
+      carouselState: formData.carouselState,
       shortDescription: formData.shortDescription,
       longDescription: formData.longDescription,
       usage: formData.usage,
@@ -132,7 +136,7 @@ export const ProductModal = ({ open, onClose, product }: ProductModalProps) => {
       addProduct(productData);
       toast({ title: "Producto creado", description: "El producto se ha añadido correctamente." });
     }
-    
+
     onClose();
   };
 
@@ -317,6 +321,49 @@ export const ProductModal = ({ open, onClose, product }: ProductModalProps) => {
                     </div>
                   </div>
 
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                    <div className="space-y-2">
+                      <Label>Estado de Carrusel</Label>
+                      <Select
+                        value={formData.carouselState}
+                        onValueChange={(value) => setFormData({ ...formData, carouselState: value })}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Seleccionar estado de carrusel" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {productCarouselStates.map((state) => (
+                            <SelectItem key={state.id} value={state.name}>
+                              <div className="flex items-center gap-2">
+                                <div
+                                  className="h-2 w-2 rounded-full shrink-0"
+                                  style={{ backgroundColor: state.color }}
+                                />
+                                <span>{state.name}</span>
+                              </div>
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Estado</Label>
+                      <Select
+                        value={formData.status}
+                        onValueChange={(value: "Activo" | "Inactivo" | "Agotado") => setFormData({ ...formData, status: value })}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Seleccionar estado" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Activo">Activo</SelectItem>
+                          <SelectItem value="Inactivo">Inactivo</SelectItem>
+                          <SelectItem value="Agotado">Agotado</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+
                   <div className="flex items-center space-x-2 py-2">
                     <Checkbox
                       id="trackStock"
@@ -343,23 +390,6 @@ export const ProductModal = ({ open, onClose, product }: ProductModalProps) => {
                       </div>
                     </div>
                   )}
-
-                  <div className="space-y-2">
-                    <Label>Estado</Label>
-                    <Select
-                      value={formData.status}
-                      onValueChange={(value: "Activo" | "Inactivo" | "Agotado") => setFormData({ ...formData, status: value })}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Seleccionar estado" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Activo">Activo</SelectItem>
-                        <SelectItem value="Inactivo">Inactivo</SelectItem>
-                        <SelectItem value="Agotado">Agotado</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
 
                   <div className="space-y-2">
                     <Label htmlFor="shortDescription">Descripción corta</Label>

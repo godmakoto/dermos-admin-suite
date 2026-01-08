@@ -9,6 +9,7 @@ export interface Product {
   subcategory: string;
   brand: string;
   label: string;
+  carouselState: string;
   shortDescription: string;
   longDescription: string;
   usage: string;
