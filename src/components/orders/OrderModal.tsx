@@ -47,7 +47,7 @@ export const OrderModal = ({ open, onClose, order }: OrderModalProps) => {
   
   const [formData, setFormData] = useState({
     status: "Pendiente",
-    discount: 0,
+    discount: "",
     items: [] as OrderItem[],
   });
   const [productSearchOpen, setProductSearchOpen] = useState(false);
@@ -56,13 +56,13 @@ export const OrderModal = ({ open, onClose, order }: OrderModalProps) => {
     if (order) {
       setFormData({
         status: order.status,
-        discount: order.discount,
+        discount: order.discount > 0 ? order.discount.toString() : "",
         items: [...order.items],
       });
     } else {
       setFormData({
         status: "Pendiente",
-        discount: 0,
+        discount: "",
         items: [],
       });
     }
@@ -73,7 +73,8 @@ export const OrderModal = ({ open, onClose, order }: OrderModalProps) => {
   };
 
   const calculateTotal = () => {
-    return calculateSubtotal() - formData.discount;
+    const discountValue = parseFloat(formData.discount) || 0;
+    return calculateSubtotal() - discountValue;
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -84,11 +85,13 @@ export const OrderModal = ({ open, onClose, order }: OrderModalProps) => {
       return;
     }
 
+    const discountValue = parseFloat(formData.discount) || 0;
+
     if (isEditing && order) {
       const updatedOrder: Order = {
         ...order,
         status: formData.status,
-        discount: formData.discount,
+        discount: discountValue,
         items: formData.items,
         subtotal: calculateSubtotal(),
         total: calculateTotal(),
@@ -98,7 +101,7 @@ export const OrderModal = ({ open, onClose, order }: OrderModalProps) => {
       toast({ title: "Pedido actualizado", description: "Los cambios se han guardado correctamente." });
     } else {
       // Generate new order ID
-      const lastOrderId = orders.length > 0 
+      const lastOrderId = orders.length > 0
         ? Math.max(...orders.map(o => parseInt(o.id.replace('#', '')) || 0))
         : 999;
       const newOrderId = `#${lastOrderId + 1}`;
@@ -108,7 +111,7 @@ export const OrderModal = ({ open, onClose, order }: OrderModalProps) => {
         customerName: "",
         customerEmail: "",
         status: formData.status,
-        discount: formData.discount,
+        discount: discountValue,
         items: formData.items,
         subtotal: calculateSubtotal(),
         total: calculateTotal(),
@@ -330,9 +333,9 @@ export const OrderModal = ({ open, onClose, order }: OrderModalProps) => {
               min="0"
               value={formData.discount}
               onChange={(e) =>
-                setFormData({ ...formData, discount: parseFloat(e.target.value) || 0 })
+                setFormData({ ...formData, discount: e.target.value })
               }
-              placeholder="0.00"
+              placeholder="Ingrese descuento"
             />
           </div>
 
@@ -342,10 +345,10 @@ export const OrderModal = ({ open, onClose, order }: OrderModalProps) => {
                   <span className="text-muted-foreground">Subtotal:</span>
                   <span>Bs {calculateSubtotal().toFixed(1)}</span>
                 </div>
-                {formData.discount > 0 && (
+                {(parseFloat(formData.discount) || 0) > 0 && (
                   <div className="flex justify-between text-sm text-destructive">
                     <span>Descuento:</span>
-                    <span>- Bs {formData.discount.toFixed(1)}</span>
+                    <span>- Bs {(parseFloat(formData.discount) || 0).toFixed(1)}</span>
                   </div>
                 )}
                 <div className="flex justify-between border-t border-border pt-2 text-base font-semibold">
