@@ -445,8 +445,8 @@ export const ProductModal = ({ open, onClose, product }: ProductModalProps) => {
                               alt={`Imagen ${index + 1}`}
                               className="h-14 w-14 shrink-0 rounded-md object-cover"
                             />
-                            <span className="hidden min-w-0 flex-1 truncate text-sm text-muted-foreground sm:block">{img}</span>
-                            <div className="flex items-center gap-1 shrink-0">
+                            <span className="min-w-0 flex-1 truncate text-sm text-muted-foreground">{img}</span>
+                            <div className="flex items-center gap-1 shrink-0 ml-auto">
                               {index > 0 && (
                                 <Button
                                   type="button"
