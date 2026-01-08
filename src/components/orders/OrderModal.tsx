@@ -154,6 +154,7 @@ export const OrderModal = ({ open, onClose, order }: OrderModalProps) => {
         id: `item-${Date.now()}`,
         productId: product.id,
         productName: product.name,
+        productImage: product.images && product.images.length > 0 ? product.images[0] : undefined,
         quantity: 1,
         price: product.price,
       };
@@ -280,15 +281,29 @@ export const OrderModal = ({ open, onClose, order }: OrderModalProps) => {
               {formData.items.map((item) => (
                 <div
                   key={item.id}
-                  className="flex items-center justify-between rounded-lg border border-border p-3"
+                  className="flex items-center gap-2 rounded-lg border border-border p-2"
                 >
-                  <div className="flex-1">
-                    <p className="text-sm font-medium">{item.productName}</p>
+                  {/* Product Image */}
+                  {item.productImage && (
+                    <div className="h-12 w-12 rounded-md overflow-hidden bg-muted flex-shrink-0">
+                      <img
+                        src={item.productImage}
+                        alt={item.productName}
+                        className="h-full w-full object-cover"
+                      />
+                    </div>
+                  )}
+
+                  {/* Product Info */}
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium truncate">{item.productName}</p>
                     <p className="text-sm text-muted-foreground">
-                      Bs {item.price.toFixed(1)} c/u
+                      Bs {item.price.toFixed(1)}
                     </p>
                   </div>
-                  <div className="flex items-center gap-2">
+
+                  {/* Quantity Controls */}
+                  <div className="flex items-center gap-1 flex-shrink-0">
                     <Button
                       type="button"
                       variant="outline"
@@ -298,7 +313,7 @@ export const OrderModal = ({ open, onClose, order }: OrderModalProps) => {
                     >
                       <Minus className="h-3 w-3" />
                     </Button>
-                    <span className="w-8 text-center text-sm">{item.quantity}</span>
+                    <span className="w-8 text-center text-sm font-medium">{item.quantity}</span>
                     <Button
                       type="button"
                       variant="outline"
