@@ -211,8 +211,8 @@ const Orders = () => {
       </PageHeader>
 
       {/* Summary - Compact */}
-      <div className="flex gap-2 mb-4 overflow-x-auto scrollbar-hide pb-1">
-        <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-secondary text-sm whitespace-nowrap">
+      <div className="grid grid-cols-2 gap-2 mb-4 lg:flex lg:gap-2">
+        <div className="col-span-2 lg:col-span-1 flex items-center gap-2 px-3 py-2 rounded-lg bg-secondary text-sm whitespace-nowrap">
           <span className="text-muted-foreground">{getDateFilterLabel()}</span>
           <span className="font-semibold">Bs {totalRevenue.toFixed(0)}</span>
         </div>
