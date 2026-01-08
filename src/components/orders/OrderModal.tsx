@@ -28,7 +28,7 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
-import { X, Plus, Minus, ChevronDown, Search } from "lucide-react";
+import { X, Plus, Minus, ChevronDown, Search, MessageCircle } from "lucide-react";
 import { Order, OrderItem } from "@/types";
 import { useApp } from "@/contexts/AppContext";
 import { useToast } from "@/hooks/use-toast";
@@ -166,6 +166,16 @@ export const OrderModal = ({ open, onClose, order }: OrderModalProps) => {
     setProductSearchOpen(false);
   };
 
+  const handleSendWhatsApp = () => {
+    if (!order) return;
+
+    // TODO: Implementar funcionalidad de WhatsApp
+    toast({
+      title: "Enviar por WhatsApp",
+      description: "Funcionalidad en desarrollo",
+    });
+  };
+
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent
@@ -177,14 +187,27 @@ export const OrderModal = ({ open, onClose, order }: OrderModalProps) => {
           <DialogTitle className="text-lg font-semibold">
             {isEditing ? `Editar Pedido ${order.id}` : "Crear Nuevo Pedido"}
           </DialogTitle>
-          <button
-            type="button"
-            onClick={onClose}
-            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-md border-0 bg-secondary/80 text-foreground transition-colors hover:bg-secondary focus:outline-none md:h-9 md:w-9 md:bg-muted/50 md:hover:bg-muted"
-            aria-label="Cerrar"
-          >
-            <X className="h-6 w-6 md:h-5 md:w-5" />
-          </button>
+          <div className="flex items-center gap-2">
+            {isEditing && (
+              <button
+                type="button"
+                onClick={handleSendWhatsApp}
+                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-md border-0 bg-green-600/90 text-white transition-colors hover:bg-green-600 focus:outline-none md:h-9 md:w-9"
+                aria-label="Enviar por WhatsApp"
+                title="Enviar pedido por WhatsApp"
+              >
+                <MessageCircle className="h-6 w-6 md:h-5 md:w-5" />
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={onClose}
+              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-md border-0 bg-secondary/80 text-foreground transition-colors hover:bg-secondary focus:outline-none md:h-9 md:w-9 md:bg-muted/50 md:hover:bg-muted"
+              aria-label="Cerrar"
+            >
+              <X className="h-6 w-6 md:h-5 md:w-5" />
+            </button>
+          </div>
         </div>
 
         <form onSubmit={handleSubmit} className="flex min-h-0 flex-1 flex-col">
