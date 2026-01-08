@@ -280,9 +280,22 @@ export const ProductCard = ({
 
         {/* Footer: Precio + Stock */}
         <div className="flex items-center justify-between gap-2 mt-auto pt-1 md:pt-2">
-          <p className="text-sm font-semibold text-foreground">
-            {product.price.toFixed(1)} Bs
-          </p>
+          <div className="flex items-center gap-2">
+            {product.salePrice ? (
+              <>
+                <p className="text-sm font-medium text-muted-foreground line-through">
+                  {product.price.toFixed(1)} Bs
+                </p>
+                <p className="text-sm font-semibold text-foreground">
+                  {product.salePrice.toFixed(1)} Bs
+                </p>
+              </>
+            ) : (
+              <p className="text-sm font-semibold text-foreground">
+                {product.price.toFixed(1)} Bs
+              </p>
+            )}
+          </div>
           <Badge
             variant="outline"
             className={`flex-shrink-0 rounded-lg text-xs border px-2.5 py-1 font-normal whitespace-nowrap ${stockLevel.color}`}
