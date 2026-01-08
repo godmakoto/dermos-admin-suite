@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { ChevronDown } from "lucide-react";
 import {
   DropdownMenu,
@@ -35,10 +35,33 @@ export const OrderStatusSelect = ({
   statuses,
 }: OrderStatusSelectProps) => {
   const [open, setOpen] = useState(false);
+  const touchStartY = useRef<number>(0);
+  const touchMoved = useRef<boolean>(false);
 
   const handleSelect = (newValue: string) => {
     onChange(newValue);
     setOpen(false);
+  };
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartY.current = e.touches[0].clientY;
+    touchMoved.current = false;
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    const deltaY = Math.abs(e.touches[0].clientY - touchStartY.current);
+    if (deltaY > 10) {
+      touchMoved.current = true;
+    }
+  };
+
+  const handleClick = (e: React.MouseEvent | React.TouchEvent) => {
+    if (touchMoved.current) {
+      e.preventDefault();
+      touchMoved.current = false;
+      return;
+    }
+    e.stopPropagation();
   };
 
   return (
@@ -52,7 +75,9 @@ export const OrderStatusSelect = ({
             "min-h-[36px]",
             getStatusStyles(value)
           )}
-          onClick={(e) => e.stopPropagation()}
+          onClick={handleClick}
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
         >
           <span className="whitespace-nowrap">{value}</span>
           <ChevronDown className="h-3 w-3 shrink-0" />

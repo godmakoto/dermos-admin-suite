@@ -55,6 +55,8 @@ export const ProductCard = ({
   const [menuOpen, setMenuOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const pendingDeleteEvent = useRef<React.MouseEvent | null>(null);
+  const touchStartY = useRef<number>(0);
+  const touchMoved = useRef<boolean>(false);
 
   // Close menu on scroll (works on both touch and mouse scroll)
   const handleScroll = useCallback(() => {
@@ -194,11 +196,29 @@ export const ProductCard = ({
 
           {/* Actions Menu */}
           <DropdownMenu open={menuOpen} onOpenChange={setMenuOpen}>
-            <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+            <DropdownMenuTrigger asChild>
               <Button
                 variant="ghost"
                 size="icon"
                 className="h-7 w-7 flex-shrink-0 opacity-60 hover:opacity-100 transition-opacity"
+                onClick={(e) => {
+                  if (touchMoved.current) {
+                    e.preventDefault();
+                    touchMoved.current = false;
+                    return;
+                  }
+                  e.stopPropagation();
+                }}
+                onTouchStart={(e) => {
+                  touchStartY.current = e.touches[0].clientY;
+                  touchMoved.current = false;
+                }}
+                onTouchMove={(e) => {
+                  const deltaY = Math.abs(e.touches[0].clientY - touchStartY.current);
+                  if (deltaY > 10) {
+                    touchMoved.current = true;
+                  }
+                }}
               >
                 <MoreVertical className="h-4 w-4 text-muted-foreground" />
               </Button>
