@@ -239,9 +239,9 @@ const Products = () => {
         </Button>
       </PageHeader>
 
-      {/* Stock Summary - 2x2 Grid */}
-      <div className="grid grid-cols-2 gap-2 mb-4">
-        {/* First row: Total + Good Stock */}
+      {/* Stock Summary - 2x2 Grid mobile, 1x4 Desktop */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 mb-4">
+        {/* Total */}
         <button
           onClick={() => setStockFilter("all")}
           className={`flex items-center justify-between gap-2 px-3 py-2.5 rounded-lg text-sm transition-all ${
@@ -253,6 +253,8 @@ const Products = () => {
           <span className="text-muted-foreground font-medium">Total</span>
           <span className="font-semibold">{totalProducts}</span>
         </button>
+
+        {/* Good Stock */}
         <button
           onClick={() => setStockFilter(stockFilter === "goodStock" ? "all" : "goodStock")}
           className={`flex items-center justify-between gap-2 px-3 py-2.5 rounded-lg text-sm transition-all ${
@@ -265,7 +267,7 @@ const Products = () => {
           <span className="font-semibold">{buenStock}</span>
         </button>
 
-        {/* Second row: Low Stock + Out of Stock */}
+        {/* Low Stock */}
         <button
           onClick={() => setStockFilter(stockFilter === "lowStock" ? "all" : "lowStock")}
           className={`flex items-center justify-between gap-2 px-3 py-2.5 rounded-lg text-sm transition-all ${
@@ -277,6 +279,8 @@ const Products = () => {
           <span className="font-medium">Stock bajo</span>
           <span className="font-semibold">{stockBajo}</span>
         </button>
+
+        {/* Out of Stock */}
         <button
           onClick={() => setStockFilter(stockFilter === "outOfStock" ? "all" : "outOfStock")}
           className={`flex items-center justify-between gap-2 px-3 py-2.5 rounded-lg text-sm transition-all ${
