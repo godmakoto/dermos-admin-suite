@@ -114,6 +114,10 @@ const Products = () => {
         result = result.filter((p) => p.stock > 0);
       } else if (stockFilter === "outOfStock") {
         result = result.filter((p) => p.stock === 0);
+      } else if (stockFilter === "lowStock") {
+        result = result.filter((p) => p.stock >= 1 && p.stock <= 10);
+      } else if (stockFilter === "goodStock") {
+        result = result.filter((p) => p.stock > 10);
       }
     }
 
@@ -221,6 +225,7 @@ const Products = () => {
   const totalProducts = products.length;
   const stockBajo = products.filter((p) => p.stock >= 1 && p.stock <= 10).length;
   const agotados = products.filter((p) => p.stock === 0).length;
+  const buenStock = products.filter((p) => p.stock > 10).length;
 
   return (
     <AppLayout>
@@ -234,24 +239,48 @@ const Products = () => {
         </Button>
       </PageHeader>
 
-      {/* Stock Summary - Compact */}
-      <div className="flex gap-2 mb-4 overflow-x-auto scrollbar-hide pb-1">
-        <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-secondary text-sm whitespace-nowrap">
+      {/* Stock Summary - 2x2 Grid */}
+      <div className="grid grid-cols-2 gap-2 mb-4">
+        {/* First row: Total + Good Stock */}
+        <div className="flex items-center justify-between gap-2 px-3 py-2.5 rounded-lg bg-secondary text-sm">
           <span className="text-muted-foreground">Total</span>
           <span className="font-semibold">{totalProducts}</span>
         </div>
-        {stockBajo > 0 && (
-          <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-warning/15 text-warning text-sm whitespace-nowrap">
-            <span>Stock bajo</span>
-            <span className="font-semibold">{stockBajo}</span>
-          </div>
-        )}
-        {agotados > 0 && (
-          <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-destructive/10 text-destructive text-sm whitespace-nowrap">
-            <span>Agotados</span>
-            <span className="font-semibold">{agotados}</span>
-          </div>
-        )}
+        <button
+          onClick={() => setStockFilter(stockFilter === "goodStock" ? "all" : "goodStock")}
+          className={`flex items-center justify-between gap-2 px-3 py-2.5 rounded-lg text-sm transition-all ${
+            stockFilter === "goodStock"
+              ? "bg-success text-success-foreground ring-2 ring-success"
+              : "bg-success/10 text-success hover:bg-success/20"
+          }`}
+        >
+          <span className="font-medium">Buen stock</span>
+          <span className="font-semibold">{buenStock}</span>
+        </button>
+
+        {/* Second row: Low Stock + Out of Stock */}
+        <button
+          onClick={() => setStockFilter(stockFilter === "lowStock" ? "all" : "lowStock")}
+          className={`flex items-center justify-between gap-2 px-3 py-2.5 rounded-lg text-sm transition-all ${
+            stockFilter === "lowStock"
+              ? "bg-warning text-warning-foreground ring-2 ring-warning"
+              : "bg-warning/10 text-warning hover:bg-warning/20"
+          }`}
+        >
+          <span className="font-medium">Stock bajo</span>
+          <span className="font-semibold">{stockBajo}</span>
+        </button>
+        <button
+          onClick={() => setStockFilter(stockFilter === "outOfStock" ? "all" : "outOfStock")}
+          className={`flex items-center justify-between gap-2 px-3 py-2.5 rounded-lg text-sm transition-all ${
+            stockFilter === "outOfStock"
+              ? "bg-destructive text-destructive-foreground ring-2 ring-destructive"
+              : "bg-destructive/10 text-destructive hover:bg-destructive/20"
+          }`}
+        >
+          <span className="font-medium">Agotados</span>
+          <span className="font-semibold">{agotados}</span>
+        </button>
       </div>
 
       {/* Search and Filters */}
