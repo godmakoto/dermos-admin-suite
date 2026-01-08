@@ -242,10 +242,17 @@ const Products = () => {
       {/* Stock Summary - 2x2 Grid */}
       <div className="grid grid-cols-2 gap-2 mb-4">
         {/* First row: Total + Good Stock */}
-        <div className="flex items-center justify-between gap-2 px-3 py-2.5 rounded-lg bg-secondary text-sm">
-          <span className="text-muted-foreground">Total</span>
+        <button
+          onClick={() => setStockFilter("all")}
+          className={`flex items-center justify-between gap-2 px-3 py-2.5 rounded-lg text-sm transition-all ${
+            stockFilter === "all"
+              ? "bg-secondary ring-2 ring-foreground/20"
+              : "bg-secondary/50 hover:bg-secondary"
+          }`}
+        >
+          <span className="text-muted-foreground font-medium">Total</span>
           <span className="font-semibold">{totalProducts}</span>
-        </div>
+        </button>
         <button
           onClick={() => setStockFilter(stockFilter === "goodStock" ? "all" : "goodStock")}
           className={`flex items-center justify-between gap-2 px-3 py-2.5 rounded-lg text-sm transition-all ${
