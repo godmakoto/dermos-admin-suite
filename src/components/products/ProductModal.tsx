@@ -333,13 +333,7 @@ export const ProductModal = ({ open, onClose, product }: ProductModalProps) => {
                       <SelectContent>
                         {productCarouselStates.map((state) => (
                           <SelectItem key={state.id} value={state.name}>
-                            <div className="flex items-center gap-2">
-                              <div
-                                className="h-2 w-2 rounded-full shrink-0"
-                                style={{ backgroundColor: state.color }}
-                              />
-                              <span>{state.name}</span>
-                            </div>
+                            {state.name}
                           </SelectItem>
                         ))}
                       </SelectContent>

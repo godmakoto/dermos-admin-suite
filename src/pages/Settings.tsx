@@ -63,7 +63,7 @@ const Settings = () => {
   const [newSubcategory, setNewSubcategory] = useState({ name: "", categoryId: "" });
   const [newBrand, setNewBrand] = useState("");
   const [newLabel, setNewLabel] = useState({ name: "", color: "#6b7280" });
-  const [newCarouselState, setNewCarouselState] = useState({ name: "", type: "carousel" as "carousel" | "banner", color: "#3b82f6" });
+  const [newCarouselState, setNewCarouselState] = useState({ name: "", type: "carousel" as "carousel" | "banner", color: "#6b7280" });
 
   const handleAddCategory = () => {
     if (newCategory.trim()) {
@@ -103,8 +103,8 @@ const Settings = () => {
 
   const handleAddCarouselState = () => {
     if (newCarouselState.name.trim()) {
-      addProductCarouselState({ id: `${Date.now()}`, ...newCarouselState });
-      setNewCarouselState({ name: "", type: "carousel", color: "#3b82f6" });
+      addProductCarouselState({ id: `${Date.now()}`, name: newCarouselState.name.trim(), type: newCarouselState.type, color: "#6b7280" });
+      setNewCarouselState({ name: "", type: "carousel", color: "#6b7280" });
       toast({ title: "Estado de carrusel agregado" });
     }
   };
@@ -442,12 +442,6 @@ const Settings = () => {
                   onKeyDown={(e) => e.key === "Enter" && handleAddCarouselState()}
                   className="flex-1 min-w-40"
                 />
-                <Input
-                  type="color"
-                  value={newCarouselState.color}
-                  onChange={(e) => setNewCarouselState({ ...newCarouselState, color: e.target.value })}
-                  className="w-14 p-1"
-                />
                 <Button onClick={handleAddCarouselState}>
                   <Plus className="h-4 w-4" />
                 </Button>
@@ -456,13 +450,8 @@ const Settings = () => {
                 {productCarouselStates.map((state) => (
                   <div
                     key={state.id}
-                    className="flex items-center gap-2 rounded-lg border border-border px-3 py-1.5"
-                    style={{ backgroundColor: `${state.color}20` }}
+                    className="flex items-center gap-2 rounded-lg border border-border bg-secondary/50 px-3 py-1.5"
                   >
-                    <span
-                      className="h-2 w-2 rounded-full"
-                      style={{ backgroundColor: state.color }}
-                    />
                     <span className="text-sm">{state.name}</span>
                     <span className="text-xs text-muted-foreground">
                       ({state.type === "carousel" ? "Carrusel" : "Banner"})
