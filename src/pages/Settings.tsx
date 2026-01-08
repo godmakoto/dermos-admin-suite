@@ -267,14 +267,14 @@ const Settings = () => {
               <CardDescription>Gestiona las subcategorías de productos</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="flex gap-2">
+              <div className="flex flex-col gap-2 md:flex-row">
                 <Select
                   value={newSubcategory.categoryId}
                   onValueChange={(value) =>
                     setNewSubcategory({ ...newSubcategory, categoryId: value })
                   }
                 >
-                  <SelectTrigger className="w-48">
+                  <SelectTrigger className="w-full md:w-48">
                     <SelectValue placeholder="Categoría" />
                   </SelectTrigger>
                   <SelectContent>
@@ -285,18 +285,20 @@ const Settings = () => {
                     ))}
                   </SelectContent>
                 </Select>
-                <Input
-                  placeholder="Nueva subcategoría"
-                  value={newSubcategory.name}
-                  onChange={(e) =>
-                    setNewSubcategory({ ...newSubcategory, name: e.target.value })
-                  }
-                  onKeyDown={(e) => e.key === "Enter" && handleAddSubcategory()}
-                  className="flex-1"
-                />
-                <Button onClick={handleAddSubcategory}>
-                  <Plus className="h-4 w-4" />
-                </Button>
+                <div className="flex gap-2 flex-1">
+                  <Input
+                    placeholder="Nueva subcategoría"
+                    value={newSubcategory.name}
+                    onChange={(e) =>
+                      setNewSubcategory({ ...newSubcategory, name: e.target.value })
+                    }
+                    onKeyDown={(e) => e.key === "Enter" && handleAddSubcategory()}
+                    className="flex-1"
+                  />
+                  <Button onClick={handleAddSubcategory}>
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
               <div className="space-y-3">
                 {categories.map((cat) => {
