@@ -219,17 +219,17 @@ export const OrderModal = ({ open, onClose, order }: OrderModalProps) => {
 
           {/* Items */}
           <div className="space-y-3">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
               <Label>Productos</Label>
               <Popover open={productSearchOpen} onOpenChange={setProductSearchOpen}>
                 <PopoverTrigger asChild>
-                  <Button variant="outline" className="w-48 justify-between">
+                  <Button variant="outline" className="w-full md:w-64 justify-between">
                     <span className="text-muted-foreground">Agregar producto</span>
                     <ChevronDown className="h-4 w-4 text-muted-foreground" />
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent
-                  className="w-72 p-0 z-[200]"
+                  className="w-[calc(100vw-2rem)] md:w-96 p-0 z-[200]"
                   align="end"
                   onWheel={(e) => e.stopPropagation()}
                   onTouchMove={(e) => e.stopPropagation()}
