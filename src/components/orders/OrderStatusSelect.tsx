@@ -38,7 +38,8 @@ export const OrderStatusSelect = ({
   const touchStartY = useRef<number>(0);
   const touchMoved = useRef<boolean>(false);
 
-  const handleSelect = (newValue: string) => {
+  const handleSelect = (newValue: string, e: React.MouseEvent) => {
+    e.stopPropagation();
     onChange(newValue);
     setOpen(false);
   };
@@ -83,11 +84,11 @@ export const OrderStatusSelect = ({
           <ChevronDown className="h-3 w-3 shrink-0" />
         </button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="min-w-[140px]">
+      <DropdownMenuContent align="end" className="min-w-[140px]" onClick={(e) => e.stopPropagation()}>
         {statuses.map((status) => (
           <DropdownMenuItem
             key={status.name}
-            onClick={() => handleSelect(status.name)}
+            onClick={(e) => handleSelect(status.name, e)}
             className="cursor-pointer"
           >
             <div className="flex items-center gap-2">
