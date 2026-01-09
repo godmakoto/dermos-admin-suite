@@ -135,6 +135,9 @@ const Products = () => {
       result.sort((a, b) => a.price - b.price);
     } else if (sortOrder === "priceDesc") {
       result.sort((a, b) => b.price - a.price);
+    } else {
+      // Por defecto: más recientes primero
+      result.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
     }
 
     return result;
