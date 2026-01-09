@@ -70,12 +70,31 @@ export const OrderModal = ({ open, onClose, order, onOrderSaved }: OrderModalPro
   }, [order, open]);
 
   const calculateSubtotal = () => {
-    return formData.items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+    // Subtotal usando precios originales (sin descuentos)
+    return formData.items.reduce((sum, item) => {
+      const product = products.find((p) => p.id === item.productId);
+      const originalPrice = product?.price || item.price;
+      return sum + originalPrice * item.quantity;
+    }, 0);
+  };
+
+  const calculateProductDiscounts = () => {
+    // Suma de descuentos por productos con precio de oferta
+    return formData.items.reduce((sum, item) => {
+      const product = products.find((p) => p.id === item.productId);
+      if (product && product.salePrice) {
+        const discount = (product.price - product.salePrice) * item.quantity;
+        return sum + discount;
+      }
+      return sum;
+    }, 0);
   };
 
   const calculateTotal = () => {
-    const discountValue = parseFloat(formData.discount) || 0;
-    return calculateSubtotal() - discountValue;
+    const subtotal = calculateSubtotal();
+    const productDiscounts = calculateProductDiscounts();
+    const additionalDiscount = parseFloat(formData.discount) || 0;
+    return subtotal - productDiscounts - additionalDiscount;
   };
 
   // Get available stock for a product considering current order context
@@ -419,9 +438,20 @@ export const OrderModal = ({ open, onClose, order, onOrderSaved }: OrderModalPro
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium truncate">{item.productName}</p>
                       <div className="flex items-center gap-2">
-                        <p className="text-sm text-muted-foreground">
-                          Bs {item.price.toFixed(1)}
-                        </p>
+                        {product && product.salePrice ? (
+                          <>
+                            <p className="text-xs text-muted-foreground line-through">
+                              Bs {product.price.toFixed(1)}
+                            </p>
+                            <p className="text-sm font-semibold text-foreground">
+                              Bs {product.salePrice.toFixed(1)}
+                            </p>
+                          </>
+                        ) : (
+                          <p className="text-sm text-muted-foreground">
+                            Bs {item.price.toFixed(1)}
+                          </p>
+                        )}
                         {hasStockTracking && (
                           <p className="text-xs text-muted-foreground">
                             • Disp: {availableStock}
@@ -470,20 +500,38 @@ export const OrderModal = ({ open, onClose, order, onOrderSaved }: OrderModalPro
             </div>
           </div>
 
-          {/* Discount */}
-          <div className="space-y-2">
-            <Label htmlFor="discount">Descuento (Bs)</Label>
-            <Input
-              id="discount"
-              type="number"
-              step="0.01"
-              min="0"
-              value={formData.discount}
-              onChange={(e) =>
-                setFormData({ ...formData, discount: e.target.value })
-              }
-              placeholder="Ingrese descuento"
-            />
+          {/* Discounts Section */}
+          <div className="space-y-3">
+            {/* Product Discounts (Read-only) */}
+            {calculateProductDiscounts() > 0 && (
+              <div className="space-y-2">
+                <Label>Descuentos de productos</Label>
+                <div className="rounded-lg border border-border bg-muted/50 p-3">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-muted-foreground">Suma de descuentos automáticos</span>
+                    <span className="text-sm font-medium text-destructive">
+                      - Bs {calculateProductDiscounts().toFixed(1)}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Additional Discount (Editable) */}
+            <div className="space-y-2">
+              <Label htmlFor="discount">Descuento adicional (Bs)</Label>
+              <Input
+                id="discount"
+                type="number"
+                step="0.01"
+                min="0"
+                value={formData.discount}
+                onChange={(e) =>
+                  setFormData({ ...formData, discount: e.target.value })
+                }
+                placeholder="Ingrese descuento adicional"
+              />
+            </div>
           </div>
 
               {/* Totals */}
@@ -492,9 +540,15 @@ export const OrderModal = ({ open, onClose, order, onOrderSaved }: OrderModalPro
                   <span className="text-muted-foreground">Subtotal:</span>
                   <span>Bs {calculateSubtotal().toFixed(1)}</span>
                 </div>
+                {calculateProductDiscounts() > 0 && (
+                  <div className="flex justify-between text-sm text-orange-600 dark:text-orange-400">
+                    <span>Descuentos de productos:</span>
+                    <span>- Bs {calculateProductDiscounts().toFixed(1)}</span>
+                  </div>
+                )}
                 {(parseFloat(formData.discount) || 0) > 0 && (
                   <div className="flex justify-between text-sm text-destructive">
-                    <span>Descuento:</span>
+                    <span>Descuento adicional:</span>
                     <span>- Bs {(parseFloat(formData.discount) || 0).toFixed(1)}</span>
                   </div>
                 )}
