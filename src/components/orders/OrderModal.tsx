@@ -28,7 +28,7 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
-import { X, Plus, Minus, ChevronDown, Search, MessageCircle, Check } from "lucide-react";
+import { X, Plus, Minus, ChevronDown, Search, MessageCircle } from "lucide-react";
 import { Order, OrderItem } from "@/types";
 import { useApp } from "@/contexts/AppContext";
 import { useToast } from "@/hooks/use-toast";
@@ -139,7 +139,6 @@ export const OrderModal = ({ open, onClose, order, onOrderSaved }: OrderModalPro
       };
       updateOrder(updatedOrder);
       setJustSaved(true);
-      setTimeout(() => setJustSaved(false), 2000);
       if (onOrderSaved) {
         onOrderSaved(updatedOrder);
       }
@@ -164,7 +163,6 @@ export const OrderModal = ({ open, onClose, order, onOrderSaved }: OrderModalPro
       };
       addOrder(newOrder);
       setJustSaved(true);
-      setTimeout(() => setJustSaved(false), 2000);
       if (onOrderSaved) {
         onOrderSaved(newOrder);
       }
@@ -585,7 +583,6 @@ export const OrderModal = ({ open, onClose, order, onOrderSaved }: OrderModalPro
                     : 'bg-muted-foreground/50 hover:bg-muted-foreground/60 text-muted'
                 }`}
               >
-                {justSaved && <Check className="h-4 w-4" />}
                 {isEditing ? "Guardar Cambios" : "Crear Pedido"}
               </Button>
             </div>
