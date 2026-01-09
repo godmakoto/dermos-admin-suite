@@ -579,9 +579,9 @@ export const OrderModal = ({ open, onClose, order, onOrderSaved }: OrderModalPro
               </Button>
               <Button
                 type="submit"
-                className={`w-full sm:w-auto transition-colors duration-300 ${
+                className={`w-full sm:w-auto transition-colors duration-500 ${
                   justSaved
-                    ? 'bg-gray-300 hover:bg-gray-300 dark:bg-gray-600 dark:hover:bg-gray-600'
+                    ? 'bg-green-600 hover:bg-green-600 dark:bg-green-500 dark:hover:bg-green-500'
                     : ''
                 }`}
               >
