@@ -78,6 +78,24 @@ export const OrderModal = ({ open, onClose, order, onOrderSaved }: OrderModalPro
     return calculateSubtotal() - discountValue;
   };
 
+  // Get available stock for a product considering current order context
+  const getAvailableStock = (productId: string): number => {
+    const product = products.find((p) => p.id === productId);
+    if (!product || !product.trackStock) return Infinity;
+
+    let available = product.stock;
+
+    // If editing, add back the original quantity from the order (it was already deducted)
+    if (isEditing && order) {
+      const originalItem = order.items.find((item) => item.productId === productId);
+      if (originalItem) {
+        available += originalItem.quantity;
+      }
+    }
+
+    return available;
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -133,11 +151,28 @@ export const OrderModal = ({ open, onClose, order, onOrderSaved }: OrderModalPro
   const updateItemQuantity = (itemId: string, delta: number) => {
     setFormData((prev) => ({
       ...prev,
-      items: prev.items.map((item) =>
-        item.id === itemId
-          ? { ...item, quantity: Math.max(1, item.quantity + delta) }
-          : item
-      ),
+      items: prev.items.map((item) => {
+        if (item.id === itemId) {
+          const newQuantity = item.quantity + delta;
+          const availableStock = getAvailableStock(item.productId);
+
+          // Don't allow going below 1
+          if (newQuantity < 1) return item;
+
+          // Don't allow exceeding available stock
+          if (newQuantity > availableStock) {
+            toast({
+              title: "Stock insuficiente",
+              description: `Solo hay ${availableStock} unidades disponibles de este producto.`,
+              variant: "destructive",
+            });
+            return item;
+          }
+
+          return { ...item, quantity: newQuantity };
+        }
+        return item;
+      }),
     }));
   };
 
@@ -152,8 +187,31 @@ export const OrderModal = ({ open, onClose, order, onOrderSaved }: OrderModalPro
     const product = products.find((p) => p.id === productId);
     if (!product) return;
 
+    const availableStock = getAvailableStock(productId);
+
+    // Check if product has stock available
+    if (product.trackStock && availableStock <= 0) {
+      toast({
+        title: "Sin stock disponible",
+        description: `El producto "${product.name}" no tiene stock disponible.`,
+        variant: "destructive",
+      });
+      setProductSearchOpen(false);
+      return;
+    }
+
     const existingItem = formData.items.find((item) => item.productId === productId);
     if (existingItem) {
+      // Check if we can add one more
+      if (existingItem.quantity >= availableStock) {
+        toast({
+          title: "Stock insuficiente",
+          description: `Solo hay ${availableStock} unidades disponibles de este producto.`,
+          variant: "destructive",
+        });
+        setProductSearchOpen(false);
+        return;
+      }
       updateItemQuantity(existingItem.id, 1);
     } else {
       const newItem: OrderItem = {
@@ -269,36 +327,50 @@ export const OrderModal = ({ open, onClose, order, onOrderSaved }: OrderModalPro
                     <CommandList className="max-h-[300px] overflow-y-auto">
                       <CommandEmpty>No se encontraron productos.</CommandEmpty>
                       <CommandGroup>
-                        {products.map((product) => (
-                          <CommandItem
-                            key={product.id}
-                            value={product.name}
-                            onSelect={() => addProduct(product.id)}
-                            className="cursor-pointer"
-                          >
-                            <div className="flex items-center gap-3">
-                              <div className="h-10 w-10 rounded-md overflow-hidden bg-muted flex-shrink-0">
-                                {product.images && product.images.length > 0 ? (
-                                  <img
-                                    src={product.images[0]}
-                                    alt={product.name}
-                                    className="h-full w-full object-cover"
-                                  />
-                                ) : (
-                                  <div className="h-full w-full flex items-center justify-center text-muted-foreground text-xs">
-                                    Sin img
+                        {products.map((product) => {
+                          const availableStock = getAvailableStock(product.id);
+                          const hasStockTracking = product.trackStock;
+                          const outOfStock = hasStockTracking && availableStock <= 0;
+
+                          return (
+                            <CommandItem
+                              key={product.id}
+                              value={product.name}
+                              onSelect={() => addProduct(product.id)}
+                              className="cursor-pointer"
+                              disabled={outOfStock}
+                            >
+                              <div className="flex items-center gap-3 w-full">
+                                <div className="h-10 w-10 rounded-md overflow-hidden bg-muted flex-shrink-0">
+                                  {product.images && product.images.length > 0 ? (
+                                    <img
+                                      src={product.images[0]}
+                                      alt={product.name}
+                                      className="h-full w-full object-cover"
+                                    />
+                                  ) : (
+                                    <div className="h-full w-full flex items-center justify-center text-muted-foreground text-xs">
+                                      Sin img
+                                    </div>
+                                  )}
+                                </div>
+                                <div className="flex flex-col min-w-0 flex-1">
+                                  <span className="truncate">{product.name}</span>
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-xs text-muted-foreground">
+                                      Bs {product.price.toFixed(1)}
+                                    </span>
+                                    {hasStockTracking && (
+                                      <span className={`text-xs ${outOfStock ? 'text-destructive' : 'text-muted-foreground'}`}>
+                                        • Stock: {availableStock}
+                                      </span>
+                                    )}
                                   </div>
-                                )}
+                                </div>
                               </div>
-                              <div className="flex flex-col min-w-0">
-                                <span className="truncate">{product.name}</span>
-                                <span className="text-xs text-muted-foreground">
-                                  Bs {product.price.toFixed(1)}
-                                </span>
-                              </div>
-                            </div>
-                          </CommandItem>
-                        ))}
+                            </CommandItem>
+                          );
+                        })}
                       </CommandGroup>
                     </CommandList>
                   </Command>
@@ -307,63 +379,80 @@ export const OrderModal = ({ open, onClose, order, onOrderSaved }: OrderModalPro
             </div>
 
             <div className="space-y-2">
-              {formData.items.map((item) => (
-                <div
-                  key={item.id}
-                  className="flex items-center gap-2 rounded-lg border border-border p-2"
-                >
-                  {/* Product Image */}
-                  {item.productImage && (
-                    <div className="h-12 w-12 rounded-md overflow-hidden bg-muted flex-shrink-0">
-                      <img
-                        src={item.productImage}
-                        alt={item.productName}
-                        className="h-full w-full object-cover"
-                      />
+              {formData.items.map((item) => {
+                const product = products.find((p) => p.id === item.productId);
+                const availableStock = getAvailableStock(item.productId);
+                const hasStockTracking = product?.trackStock || false;
+                const isAtMaxStock = hasStockTracking && item.quantity >= availableStock;
+
+                return (
+                  <div
+                    key={item.id}
+                    className="flex items-center gap-2 rounded-lg border border-border p-2"
+                  >
+                    {/* Product Image */}
+                    {item.productImage && (
+                      <div className="h-12 w-12 rounded-md overflow-hidden bg-muted flex-shrink-0">
+                        <img
+                          src={item.productImage}
+                          alt={item.productName}
+                          className="h-full w-full object-cover"
+                        />
+                      </div>
+                    )}
+
+                    {/* Product Info */}
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium truncate">{item.productName}</p>
+                      <div className="flex items-center gap-2">
+                        <p className="text-sm text-muted-foreground">
+                          Bs {item.price.toFixed(1)}
+                        </p>
+                        {hasStockTracking && (
+                          <p className="text-xs text-muted-foreground">
+                            • Disp: {availableStock}
+                          </p>
+                        )}
+                      </div>
                     </div>
-                  )}
 
-                  {/* Product Info */}
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium truncate">{item.productName}</p>
-                    <p className="text-sm text-muted-foreground">
-                      Bs {item.price.toFixed(1)}
-                    </p>
+                    {/* Quantity Controls */}
+                    <div className="flex items-center gap-1 flex-shrink-0">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="icon"
+                        className="h-8 w-8"
+                        onClick={() => updateItemQuantity(item.id, -1)}
+                        disabled={item.quantity <= 1}
+                      >
+                        <Minus className="h-3 w-3" />
+                      </Button>
+                      <span className="w-8 text-center text-sm font-medium">{item.quantity}</span>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="icon"
+                        className="h-8 w-8"
+                        onClick={() => updateItemQuantity(item.id, 1)}
+                        disabled={isAtMaxStock}
+                        title={isAtMaxStock ? "Stock máximo alcanzado" : ""}
+                      >
+                        <Plus className="h-3 w-3" />
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-destructive"
+                        onClick={() => removeItem(item.id)}
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </div>
-
-                  {/* Quantity Controls */}
-                  <div className="flex items-center gap-1 flex-shrink-0">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="icon"
-                      className="h-8 w-8"
-                      onClick={() => updateItemQuantity(item.id, -1)}
-                    >
-                      <Minus className="h-3 w-3" />
-                    </Button>
-                    <span className="w-8 text-center text-sm font-medium">{item.quantity}</span>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="icon"
-                      className="h-8 w-8"
-                      onClick={() => updateItemQuantity(item.id, 1)}
-                    >
-                      <Plus className="h-3 w-3" />
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8 text-destructive"
-                      onClick={() => removeItem(item.id)}
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
 
