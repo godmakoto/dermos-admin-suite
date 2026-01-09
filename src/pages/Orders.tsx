@@ -153,14 +153,17 @@ const Orders = () => {
     } else if (dateFilter === "thisMonth") {
       result = result.filter((o) => isThisMonth(o.createdAt));
     } else if (dateFilter === "selectDate" && selectedDate) {
-      result = result.filter((o) => 
+      result = result.filter((o) =>
         format(o.createdAt, "yyyy-MM-dd") === format(selectedDate, "yyyy-MM-dd")
       );
     } else if (dateFilter === "selectRange" && dateRange.from && dateRange.to) {
-      result = result.filter((o) => 
+      result = result.filter((o) =>
         isWithinInterval(o.createdAt, { start: dateRange.from!, end: dateRange.to! })
       );
     }
+
+    // Ordenar por defecto: más recientes primero
+    result.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
     return result;
   }, [orders, searchQuery, statusFilter, dateFilter, selectedDate, dateRange]);
