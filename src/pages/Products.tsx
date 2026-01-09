@@ -42,8 +42,6 @@ const Products = () => {
   const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
   const [bulkEditModalOpen, setBulkEditModalOpen] = useState(false);
   const [bulkEditData, setBulkEditData] = useState({
-    category: "",
-    subcategory: "",
     brand: "",
   });
 
@@ -92,7 +90,8 @@ const Products = () => {
       result = result.filter(
         (p) =>
           p.name.toLowerCase().includes(query) ||
-          p.category.toLowerCase().includes(query) ||
+          p.categories.some((cat) => cat.toLowerCase().includes(query)) ||
+          p.subcategories.some((sub) => sub.toLowerCase().includes(query)) ||
           p.id.toLowerCase().includes(query) ||
           p.brand.toLowerCase().includes(query)
       );
@@ -100,7 +99,7 @@ const Products = () => {
 
     // Category filter
     if (categoryFilter !== "all") {
-      result = result.filter((p) => p.category === categoryFilter);
+      result = result.filter((p) => p.categories.includes(categoryFilter));
     }
 
     // Brand filter
@@ -197,12 +196,6 @@ const Products = () => {
       if (product) {
         const updates: Partial<Product> = {};
 
-        if (bulkEditData.category) {
-          updates.category = bulkEditData.category;
-        }
-        if (bulkEditData.subcategory) {
-          updates.subcategory = bulkEditData.subcategory;
-        }
         if (bulkEditData.brand) {
           updates.brand = bulkEditData.brand;
         }
@@ -216,7 +209,7 @@ const Products = () => {
 
     setBulkEditModalOpen(false);
     setSelectedProducts([]);
-    setBulkEditData({ category: "", subcategory: "", brand: "" });
+    setBulkEditData({ brand: "" });
 
     toast({
       title: "Productos actualizados",
@@ -471,21 +464,6 @@ const Products = () => {
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label>Categoría</Label>
-              <Select value={bulkEditData.category} onValueChange={(value) => setBulkEditData({ ...bulkEditData, category: value })}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Sin cambios" />
-                </SelectTrigger>
-                <SelectContent>
-                  {categories.map((cat) => (
-                    <SelectItem key={cat.id} value={cat.name}>
-                      {cat.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
             <div className="space-y-2">
               <Label>Marca</Label>
               <Select value={bulkEditData.brand} onValueChange={(value) => setBulkEditData({ ...bulkEditData, brand: value })}>

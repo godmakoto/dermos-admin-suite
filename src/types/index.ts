@@ -5,8 +5,8 @@ export interface Product {
   name: string;
   price: number;
   salePrice?: number;
-  category: string;
-  subcategory: string;
+  categories: string[];
+  subcategories: string[];
   brand: string;
   label: string;
   carouselState: string;

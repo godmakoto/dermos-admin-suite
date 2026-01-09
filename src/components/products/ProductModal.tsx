@@ -37,8 +37,8 @@ export const ProductModal = ({ open, onClose, product }: ProductModalProps) => {
     name: "",
     price: "",
     salePrice: "",
-    category: "",
-    subcategory: "",
+    categories: [] as string[],
+    subcategories: [] as string[],
     brand: "",
     label: "",
     carouselState: "",
@@ -60,8 +60,8 @@ export const ProductModal = ({ open, onClose, product }: ProductModalProps) => {
         name: product.name,
         price: product.price.toString(),
         salePrice: product.salePrice?.toString() || "",
-        category: product.category,
-        subcategory: product.subcategory,
+        categories: [...product.categories],
+        subcategories: [...product.subcategories],
         brand: product.brand,
         label: product.label,
         carouselState: product.carouselState,
@@ -79,8 +79,8 @@ export const ProductModal = ({ open, onClose, product }: ProductModalProps) => {
         name: "",
         price: "",
         salePrice: "",
-        category: "",
-        subcategory: "",
+        categories: [],
+        subcategories: [],
         brand: "",
         label: "",
         carouselState: "",
@@ -97,12 +97,16 @@ export const ProductModal = ({ open, onClose, product }: ProductModalProps) => {
     setActiveTab("general");
   }, [product, open]);
 
-  const filteredSubcategories = subcategories.filter(
-    (sub) => {
-      const category = categories.find((c) => c.name === formData.category);
-      return category && sub.categoryId === category.id;
-    }
-  );
+  // Filter subcategories based on selected categories
+  const filteredSubcategories = subcategories.filter((sub) => {
+    // Get all selected category IDs
+    const selectedCategoryIds = formData.categories
+      .map((catName) => categories.find((c) => c.name === catName)?.id)
+      .filter(Boolean);
+
+    // Include subcategory if it belongs to any selected category
+    return selectedCategoryIds.includes(sub.categoryId);
+  });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -112,8 +116,8 @@ export const ProductModal = ({ open, onClose, product }: ProductModalProps) => {
       name: formData.name,
       price: parseFloat(formData.price) || 0,
       salePrice: formData.salePrice ? parseFloat(formData.salePrice) : undefined,
-      category: formData.category,
-      subcategory: formData.subcategory,
+      categories: formData.categories,
+      subcategories: formData.subcategories,
       brand: formData.brand,
       label: formData.label,
       carouselState: formData.carouselState,
@@ -244,41 +248,76 @@ export const ProductModal = ({ open, onClose, product }: ProductModalProps) => {
 
                   <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <div className="space-y-2">
-                      <Label>Categoría</Label>
-                      <Select
-                        value={formData.category}
-                        onValueChange={(value) => setFormData({ ...formData, category: value, subcategory: "" })}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Seleccionar categoría" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {categories.map((cat) => (
-                            <SelectItem key={cat.id} value={cat.name}>
-                              {cat.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      <Label>Categorías</Label>
+                      <div className="rounded-lg border border-border bg-background p-3 max-h-[200px] overflow-y-auto">
+                        {categories.length === 0 ? (
+                          <p className="text-sm text-muted-foreground">No hay categorías disponibles</p>
+                        ) : (
+                          <div className="space-y-2">
+                            {categories.map((cat) => (
+                              <div key={cat.id} className="flex items-center space-x-2">
+                                <Checkbox
+                                  id={`cat-${cat.id}`}
+                                  checked={formData.categories.includes(cat.name)}
+                                  onCheckedChange={(checked) => {
+                                    if (checked) {
+                                      setFormData({ ...formData, categories: [...formData.categories, cat.name] });
+                                    } else {
+                                      // Remove category and its related subcategories
+                                      const categoryToRemove = categories.find((c) => c.name === cat.name);
+                                      const subcatsToRemove = subcategories
+                                        .filter((sub) => sub.categoryId === categoryToRemove?.id)
+                                        .map((sub) => sub.name);
+                                      setFormData({
+                                        ...formData,
+                                        categories: formData.categories.filter((c) => c !== cat.name),
+                                        subcategories: formData.subcategories.filter((s) => !subcatsToRemove.includes(s))
+                                      });
+                                    }
+                                  }}
+                                />
+                                <Label htmlFor={`cat-${cat.id}`} className="text-sm font-normal cursor-pointer">
+                                  {cat.name}
+                                </Label>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
                     </div>
                     <div className="space-y-2">
-                      <Label>Subcategoría</Label>
-                      <Select
-                        value={formData.subcategory}
-                        onValueChange={(value) => setFormData({ ...formData, subcategory: value })}
-                        disabled={!formData.category}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Seleccionar subcategoría" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {filteredSubcategories.map((sub) => (
-                            <SelectItem key={sub.id} value={sub.name}>
-                              {sub.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      <Label>Subcategorías</Label>
+                      <div className="rounded-lg border border-border bg-background p-3 max-h-[200px] overflow-y-auto">
+                        {formData.categories.length === 0 ? (
+                          <p className="text-sm text-muted-foreground">Selecciona una categoría primero</p>
+                        ) : filteredSubcategories.length === 0 ? (
+                          <p className="text-sm text-muted-foreground">No hay subcategorías disponibles</p>
+                        ) : (
+                          <div className="space-y-2">
+                            {filteredSubcategories.map((sub) => (
+                              <div key={sub.id} className="flex items-center space-x-2">
+                                <Checkbox
+                                  id={`sub-${sub.id}`}
+                                  checked={formData.subcategories.includes(sub.name)}
+                                  onCheckedChange={(checked) => {
+                                    if (checked) {
+                                      setFormData({ ...formData, subcategories: [...formData.subcategories, sub.name] });
+                                    } else {
+                                      setFormData({
+                                        ...formData,
+                                        subcategories: formData.subcategories.filter((s) => s !== sub.name)
+                                      });
+                                    }
+                                  }}
+                                />
+                                <Label htmlFor={`sub-${sub.id}`} className="text-sm font-normal cursor-pointer">
+                                  {sub.name}
+                                </Label>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
 

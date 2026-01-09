@@ -97,8 +97,8 @@ export const ProductCard = ({
     setDeleteDialogOpen(false);
   };
 
-  // Chips: max 2 visible
-  const allChips = [product.category, product.subcategory].filter(Boolean);
+  // Chips: combine categories and subcategories, max 2 visible
+  const allChips = [...product.categories, ...product.subcategories];
   const visibleChips = allChips.slice(0, 2);
   const extraChipsCount = allChips.length - 2;
 
