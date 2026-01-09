@@ -28,7 +28,7 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
-import { X, Plus, Minus, ChevronDown, Search, MessageCircle } from "lucide-react";
+import { X, Plus, Minus, ChevronDown, Search, MessageCircle, Check } from "lucide-react";
 import { Order, OrderItem } from "@/types";
 import { useApp } from "@/contexts/AppContext";
 import { useToast } from "@/hooks/use-toast";
@@ -579,12 +579,13 @@ export const OrderModal = ({ open, onClose, order, onOrderSaved }: OrderModalPro
               </Button>
               <Button
                 type="submit"
-                className={`w-full sm:w-auto transition-colors duration-500 ${
-                  !justSaved
-                    ? 'bg-gray-400 hover:bg-gray-400 dark:bg-gray-700 dark:hover:bg-gray-700'
-                    : 'bg-slate-900 hover:bg-slate-900 dark:bg-slate-50 dark:hover:bg-slate-50 dark:text-slate-900'
+                className={`w-full sm:w-auto transition-all duration-300 ${
+                  justSaved
+                    ? 'bg-foreground hover:bg-foreground text-background'
+                    : 'bg-muted-foreground/50 hover:bg-muted-foreground/60 text-muted'
                 }`}
               >
+                {justSaved && <Check className="h-4 w-4" />}
                 {isEditing ? "Guardar Cambios" : "Crear Pedido"}
               </Button>
             </div>

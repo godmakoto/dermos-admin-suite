@@ -152,14 +152,18 @@ const Settings = () => {
           const statusValue = values[headers.indexOf("status")] || values[headers.indexOf("estado")] || "Activo";
           const validStatus = ["Activo", "Inactivo", "Agotado"].includes(statusValue) ? statusValue as Product["status"] : "Activo";
           
+          const categoryValue = values[headers.indexOf("category")] || values[headers.indexOf("categoria")] || "Sin categoría";
+          const subcategoryValue = values[headers.indexOf("subcategory")] || values[headers.indexOf("subcategoria")] || "";
+          
           const product: Product = {
             id: `imported-${Date.now()}-${i}`,
             name: values[headers.indexOf("name")] || values[headers.indexOf("nombre")] || `Producto ${i}`,
             price: parseFloat(values[headers.indexOf("price")] || values[headers.indexOf("precio")] || "0"),
-            category: values[headers.indexOf("category")] || values[headers.indexOf("categoria")] || "Sin categoría",
-            subcategory: values[headers.indexOf("subcategory")] || values[headers.indexOf("subcategoria")] || "",
+            categories: categoryValue ? [categoryValue] : [],
+            subcategories: subcategoryValue ? [subcategoryValue] : [],
             brand: values[headers.indexOf("brand")] || values[headers.indexOf("marca")] || "Sin marca",
             label: values[headers.indexOf("label")] || values[headers.indexOf("etiqueta")] || "",
+            carouselState: "",
             shortDescription: values[headers.indexOf("shortdescription")] || values[headers.indexOf("descripcion_corta")] || "",
             longDescription: values[headers.indexOf("longdescription")] || values[headers.indexOf("descripcion_larga")] || "",
             usage: values[headers.indexOf("usage")] || values[headers.indexOf("uso")] || "",
