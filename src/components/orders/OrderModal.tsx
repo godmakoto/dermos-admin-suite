@@ -37,9 +37,10 @@ interface OrderModalProps {
   open: boolean;
   onClose: () => void;
   order: Order | null;
+  onOrderSaved?: (order: Order) => void;
 }
 
-export const OrderModal = ({ open, onClose, order }: OrderModalProps) => {
+export const OrderModal = ({ open, onClose, order, onOrderSaved }: OrderModalProps) => {
   const { products, orderStatuses, updateOrder, addOrder, orders } = useApp();
   const { toast } = useToast();
   
@@ -99,6 +100,9 @@ export const OrderModal = ({ open, onClose, order }: OrderModalProps) => {
       };
       updateOrder(updatedOrder);
       toast({ title: "Pedido actualizado", description: "Los cambios se han guardado correctamente." });
+      if (onOrderSaved) {
+        onOrderSaved(updatedOrder);
+      }
     } else {
       // Generate new order ID
       const lastOrderId = orders.length > 0
@@ -120,8 +124,10 @@ export const OrderModal = ({ open, onClose, order }: OrderModalProps) => {
       };
       addOrder(newOrder);
       toast({ title: "Pedido creado", description: `El pedido ${newOrderId} se ha creado correctamente.` });
+      if (onOrderSaved) {
+        onOrderSaved(newOrder);
+      }
     }
-    onClose();
   };
 
   const updateItemQuantity = (itemId: string, delta: number) => {

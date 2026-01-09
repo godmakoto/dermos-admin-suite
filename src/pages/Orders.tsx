@@ -342,6 +342,7 @@ const Orders = () => {
         open={modalOpen}
         onClose={() => setModalOpen(false)}
         order={selectedOrder}
+        onOrderSaved={(savedOrder) => setSelectedOrder(savedOrder)}
       />
     </AppLayout>
   );
