@@ -45,13 +45,14 @@ export const OrderModal = ({ open, onClose, order, onOrderSaved }: OrderModalPro
   const { toast } = useToast();
   
   const isEditing = !!order;
-  
+
   const [formData, setFormData] = useState({
     status: "Pendiente",
     discount: "",
     items: [] as OrderItem[],
   });
   const [productSearchOpen, setProductSearchOpen] = useState(false);
+  const [justSaved, setJustSaved] = useState(false);
 
   useEffect(() => {
     if (order) {
@@ -67,6 +68,7 @@ export const OrderModal = ({ open, onClose, order, onOrderSaved }: OrderModalPro
         items: [],
       });
     }
+    setJustSaved(false);
   }, [order, open]);
 
   const calculateSubtotal = () => {
@@ -136,7 +138,8 @@ export const OrderModal = ({ open, onClose, order, onOrderSaved }: OrderModalPro
         updatedAt: new Date(),
       };
       updateOrder(updatedOrder);
-      toast({ title: "Pedido actualizado", description: "Los cambios se han guardado correctamente." });
+      setJustSaved(true);
+      setTimeout(() => setJustSaved(false), 2000);
       if (onOrderSaved) {
         onOrderSaved(updatedOrder);
       }
@@ -160,7 +163,8 @@ export const OrderModal = ({ open, onClose, order, onOrderSaved }: OrderModalPro
         updatedAt: new Date(),
       };
       addOrder(newOrder);
-      toast({ title: "Pedido creado", description: `El pedido ${newOrderId} se ha creado correctamente.` });
+      setJustSaved(true);
+      setTimeout(() => setJustSaved(false), 2000);
       if (onOrderSaved) {
         onOrderSaved(newOrder);
       }
@@ -168,6 +172,7 @@ export const OrderModal = ({ open, onClose, order, onOrderSaved }: OrderModalPro
   };
 
   const updateItemQuantity = (itemId: string, delta: number) => {
+    setJustSaved(false);
     setFormData((prev) => ({
       ...prev,
       items: prev.items.map((item) => {
@@ -196,6 +201,7 @@ export const OrderModal = ({ open, onClose, order, onOrderSaved }: OrderModalPro
   };
 
   const removeItem = (itemId: string) => {
+    setJustSaved(false);
     setFormData((prev) => ({
       ...prev,
       items: prev.items.filter((item) => item.id !== itemId),
@@ -206,6 +212,7 @@ export const OrderModal = ({ open, onClose, order, onOrderSaved }: OrderModalPro
     const product = products.find((p) => p.id === productId);
     if (!product) return;
 
+    setJustSaved(false);
     const availableStock = getAvailableStock(productId);
 
     // Check if product has stock available
@@ -306,7 +313,10 @@ export const OrderModal = ({ open, onClose, order, onOrderSaved }: OrderModalPro
             <Label>Estado del Pedido</Label>
             <Select
               value={formData.status}
-              onValueChange={(value) => setFormData({ ...formData, status: value })}
+              onValueChange={(value) => {
+                setJustSaved(false);
+                setFormData({ ...formData, status: value });
+              }}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Seleccionar estado" />
@@ -526,9 +536,10 @@ export const OrderModal = ({ open, onClose, order, onOrderSaved }: OrderModalPro
                 step="0.01"
                 min="0"
                 value={formData.discount}
-                onChange={(e) =>
-                  setFormData({ ...formData, discount: e.target.value })
-                }
+                onChange={(e) => {
+                  setJustSaved(false);
+                  setFormData({ ...formData, discount: e.target.value });
+                }}
                 placeholder="Ingrese descuento adicional"
               />
             </div>
@@ -566,7 +577,14 @@ export const OrderModal = ({ open, onClose, order, onOrderSaved }: OrderModalPro
               <Button type="button" variant="outline" onClick={onClose} className="w-full sm:w-auto">
                 Cancelar
               </Button>
-              <Button type="submit" className="w-full sm:w-auto">
+              <Button
+                type="submit"
+                className={`w-full sm:w-auto transition-colors duration-300 ${
+                  justSaved
+                    ? 'bg-gray-300 hover:bg-gray-300 dark:bg-gray-600 dark:hover:bg-gray-600'
+                    : ''
+                }`}
+              >
                 {isEditing ? "Guardar Cambios" : "Crear Pedido"}
               </Button>
             </div>
