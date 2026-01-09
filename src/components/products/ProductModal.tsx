@@ -170,10 +170,10 @@ export const ProductModal = ({ open, onClose, product }: ProductModalProps) => {
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent
         hideCloseButton
-        className="fixed !inset-0 flex h-[100dvh] !w-full !max-w-full !translate-x-0 !translate-y-0 flex-col gap-0 !rounded-none !border-0 !p-0 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=open]:duration-200 data-[state=closed]:duration-150 data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 md:inset-auto md:left-1/2 md:top-1/2 md:h-auto md:max-h-[95vh] md:max-w-3xl md:-translate-x-1/2 md:-translate-y-1/2 md:!rounded-xl md:border"
+        className="fixed inset-0 flex h-[100dvh] w-full max-w-full translate-x-0 translate-y-0 flex-col gap-0 rounded-none border-0 p-0 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=open]:duration-200 data-[state=closed]:duration-150 data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 lg:inset-auto lg:left-1/2 lg:top-1/2 lg:h-auto lg:max-h-[90vh] lg:w-auto lg:max-w-3xl lg:-translate-x-1/2 lg:-translate-y-1/2 lg:rounded-xl lg:border"
       >
         {/* Fixed Header */}
-        <div className="flex h-14 shrink-0 items-center justify-between border-b border-border bg-background px-4 md:px-6 md:rounded-t-xl">
+        <div className="flex h-14 shrink-0 items-center justify-between border-b border-border bg-background px-4 lg:px-6 lg:rounded-t-xl">
           <DialogTitle className="text-lg font-semibold">
             {product ? "Editar Producto" : "Nuevo Producto"}
           </DialogTitle>
@@ -190,7 +190,7 @@ export const ProductModal = ({ open, onClose, product }: ProductModalProps) => {
         <form onSubmit={handleSubmit} className="flex min-h-0 flex-1 flex-col">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="flex min-h-0 flex-1 flex-col">
             {/* Fixed Tabs Bar */}
-            <div className="shrink-0 border-b border-border bg-background px-4 md:px-6">
+            <div className="shrink-0 border-b border-border bg-background px-4 lg:px-6">
               <TabsList className="grid h-12 w-full grid-cols-3 bg-transparent p-0">
                 <TabsTrigger value="general" className="h-full rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:font-semibold data-[state=active]:shadow-none">
                   General
@@ -206,7 +206,7 @@ export const ProductModal = ({ open, onClose, product }: ProductModalProps) => {
 
             {/* Scrollable Content Area */}
             <div className="min-h-0 flex-1 overflow-y-auto">
-              <div className="px-4 py-4 md:px-6">
+              <div className="px-4 py-4 lg:px-6">
                 <TabsContent value="general" className="m-0 space-y-4">
                   <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <div className="space-y-2">
@@ -496,7 +496,7 @@ export const ProductModal = ({ open, onClose, product }: ProductModalProps) => {
           </Tabs>
 
           {/* Fixed Footer */}
-          <div className="shrink-0 border-t border-border bg-background px-4 py-4 md:px-6 md:rounded-b-xl">
+          <div className="shrink-0 border-t border-border bg-background px-4 py-4 lg:px-6 lg:rounded-b-xl">
             <div className="flex flex-col gap-2 sm:flex-row sm:justify-end sm:gap-3">
               <Button type="button" variant="outline" onClick={onClose} className="w-full sm:w-auto">
                 Cancelar
