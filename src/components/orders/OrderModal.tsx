@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -54,22 +54,51 @@ export const OrderModal = ({ open, onClose, order, onOrderSaved }: OrderModalPro
   const [productSearchOpen, setProductSearchOpen] = useState(false);
   const [justSaved, setJustSaved] = useState(false);
 
+  const prevOpenRef = useRef(false);
+  const currentOrderIdRef = useRef<string | null>(null);
+  const lastSavedOrderIdRef = useRef<string | null>(null);
+
   useEffect(() => {
-    if (order) {
-      setFormData({
-        status: order.status,
-        discount: order.discount > 0 ? order.discount.toString() : "",
-        items: [...order.items],
-      });
-    } else {
-      setFormData({
-        status: "Pendiente",
-        discount: "",
-        items: [],
-      });
+    const wasOpen = prevOpenRef.current;
+    prevOpenRef.current = open;
+
+    if (!open) {
+      setJustSaved(false);
+      return;
     }
-    setJustSaved(false);
-  }, [order, open]);
+
+    const incomingOrderId = order?.id ?? null;
+    const isOpening = open && !wasOpen;
+    const isOrderSwitched = incomingOrderId !== currentOrderIdRef.current;
+
+    if (isOpening || isOrderSwitched) {
+      if (order) {
+        setFormData({
+          status: order.status,
+          discount: order.discount > 0 ? order.discount.toString() : "",
+          items: [...order.items],
+        });
+      } else {
+        setFormData({
+          status: "Pendiente",
+          discount: "",
+          items: [],
+        });
+      }
+
+      // Estado inicial: gris. Solo mantenemos negro si acabamos de guardar y
+      // el padre nos devuelve el mismo pedido (p. ej. al crear o al actualizar).
+      if (incomingOrderId === null || incomingOrderId !== lastSavedOrderIdRef.current) {
+        setJustSaved(false);
+      }
+
+      currentOrderIdRef.current = incomingOrderId;
+
+      if (isOpening) {
+        lastSavedOrderIdRef.current = null;
+      }
+    }
+  }, [open, order?.id]);
 
   const calculateSubtotal = () => {
     // Subtotal usando precios originales (sin descuentos)
@@ -138,6 +167,7 @@ export const OrderModal = ({ open, onClose, order, onOrderSaved }: OrderModalPro
         updatedAt: new Date(),
       };
       updateOrder(updatedOrder);
+      lastSavedOrderIdRef.current = updatedOrder.id;
       setJustSaved(true);
       if (onOrderSaved) {
         onOrderSaved(updatedOrder);
@@ -162,6 +192,7 @@ export const OrderModal = ({ open, onClose, order, onOrderSaved }: OrderModalPro
         updatedAt: new Date(),
       };
       addOrder(newOrder);
+      lastSavedOrderIdRef.current = newOrder.id;
       setJustSaved(true);
       if (onOrderSaved) {
         onOrderSaved(newOrder);
@@ -580,7 +611,7 @@ export const OrderModal = ({ open, onClose, order, onOrderSaved }: OrderModalPro
                 className={`w-full sm:w-auto transition-all duration-300 ${
                   justSaved
                     ? 'bg-foreground hover:bg-foreground text-background'
-                    : 'bg-muted-foreground/50 hover:bg-muted-foreground/60 text-muted'
+                    : 'bg-muted-foreground/50 hover:bg-muted-foreground/60 text-muted-foreground'
                 }`}
               >
                 {isEditing ? "Guardar Cambios" : "Crear Pedido"}
