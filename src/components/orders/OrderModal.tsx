@@ -582,7 +582,7 @@ export const OrderModal = ({ open, onClose, order, onOrderSaved }: OrderModalPro
                 className={`w-full sm:w-auto transition-colors duration-500 ${
                   !justSaved
                     ? 'bg-gray-400 hover:bg-gray-400 dark:bg-gray-700 dark:hover:bg-gray-700'
-                    : ''
+                    : 'bg-slate-900 hover:bg-slate-900 dark:bg-slate-50 dark:hover:bg-slate-50 dark:text-slate-900'
                 }`}
               >
                 {isEditing ? "Guardar Cambios" : "Crear Pedido"}
