@@ -170,7 +170,7 @@ export const ProductModal = ({ open, onClose, product }: ProductModalProps) => {
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent
         hideCloseButton
-        className="fixed inset-0 flex h-[100dvh] w-full max-w-full translate-x-0 translate-y-0 flex-col gap-0 rounded-none border-0 p-0 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=open]:duration-200 data-[state=closed]:duration-150 data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 lg:inset-auto lg:left-1/2 lg:top-1/2 lg:h-auto lg:max-h-[90vh] lg:w-auto lg:max-w-5xl lg:-translate-x-1/2 lg:-translate-y-1/2 lg:rounded-xl lg:border"
+        className="fixed inset-0 flex h-[100dvh] w-full max-w-full translate-x-0 translate-y-0 flex-col gap-0 rounded-none border-0 p-0 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=open]:duration-200 data-[state=closed]:duration-150 data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 lg:inset-auto lg:left-1/2 lg:top-1/2 lg:h-auto lg:max-h-[90vh] lg:w-auto lg:max-w-6xl lg:-translate-x-1/2 lg:-translate-y-1/2 lg:rounded-xl lg:border"
       >
         {/* Fixed Header */}
         <div className="flex h-14 shrink-0 items-center justify-between border-b border-border bg-background px-4 lg:px-6 lg:rounded-t-xl">
