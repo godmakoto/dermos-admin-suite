@@ -214,13 +214,16 @@ export const OrderModal = ({ open, onClose, order, onOrderSaved }: OrderModalPro
       }
       updateItemQuantity(existingItem.id, 1);
     } else {
+      // Use sale price if available, otherwise use regular price
+      const itemPrice = product.salePrice ?? product.price;
+
       const newItem: OrderItem = {
         id: `item-${Date.now()}`,
         productId: product.id,
         productName: product.name,
         productImage: product.images && product.images.length > 0 ? product.images[0] : undefined,
         quantity: 1,
-        price: product.price,
+        price: itemPrice,
       };
       setFormData((prev) => ({
         ...prev,
@@ -357,9 +360,20 @@ export const OrderModal = ({ open, onClose, order, onOrderSaved }: OrderModalPro
                                 <div className="flex flex-col min-w-0 flex-1">
                                   <span className="truncate">{product.name}</span>
                                   <div className="flex items-center gap-2">
-                                    <span className="text-xs text-muted-foreground">
-                                      Bs {product.price.toFixed(1)}
-                                    </span>
+                                    {product.salePrice ? (
+                                      <>
+                                        <span className="text-xs text-muted-foreground line-through">
+                                          Bs {product.price.toFixed(1)}
+                                        </span>
+                                        <span className="text-xs font-semibold text-foreground">
+                                          Bs {product.salePrice.toFixed(1)}
+                                        </span>
+                                      </>
+                                    ) : (
+                                      <span className="text-xs text-muted-foreground">
+                                        Bs {product.price.toFixed(1)}
+                                      </span>
+                                    )}
                                     {hasStockTracking && (
                                       <span className={`text-xs ${outOfStock ? 'text-destructive' : 'text-muted-foreground'}`}>
                                         • Stock: {availableStock}
