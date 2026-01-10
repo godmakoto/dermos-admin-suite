@@ -5,15 +5,17 @@ export interface Product {
   name: string;
   price: number;
   salePrice?: number;
-  category: string;
-  subcategory: string;
+  categories: string[];
+  subcategories: string[];
   brand: string;
   label: string;
+  carouselState: string;
   shortDescription: string;
   longDescription: string;
   usage: string;
   ingredients: string;
   images: string[];
+  trackStock: boolean;
   stock: number;
   status: ProductStatus;
   createdAt: Date;
@@ -24,6 +26,7 @@ export interface OrderItem {
   id: string;
   productId: string;
   productName: string;
+  productImage?: string;
   quantity: number;
   price: number;
 }
@@ -66,5 +69,12 @@ export interface Label {
 export interface OrderStatus {
   id: string;
   name: string;
+  color: string;
+}
+
+export interface ProductCarouselState {
+  id: string;
+  name: string;
+  type: "carousel" | "banner";
   color: string;
 }

@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
-import { Product, Order, Category, Subcategory, Brand, Label, OrderStatus } from "@/types";
+import { Product, Order, Category, Subcategory, Brand, Label, OrderStatus, ProductCarouselState } from "@/types";
 import {
   mockProducts,
   mockOrders,
@@ -8,6 +8,7 @@ import {
   mockBrands,
   mockLabels,
   mockOrderStatuses,
+  mockProductCarouselStates,
 } from "@/data/mockData";
 
 interface AppContextType {
@@ -53,6 +54,11 @@ interface AppContextType {
   addOrderStatus: (status: OrderStatus) => void;
   deleteOrderStatus: (id: string) => void;
 
+  // Product Carousel States
+  productCarouselStates: ProductCarouselState[];
+  addProductCarouselState: (state: ProductCarouselState) => void;
+  deleteProductCarouselState: (id: string) => void;
+
   // Reset Store
   resetStore: () => void;
 
@@ -71,6 +77,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [brands, setBrands] = useState<Brand[]>(mockBrands);
   const [labels, setLabels] = useState<Label[]>(mockLabels);
   const [orderStatuses, setOrderStatuses] = useState<OrderStatus[]>(mockOrderStatuses);
+  const [productCarouselStates, setProductCarouselStates] = useState<ProductCarouselState[]>(mockProductCarouselStates);
   const [isDarkMode, setIsDarkMode] = useState(false);
 
   useEffect(() => {
@@ -132,11 +139,72 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   // Orders
   const addOrder = (order: Order) => {
+    // Agregar el pedido
     setOrders((prev) => [...prev, order]);
+
+    // Descontar stock de productos si tienen control de stock activado
+    setProducts((prevProducts) =>
+      prevProducts.map((product) => {
+        // Buscar si este producto está en el pedido
+        const orderItem = order.items.find((item) => item.productId === product.id);
+
+        // Si el producto está en el pedido y tiene control de stock activado
+        if (orderItem && product.trackStock) {
+          return {
+            ...product,
+            stock: Math.max(0, product.stock - orderItem.quantity), // No permitir stock negativo
+            updatedAt: new Date(),
+          };
+        }
+
+        return product;
+      })
+    );
   };
 
   const updateOrder = (order: Order) => {
+    // Encontrar el pedido original
+    const originalOrder = orders.find((o) => o.id === order.id);
+
+    // Actualizar el pedido
     setOrders((prev) => prev.map((o) => (o.id === order.id ? order : o)));
+
+    // Si no hay pedido original, no hacer cambios en el stock
+    if (!originalOrder) return;
+
+    // Ajustar stock de productos
+    setProducts((prevProducts) =>
+      prevProducts.map((product) => {
+        if (!product.trackStock) return product;
+
+        // Buscar item en pedido original y nuevo
+        const originalItem = originalOrder.items.find((item) => item.productId === product.id);
+        const newItem = order.items.find((item) => item.productId === product.id);
+
+        let stockChange = 0;
+
+        // Si estaba en el pedido original, restaurar ese stock
+        if (originalItem) {
+          stockChange += originalItem.quantity;
+        }
+
+        // Si está en el nuevo pedido, descontar ese stock
+        if (newItem) {
+          stockChange -= newItem.quantity;
+        }
+
+        // Aplicar cambio de stock si hay alguno
+        if (stockChange !== 0) {
+          return {
+            ...product,
+            stock: Math.max(0, product.stock + stockChange),
+            updatedAt: new Date(),
+          };
+        }
+
+        return product;
+      })
+    );
   };
 
   // Categories
@@ -196,6 +264,15 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setOrderStatuses((prev) => prev.filter((s) => s.id !== id));
   };
 
+  // Product Carousel States
+  const addProductCarouselState = (state: ProductCarouselState) => {
+    setProductCarouselStates((prev) => [...prev, state]);
+  };
+
+  const deleteProductCarouselState = (id: string) => {
+    setProductCarouselStates((prev) => prev.filter((s) => s.id !== id));
+  };
+
   // Reset Store
   const resetStore = () => {
     setProducts([]);
@@ -205,6 +282,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setBrands([]);
     setLabels([]);
     setOrderStatuses([]);
+    setProductCarouselStates([]);
   };
 
   return (
@@ -238,6 +316,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         orderStatuses,
         addOrderStatus,
         deleteOrderStatus,
+        productCarouselStates,
+        addProductCarouselState,
+        deleteProductCarouselState,
         resetStore,
         isDarkMode,
         toggleDarkMode,

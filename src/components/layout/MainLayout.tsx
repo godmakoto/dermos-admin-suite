@@ -1,11 +1,17 @@
 import { Sidebar } from "./Sidebar";
 import { useSidebar } from "@/contexts/SidebarContext";
-import { Menu } from "lucide-react";
+import { Menu, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface MainLayoutProps {
   children: React.ReactNode;
 }
+
+// Mock user data - en el futuro esto vendrá de autenticación
+const mockUser = {
+  name: "Admin Usuario",
+  email: "admin@dermoadmin.com",
+};
 
 export const MainLayout = ({ children }: MainLayoutProps) => {
   const { isCollapsed, toggleSidebar } = useSidebar();
@@ -30,9 +36,20 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
           isCollapsed ? "ml-0" : "lg:ml-64 ml-0"
         )}
       >
-        {/* Header with toggle button when collapsed */}
+        {/* Header móvil siempre visible - solo hamburguesa + DermoAdmin */}
+        <div className="sticky top-0 z-30 flex h-16 items-center border-b border-border bg-background px-4 lg:hidden">
+          <button
+            onClick={toggleSidebar}
+            className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary hover:bg-primary/90 transition-colors cursor-pointer"
+          >
+            <Menu className="h-4 w-4 text-primary-foreground" />
+          </button>
+          <span className="ml-3 text-lg font-semibold text-foreground">DermoAdmin</span>
+        </div>
+
+        {/* Header desktop cuando sidebar colapsado */}
         {isCollapsed && (
-          <div className="sticky top-0 z-30 flex h-16 items-center border-b border-border bg-background px-4">
+          <div className="sticky top-0 z-30 hidden lg:flex h-16 items-center border-b border-border bg-background px-4">
             <button
               onClick={toggleSidebar}
               className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary hover:bg-primary/90 transition-colors cursor-pointer"
@@ -42,7 +59,8 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
             <span className="ml-3 text-lg font-semibold text-foreground">DermoAdmin</span>
           </div>
         )}
-        <div className="p-8">{children}</div>
+
+        <div className="p-4 md:p-8">{children}</div>
       </main>
     </div>
   );

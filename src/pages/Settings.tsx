@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-import { MainLayout } from "@/components/layout/MainLayout";
+import { AppLayout } from "@/components/layout/AppLayout";
 import { PageHeader } from "@/components/ui/page-header";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -28,7 +28,7 @@ import {
 import { useApp } from "@/contexts/AppContext";
 import { useToast } from "@/hooks/use-toast";
 import { Plus, X, Tag, Layers, Bookmark, Flag, Moon, Trash2, Upload, Database } from "lucide-react";
-import { Product } from "@/types";
+import { Product, ProductCarouselState } from "@/types";
 
 const Settings = () => {
   const {
@@ -36,7 +36,7 @@ const Settings = () => {
     subcategories,
     brands,
     labels,
-    orderStatuses,
+    productCarouselStates,
     addCategory,
     deleteCategory,
     deleteAllCategories,
@@ -49,8 +49,8 @@ const Settings = () => {
     deleteLabel,
     deleteAllLabels,
     resetStore,
-    addOrderStatus,
-    deleteOrderStatus,
+    addProductCarouselState,
+    deleteProductCarouselState,
     deleteAllProducts,
     importProducts,
     isDarkMode,
@@ -62,8 +62,8 @@ const Settings = () => {
   const [newCategory, setNewCategory] = useState("");
   const [newSubcategory, setNewSubcategory] = useState({ name: "", categoryId: "" });
   const [newBrand, setNewBrand] = useState("");
-  const [newLabel, setNewLabel] = useState({ name: "", color: "#3b82f6" });
-  const [newStatus, setNewStatus] = useState({ name: "", color: "#3b82f6" });
+  const [newLabel, setNewLabel] = useState({ name: "", color: "#6b7280" });
+  const [newCarouselState, setNewCarouselState] = useState({ name: "", type: "carousel" as "carousel" | "banner", color: "#6b7280" });
 
   const handleAddCategory = () => {
     if (newCategory.trim()) {
@@ -95,17 +95,17 @@ const Settings = () => {
 
   const handleAddLabel = () => {
     if (newLabel.name.trim()) {
-      addLabel({ id: `${Date.now()}`, ...newLabel });
-      setNewLabel({ name: "", color: "#3b82f6" });
-      toast({ title: "Etiqueta agregada" });
+      addLabel({ id: `${Date.now()}`, name: newLabel.name.trim(), color: "#6b7280" });
+      setNewLabel({ name: "", color: "#6b7280" });
+      toast({ title: "Propiedad agregada" });
     }
   };
 
-  const handleAddStatus = () => {
-    if (newStatus.name.trim()) {
-      addOrderStatus({ id: `${Date.now()}`, ...newStatus });
-      setNewStatus({ name: "", color: "#3b82f6" });
-      toast({ title: "Estado agregado" });
+  const handleAddCarouselState = () => {
+    if (newCarouselState.name.trim()) {
+      addProductCarouselState({ id: `${Date.now()}`, name: newCarouselState.name.trim(), type: newCarouselState.type, color: "#6b7280" });
+      setNewCarouselState({ name: "", type: "carousel", color: "#6b7280" });
+      toast({ title: "Estado de carrusel agregado" });
     }
   };
 
@@ -152,19 +152,24 @@ const Settings = () => {
           const statusValue = values[headers.indexOf("status")] || values[headers.indexOf("estado")] || "Activo";
           const validStatus = ["Activo", "Inactivo", "Agotado"].includes(statusValue) ? statusValue as Product["status"] : "Activo";
           
+          const categoryValue = values[headers.indexOf("category")] || values[headers.indexOf("categoria")] || "Sin categoría";
+          const subcategoryValue = values[headers.indexOf("subcategory")] || values[headers.indexOf("subcategoria")] || "";
+          
           const product: Product = {
             id: `imported-${Date.now()}-${i}`,
             name: values[headers.indexOf("name")] || values[headers.indexOf("nombre")] || `Producto ${i}`,
             price: parseFloat(values[headers.indexOf("price")] || values[headers.indexOf("precio")] || "0"),
-            category: values[headers.indexOf("category")] || values[headers.indexOf("categoria")] || "Sin categoría",
-            subcategory: values[headers.indexOf("subcategory")] || values[headers.indexOf("subcategoria")] || "",
+            categories: categoryValue ? [categoryValue] : [],
+            subcategories: subcategoryValue ? [subcategoryValue] : [],
             brand: values[headers.indexOf("brand")] || values[headers.indexOf("marca")] || "Sin marca",
             label: values[headers.indexOf("label")] || values[headers.indexOf("etiqueta")] || "",
+            carouselState: "",
             shortDescription: values[headers.indexOf("shortdescription")] || values[headers.indexOf("descripcion_corta")] || "",
             longDescription: values[headers.indexOf("longdescription")] || values[headers.indexOf("descripcion_larga")] || "",
             usage: values[headers.indexOf("usage")] || values[headers.indexOf("uso")] || "",
             ingredients: values[headers.indexOf("ingredients")] || values[headers.indexOf("ingredientes")] || "",
             images: [values[headers.indexOf("image")] || values[headers.indexOf("imagen")] || "/placeholder.svg"],
+            trackStock: false,
             stock: parseInt(values[headers.indexOf("stock")] || "0"),
             status: validStatus,
             createdAt: new Date(),
@@ -188,7 +193,7 @@ const Settings = () => {
   };
 
   return (
-    <MainLayout>
+    <AppLayout>
       <PageHeader
         title="Configuración"
         description="Administra las opciones de tu tienda"
@@ -206,7 +211,7 @@ const Settings = () => {
           </TabsTrigger>
           <TabsTrigger value="labels" className="gap-2">
             <Tag className="h-4 w-4" />
-            <span className="hidden sm:inline">Etiquetas</span>
+            <span className="hidden sm:inline">Propiedades</span>
           </TabsTrigger>
           <TabsTrigger value="statuses" className="gap-2">
             <Flag className="h-4 w-4" />
@@ -266,14 +271,14 @@ const Settings = () => {
               <CardDescription>Gestiona las subcategorías de productos</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="flex gap-2">
+              <div className="flex flex-col gap-2 md:flex-row">
                 <Select
                   value={newSubcategory.categoryId}
                   onValueChange={(value) =>
                     setNewSubcategory({ ...newSubcategory, categoryId: value })
                   }
                 >
-                  <SelectTrigger className="w-48">
+                  <SelectTrigger className="w-full md:w-48">
                     <SelectValue placeholder="Categoría" />
                   </SelectTrigger>
                   <SelectContent>
@@ -284,18 +289,20 @@ const Settings = () => {
                     ))}
                   </SelectContent>
                 </Select>
-                <Input
-                  placeholder="Nueva subcategoría"
-                  value={newSubcategory.name}
-                  onChange={(e) =>
-                    setNewSubcategory({ ...newSubcategory, name: e.target.value })
-                  }
-                  onKeyDown={(e) => e.key === "Enter" && handleAddSubcategory()}
-                  className="flex-1"
-                />
-                <Button onClick={handleAddSubcategory}>
-                  <Plus className="h-4 w-4" />
-                </Button>
+                <div className="flex gap-2 flex-1">
+                  <Input
+                    placeholder="Nueva subcategoría"
+                    value={newSubcategory.name}
+                    onChange={(e) =>
+                      setNewSubcategory({ ...newSubcategory, name: e.target.value })
+                    }
+                    onKeyDown={(e) => e.key === "Enter" && handleAddSubcategory()}
+                    className="flex-1"
+                  />
+                  <Button onClick={handleAddSubcategory}>
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
               <div className="space-y-3">
                 {categories.map((cat) => {
@@ -373,23 +380,17 @@ const Settings = () => {
         <TabsContent value="labels">
           <Card>
             <CardHeader>
-              <CardTitle>Etiquetas</CardTitle>
-              <CardDescription>Gestiona las etiquetas de productos</CardDescription>
+              <CardTitle>Propiedades</CardTitle>
+              <CardDescription>Gestiona las propiedades de productos</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex gap-2">
                 <Input
-                  placeholder="Nueva etiqueta"
+                  placeholder="Nueva propiedad"
                   value={newLabel.name}
                   onChange={(e) => setNewLabel({ ...newLabel, name: e.target.value })}
                   onKeyDown={(e) => e.key === "Enter" && handleAddLabel()}
                   className="flex-1"
-                />
-                <Input
-                  type="color"
-                  value={newLabel.color}
-                  onChange={(e) => setNewLabel({ ...newLabel, color: e.target.value })}
-                  className="w-14 p-1"
                 />
                 <Button onClick={handleAddLabel}>
                   <Plus className="h-4 w-4" />
@@ -399,13 +400,8 @@ const Settings = () => {
                 {labels.map((label) => (
                   <div
                     key={label.id}
-                    className="flex items-center gap-2 rounded-lg border border-border px-3 py-1.5"
-                    style={{ backgroundColor: `${label.color}20` }}
+                    className="flex items-center gap-2 rounded-lg border border-border bg-secondary/50 px-3 py-1.5"
                   >
-                    <span
-                      className="h-2 w-2 rounded-full"
-                      style={{ backgroundColor: label.color }}
-                    />
                     <span className="text-sm">{label.name}</span>
                     <button
                       onClick={() => deleteLabel(label.id)}
@@ -420,46 +416,54 @@ const Settings = () => {
           </Card>
         </TabsContent>
 
-        {/* Order Statuses */}
+        {/* Product Carousel States */}
         <TabsContent value="statuses">
           <Card>
             <CardHeader>
-              <CardTitle>Estados de Pedido</CardTitle>
-              <CardDescription>Gestiona los estados de los pedidos</CardDescription>
+              <CardTitle>Estados de Carruseles</CardTitle>
+              <CardDescription>Gestiona los estados para carruseles y banners de productos en tu web</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="flex gap-2">
-                <Input
-                  placeholder="Nuevo estado"
-                  value={newStatus.name}
-                  onChange={(e) => setNewStatus({ ...newStatus, name: e.target.value })}
-                  onKeyDown={(e) => e.key === "Enter" && handleAddStatus()}
-                  className="flex-1"
-                />
-                <Input
-                  type="color"
-                  value={newStatus.color}
-                  onChange={(e) => setNewStatus({ ...newStatus, color: e.target.value })}
-                  className="w-14 p-1"
-                />
-                <Button onClick={handleAddStatus}>
-                  <Plus className="h-4 w-4" />
-                </Button>
+              <div className="flex flex-col gap-2 md:flex-row">
+                <Select
+                  value={newCarouselState.type}
+                  onValueChange={(value: "carousel" | "banner") =>
+                    setNewCarouselState({ ...newCarouselState, type: value })
+                  }
+                >
+                  <SelectTrigger className="w-full md:w-40">
+                    <SelectValue placeholder="Tipo" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="carousel">Carrusel</SelectItem>
+                    <SelectItem value="banner">Banner</SelectItem>
+                  </SelectContent>
+                </Select>
+                <div className="flex gap-2 flex-1">
+                  <Input
+                    placeholder="Nombre del estado"
+                    value={newCarouselState.name}
+                    onChange={(e) => setNewCarouselState({ ...newCarouselState, name: e.target.value })}
+                    onKeyDown={(e) => e.key === "Enter" && handleAddCarouselState()}
+                    className="flex-1"
+                  />
+                  <Button onClick={handleAddCarouselState}>
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
               <div className="flex flex-wrap gap-2">
-                {orderStatuses.map((status) => (
+                {productCarouselStates.map((state) => (
                   <div
-                    key={status.id}
-                    className="flex items-center gap-2 rounded-lg border border-border px-3 py-1.5"
-                    style={{ backgroundColor: `${status.color}20` }}
+                    key={state.id}
+                    className="flex items-center gap-2 rounded-lg border border-border bg-secondary/50 px-3 py-1.5"
                   >
-                    <span
-                      className="h-2 w-2 rounded-full"
-                      style={{ backgroundColor: status.color }}
-                    />
-                    <span className="text-sm">{status.name}</span>
+                    <span className="text-sm">{state.name}</span>
+                    <span className="text-xs text-muted-foreground">
+                      ({state.type === "carousel" ? "Carrusel" : "Banner"})
+                    </span>
                     <button
-                      onClick={() => deleteOrderStatus(status.id)}
+                      onClick={() => deleteProductCarouselState(state.id)}
                       className="text-muted-foreground hover:text-destructive"
                     >
                       <X className="h-3 w-3" />
@@ -633,7 +637,7 @@ const Settings = () => {
           </Card>
         </TabsContent>
       </Tabs>
-    </MainLayout>
+    </AppLayout>
   );
 };
 
