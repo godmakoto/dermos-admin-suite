@@ -32,6 +32,7 @@ import { X, Plus, Minus, ChevronDown, Search, MessageCircle } from "lucide-react
 import { Order, OrderItem } from "@/types";
 import { useApp } from "@/contexts/AppContext";
 import { useToast } from "@/hooks/use-toast";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface OrderModalProps {
   open: boolean;
@@ -43,7 +44,8 @@ interface OrderModalProps {
 export const OrderModal = ({ open, onClose, order, onOrderSaved }: OrderModalProps) => {
   const { products, orderStatuses, updateOrder, addOrder, orders } = useApp();
   const { toast } = useToast();
-  
+  const isMobile = useIsMobile();
+
   const isEditing = !!order;
 
   const [formData, setFormData] = useState({
@@ -370,84 +372,178 @@ export const OrderModal = ({ open, onClose, order, onOrderSaved }: OrderModalPro
           <div className="space-y-3">
             <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
               <Label>Productos</Label>
-              <Popover open={productSearchOpen} onOpenChange={setProductSearchOpen}>
-                <PopoverTrigger asChild>
-                  <Button variant="outline" className="w-full md:w-64 justify-between">
+
+              {/* Desktop: Popover */}
+              {!isMobile && (
+                <Popover open={productSearchOpen} onOpenChange={setProductSearchOpen}>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" className="w-full md:w-64 justify-between">
+                      <span className="text-muted-foreground">Agregar producto</span>
+                      <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent
+                    className="w-96 p-0 z-[200]"
+                    align="end"
+                    onWheel={(e) => e.stopPropagation()}
+                    onTouchMove={(e) => e.stopPropagation()}
+                  >
+                    <Command>
+                      <CommandInput placeholder="Buscar producto..." />
+                      <CommandList className="max-h-[300px] overflow-y-auto">
+                        <CommandEmpty>No se encontraron productos.</CommandEmpty>
+                        <CommandGroup>
+                          {products.map((product) => {
+                            const availableStock = getAvailableStock(product.id);
+                            const hasStockTracking = product.trackStock;
+                            const outOfStock = hasStockTracking && availableStock <= 0;
+
+                            return (
+                              <CommandItem
+                                key={product.id}
+                                value={product.name}
+                                onSelect={() => addProduct(product.id)}
+                                className="cursor-pointer"
+                                disabled={outOfStock}
+                              >
+                                <div className="flex items-center gap-3 w-full">
+                                  <div className="h-10 w-10 rounded-md overflow-hidden bg-muted flex-shrink-0">
+                                    {product.images && product.images.length > 0 ? (
+                                      <img
+                                        src={product.images[0]}
+                                        alt={product.name}
+                                        className="h-full w-full object-cover"
+                                      />
+                                    ) : (
+                                      <div className="h-full w-full flex items-center justify-center text-muted-foreground text-xs">
+                                        Sin img
+                                      </div>
+                                    )}
+                                  </div>
+                                  <div className="flex flex-col min-w-0 flex-1">
+                                    <span className="truncate">{product.name}</span>
+                                    <div className="flex items-center gap-2">
+                                      {product.salePrice ? (
+                                        <>
+                                          <span className="text-xs text-muted-foreground line-through">
+                                            Bs {product.price.toFixed(1)}
+                                          </span>
+                                          <span className="text-xs font-semibold text-foreground">
+                                            Bs {product.salePrice.toFixed(1)}
+                                          </span>
+                                        </>
+                                      ) : (
+                                        <span className="text-xs text-muted-foreground">
+                                          Bs {product.price.toFixed(1)}
+                                        </span>
+                                      )}
+                                      {hasStockTracking && (
+                                        <span className={`text-xs ${outOfStock ? 'text-destructive' : 'text-muted-foreground'}`}>
+                                          • Stock: {availableStock}
+                                        </span>
+                                      )}
+                                    </div>
+                                  </div>
+                                </div>
+                              </CommandItem>
+                            );
+                          })}
+                        </CommandGroup>
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
+              )}
+
+              {/* Mobile: Button + Dialog */}
+              {isMobile && (
+                <>
+                  <Button
+                    variant="outline"
+                    className="w-full justify-between"
+                    onClick={() => setProductSearchOpen(true)}
+                  >
                     <span className="text-muted-foreground">Agregar producto</span>
                     <ChevronDown className="h-4 w-4 text-muted-foreground" />
                   </Button>
-                </PopoverTrigger>
-                <PopoverContent
-                  className="w-[calc(100vw-2rem)] md:w-96 p-0 z-[200]"
-                  align="end"
-                  onWheel={(e) => e.stopPropagation()}
-                  onTouchMove={(e) => e.stopPropagation()}
-                >
-                  <Command>
-                    <CommandInput placeholder="Buscar producto..." />
-                    <CommandList className="max-h-[300px] overflow-y-auto">
-                      <CommandEmpty>No se encontraron productos.</CommandEmpty>
-                      <CommandGroup>
-                        {products.map((product) => {
-                          const availableStock = getAvailableStock(product.id);
-                          const hasStockTracking = product.trackStock;
-                          const outOfStock = hasStockTracking && availableStock <= 0;
 
-                          return (
-                            <CommandItem
-                              key={product.id}
-                              value={product.name}
-                              onSelect={() => addProduct(product.id)}
-                              className="cursor-pointer"
-                              disabled={outOfStock}
-                            >
-                              <div className="flex items-center gap-3 w-full">
-                                <div className="h-10 w-10 rounded-md overflow-hidden bg-muted flex-shrink-0">
-                                  {product.images && product.images.length > 0 ? (
-                                    <img
-                                      src={product.images[0]}
-                                      alt={product.name}
-                                      className="h-full w-full object-cover"
-                                    />
-                                  ) : (
-                                    <div className="h-full w-full flex items-center justify-center text-muted-foreground text-xs">
-                                      Sin img
+                  <Dialog open={productSearchOpen} onOpenChange={setProductSearchOpen}>
+                    <DialogContent
+                      className="p-0 gap-0 max-w-[calc(100vw-2rem)] max-h-[85vh] top-[5%] translate-y-0"
+                      overlayClassName="bg-black/70"
+                    >
+                      <Command className="rounded-lg">
+                        <div className="sticky top-0 bg-background z-10 border-b">
+                          <CommandInput
+                            placeholder="Buscar producto..."
+                            className="h-14 text-base"
+                          />
+                        </div>
+                        <CommandList className="max-h-[calc(85vh-3.5rem)] overflow-y-auto">
+                          <CommandEmpty>No se encontraron productos.</CommandEmpty>
+                          <CommandGroup>
+                            {products.map((product) => {
+                              const availableStock = getAvailableStock(product.id);
+                              const hasStockTracking = product.trackStock;
+                              const outOfStock = hasStockTracking && availableStock <= 0;
+
+                              return (
+                                <CommandItem
+                                  key={product.id}
+                                  value={product.name}
+                                  onSelect={() => addProduct(product.id)}
+                                  className="cursor-pointer py-4 px-4"
+                                  disabled={outOfStock}
+                                >
+                                  <div className="flex items-center gap-3 w-full">
+                                    <div className="h-12 w-12 rounded-md overflow-hidden bg-muted flex-shrink-0">
+                                      {product.images && product.images.length > 0 ? (
+                                        <img
+                                          src={product.images[0]}
+                                          alt={product.name}
+                                          className="h-full w-full object-cover"
+                                        />
+                                      ) : (
+                                        <div className="h-full w-full flex items-center justify-center text-muted-foreground text-xs">
+                                          Sin img
+                                        </div>
+                                      )}
                                     </div>
-                                  )}
-                                </div>
-                                <div className="flex flex-col min-w-0 flex-1">
-                                  <span className="truncate">{product.name}</span>
-                                  <div className="flex items-center gap-2">
-                                    {product.salePrice ? (
-                                      <>
-                                        <span className="text-xs text-muted-foreground line-through">
-                                          Bs {product.price.toFixed(1)}
-                                        </span>
-                                        <span className="text-xs font-semibold text-foreground">
-                                          Bs {product.salePrice.toFixed(1)}
-                                        </span>
-                                      </>
-                                    ) : (
-                                      <span className="text-xs text-muted-foreground">
-                                        Bs {product.price.toFixed(1)}
-                                      </span>
-                                    )}
-                                    {hasStockTracking && (
-                                      <span className={`text-xs ${outOfStock ? 'text-destructive' : 'text-muted-foreground'}`}>
-                                        • Stock: {availableStock}
-                                      </span>
-                                    )}
+                                    <div className="flex flex-col min-w-0 flex-1">
+                                      <span className="truncate font-medium">{product.name}</span>
+                                      <div className="flex items-center gap-2 mt-1">
+                                        {product.salePrice ? (
+                                          <>
+                                            <span className="text-sm text-muted-foreground line-through">
+                                              Bs {product.price.toFixed(1)}
+                                            </span>
+                                            <span className="text-sm font-semibold text-foreground">
+                                              Bs {product.salePrice.toFixed(1)}
+                                            </span>
+                                          </>
+                                        ) : (
+                                          <span className="text-sm text-muted-foreground">
+                                            Bs {product.price.toFixed(1)}
+                                          </span>
+                                        )}
+                                        {hasStockTracking && (
+                                          <span className={`text-sm ${outOfStock ? 'text-destructive' : 'text-muted-foreground'}`}>
+                                            • Stock: {availableStock}
+                                          </span>
+                                        )}
+                                      </div>
+                                    </div>
                                   </div>
-                                </div>
-                              </div>
-                            </CommandItem>
-                          );
-                        })}
-                      </CommandGroup>
-                    </CommandList>
-                  </Command>
-                </PopoverContent>
-              </Popover>
+                                </CommandItem>
+                              );
+                            })}
+                          </CommandGroup>
+                        </CommandList>
+                      </Command>
+                    </DialogContent>
+                  </Dialog>
+                </>
+              )}
             </div>
 
             <div className="space-y-2">
