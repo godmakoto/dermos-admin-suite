@@ -66,7 +66,8 @@ export const Sidebar = () => {
         {/* Navigation */}
         <nav className="flex-1 space-y-1 px-3 py-4">
           {navItems.map((item) => {
-            const isActive = location.pathname === item.path;
+            const isActive = location.pathname === item.path ||
+                            (item.path === "/products" && location.pathname === "/");
             return (
               <Link
                 key={item.path}
