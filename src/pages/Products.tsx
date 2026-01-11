@@ -299,6 +299,7 @@ const Products = () => {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-9 h-10"
+            autoComplete="off"
           />
         </div>
         
