@@ -32,7 +32,7 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 
 const Products = () => {
-  const { products, categories, brands, deleteProduct, duplicateProduct, updateProduct } = useApp();
+  const { products, categories, brands, deleteProduct, duplicateProduct, updateProduct, hideOutOfStock } = useApp();
   const { toast } = useToast();
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
@@ -83,6 +83,11 @@ const Products = () => {
 
   const filteredProducts = useMemo(() => {
     let result = [...products];
+
+    // Hide out of stock filter (from settings)
+    if (hideOutOfStock) {
+      result = result.filter((p) => p.stock > 0);
+    }
 
     // Search filter
     if (searchQuery) {
@@ -140,7 +145,7 @@ const Products = () => {
     }
 
     return result;
-  }, [products, searchQuery, categoryFilter, brandFilter, stockFilter, statusFilter, sortOrder]);
+  }, [products, searchQuery, categoryFilter, brandFilter, stockFilter, statusFilter, sortOrder, hideOutOfStock]);
 
   const handleEdit = (product: Product) => {
     setSelectedProduct(product);

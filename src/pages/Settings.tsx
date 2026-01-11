@@ -55,6 +55,8 @@ const Settings = () => {
     importProducts,
     isDarkMode,
     toggleDarkMode,
+    hideOutOfStock,
+    toggleHideOutOfStock,
   } = useApp();
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -612,7 +614,7 @@ const Settings = () => {
               <CardTitle>Apariencia</CardTitle>
               <CardDescription>Personaliza la apariencia del panel</CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="space-y-6">
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
                   <Label htmlFor="dark-mode">Modo Oscuro</Label>
@@ -624,6 +626,20 @@ const Settings = () => {
                   id="dark-mode"
                   checked={isDarkMode}
                   onCheckedChange={toggleDarkMode}
+                />
+              </div>
+
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label htmlFor="hide-out-of-stock">Ocultar productos sin stock</Label>
+                  <p className="text-sm text-muted-foreground">
+                    Los productos sin stock no se mostrarán en la lista de productos
+                  </p>
+                </div>
+                <Switch
+                  id="hide-out-of-stock"
+                  checked={hideOutOfStock}
+                  onCheckedChange={toggleHideOutOfStock}
                 />
               </div>
             </CardContent>
