@@ -469,7 +469,7 @@ export const OrderModal = ({ open, onClose, order, onOrderSaved }: OrderModalPro
 
                   <Dialog open={productSearchOpen} onOpenChange={setProductSearchOpen}>
                     <DialogContent
-                      className="p-0 gap-0 w-[calc(100vw-2rem)] fixed top-4 bottom-4 left-1/2 -translate-x-1/2 translate-y-0 rounded-2xl overflow-hidden"
+                      className="p-0 gap-0 w-[calc(100vw-2rem)] max-w-md mx-auto h-[85vh] max-h-[600px] rounded-2xl overflow-hidden"
                       overlayClassName="bg-black/70"
                       hideCloseButton={false}
                     >
