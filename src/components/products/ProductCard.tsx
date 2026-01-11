@@ -97,10 +97,9 @@ export const ProductCard = ({
     setDeleteDialogOpen(false);
   };
 
-  // Chips: combine categories and subcategories, max 2 visible
-  const allChips = [...product.categories, ...product.subcategories];
-  const visibleChips = allChips.slice(0, 2);
-  const extraChipsCount = allChips.length - 2;
+  // Chips: only show categories, max 2 visible
+  const visibleChips = product.categories.slice(0, 2);
+  const extraChipsCount = product.categories.length - 2;
 
   const handleCardClick = () => {
     if (isLongPress.current) {
