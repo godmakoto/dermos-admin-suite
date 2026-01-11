@@ -469,19 +469,22 @@ export const OrderModal = ({ open, onClose, order, onOrderSaved }: OrderModalPro
 
                   <Dialog open={productSearchOpen} onOpenChange={setProductSearchOpen}>
                     <DialogContent
-                      className="p-0 gap-0 max-w-[calc(100vw-2rem)] max-h-[85vh] top-[5%] translate-y-0"
+                      className="p-0 gap-0 max-w-[calc(100vw-2rem)] max-h-[85vh] top-[5%] translate-y-0 rounded-2xl overflow-hidden"
                       overlayClassName="bg-black/70"
+                      hideCloseButton={false}
                     >
-                      <Command className="rounded-lg">
-                        <div className="sticky top-0 bg-background z-10 border-b">
+                      <Command className="rounded-2xl border-0">
+                        <div className="sticky top-0 bg-background z-10 border-b px-2 pt-4 pb-3">
                           <CommandInput
                             placeholder="Buscar producto..."
-                            className="h-14 text-base"
+                            className="h-12 text-base border-0 focus-visible:ring-0"
                           />
                         </div>
-                        <CommandList className="max-h-[calc(85vh-3.5rem)] overflow-y-auto">
-                          <CommandEmpty>No se encontraron productos.</CommandEmpty>
-                          <CommandGroup>
+                        <CommandList className="max-h-[calc(85vh-5rem)] overflow-y-auto px-2 pb-2">
+                          <CommandEmpty className="py-8 text-center text-muted-foreground">
+                            No se encontraron productos.
+                          </CommandEmpty>
+                          <CommandGroup className="[&_[cmdk-group-heading]]:hidden">
                             {products.map((product) => {
                               const availableStock = getAvailableStock(product.id);
                               const hasStockTracking = product.trackStock;
@@ -492,11 +495,11 @@ export const OrderModal = ({ open, onClose, order, onOrderSaved }: OrderModalPro
                                   key={product.id}
                                   value={product.name}
                                   onSelect={() => addProduct(product.id)}
-                                  className="cursor-pointer py-4 px-4"
+                                  className="cursor-pointer py-3 px-3 mb-2 rounded-xl data-[selected=true]:bg-accent"
                                   disabled={outOfStock}
                                 >
                                   <div className="flex items-center gap-3 w-full">
-                                    <div className="h-12 w-12 rounded-md overflow-hidden bg-muted flex-shrink-0">
+                                    <div className="h-14 w-14 rounded-xl overflow-hidden bg-muted flex-shrink-0 border">
                                       {product.images && product.images.length > 0 ? (
                                         <img
                                           src={product.images[0]}
@@ -510,8 +513,8 @@ export const OrderModal = ({ open, onClose, order, onOrderSaved }: OrderModalPro
                                       )}
                                     </div>
                                     <div className="flex flex-col min-w-0 flex-1">
-                                      <span className="truncate font-medium">{product.name}</span>
-                                      <div className="flex items-center gap-2 mt-1">
+                                      <span className="truncate font-medium text-base">{product.name}</span>
+                                      <div className="flex items-center gap-2 mt-1.5">
                                         {product.salePrice ? (
                                           <>
                                             <span className="text-sm text-muted-foreground line-through">
@@ -527,7 +530,7 @@ export const OrderModal = ({ open, onClose, order, onOrderSaved }: OrderModalPro
                                           </span>
                                         )}
                                         {hasStockTracking && (
-                                          <span className={`text-sm ${outOfStock ? 'text-destructive' : 'text-muted-foreground'}`}>
+                                          <span className={`text-sm ${outOfStock ? 'text-destructive font-medium' : 'text-muted-foreground'}`}>
                                             • Stock: {availableStock}
                                           </span>
                                         )}
