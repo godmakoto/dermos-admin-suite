@@ -469,18 +469,18 @@ export const OrderModal = ({ open, onClose, order, onOrderSaved }: OrderModalPro
 
                   <Dialog open={productSearchOpen} onOpenChange={setProductSearchOpen}>
                     <DialogContent
-                      className="p-0 gap-0 max-w-[calc(100vw-2rem)] h-[90vh] max-h-[90vh] top-[50%] translate-y-[-50%] rounded-2xl overflow-hidden"
+                      className="p-0 gap-0 w-[calc(100vw-2rem)] fixed top-4 bottom-4 left-1/2 -translate-x-1/2 translate-y-0 rounded-2xl overflow-hidden"
                       overlayClassName="bg-black/70"
                       hideCloseButton={false}
                     >
                       <Command className="rounded-2xl border-0 h-full flex flex-col">
-                        <div className="flex-none bg-background z-10 border-b px-2 pt-4 pb-3">
+                        <div className="flex-shrink-0 bg-background z-10 border-b px-2 pt-4 pb-3">
                           <CommandInput
                             placeholder="Buscar producto..."
                             className="h-12 text-base border-0 focus-visible:ring-0"
                           />
                         </div>
-                        <CommandList className="flex-1 overflow-y-auto px-2 pb-2">
+                        <CommandList className="flex-1 overflow-y-auto px-2 pb-2 min-h-0">
                           <CommandEmpty className="py-8 text-center text-muted-foreground">
                             No se encontraron productos.
                           </CommandEmpty>
