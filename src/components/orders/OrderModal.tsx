@@ -102,6 +102,26 @@ export const OrderModal = ({ open, onClose, order, onOrderSaved }: OrderModalPro
     }
   }, [open, order?.id]);
 
+  // Ajusta el alto del dialog en móvil cuando aparece el teclado (VisualViewport)
+  useEffect(() => {
+    if (!productSearchOpen || !isMobile) return;
+
+    const vv = window.visualViewport;
+    const setVh = () => {
+      const height = vv?.height ?? window.innerHeight;
+      document.documentElement.style.setProperty("--dialog-vh", `${Math.round(height)}px`);
+    };
+
+    setVh();
+    vv?.addEventListener("resize", setVh);
+    vv?.addEventListener("scroll", setVh);
+
+    return () => {
+      vv?.removeEventListener("resize", setVh);
+      vv?.removeEventListener("scroll", setVh);
+      document.documentElement.style.removeProperty("--dialog-vh");
+    };
+  }, [productSearchOpen, isMobile]);
   const calculateSubtotal = () => {
     // Subtotal usando precios originales (sin descuentos)
     return formData.items.reduce((sum, item) => {
@@ -469,7 +489,7 @@ export const OrderModal = ({ open, onClose, order, onOrderSaved }: OrderModalPro
 
                   <Dialog open={productSearchOpen} onOpenChange={setProductSearchOpen}>
                     <DialogContent
-                      className="p-0 gap-0 w-[calc(100vw-2rem)] max-w-md mx-auto h-[85vh] max-h-[600px] rounded-2xl overflow-hidden"
+                      className="p-0 gap-0 overflow-hidden left-0 top-0 translate-x-0 translate-y-0 w-screen h-[var(--dialog-vh,100dvh)] max-w-none rounded-none border-0 overscroll-contain sm:left-[50%] sm:top-[50%] sm:translate-x-[-50%] sm:translate-y-[-50%] sm:w-[calc(100vw-2rem)] sm:max-w-md sm:h-[85vh] sm:max-h-[600px] sm:rounded-2xl sm:border"
                       overlayClassName="bg-black/70"
                       hideCloseButton={false}
                     >
