@@ -207,11 +207,7 @@ const Settings = () => {
           </TabsTrigger>
           <TabsTrigger value="brands" className="gap-2">
             <Bookmark className="h-4 w-4" />
-            <span className="hidden sm:inline">Marcas</span>
-          </TabsTrigger>
-          <TabsTrigger value="labels" className="gap-2">
-            <Tag className="h-4 w-4" />
-            <span className="hidden sm:inline">Propiedades</span>
+            <span className="hidden sm:inline">Marcas y Propiedades</span>
           </TabsTrigger>
           <TabsTrigger value="statuses" className="gap-2">
             <Flag className="h-4 w-4" />
@@ -337,8 +333,8 @@ const Settings = () => {
           </Card>
         </TabsContent>
 
-        {/* Brands */}
-        <TabsContent value="brands">
+        {/* Brands & Labels */}
+        <TabsContent value="brands" className="space-y-6">
           <Card>
             <CardHeader>
               <CardTitle>Marcas</CardTitle>
@@ -374,10 +370,7 @@ const Settings = () => {
               </div>
             </CardContent>
           </Card>
-        </TabsContent>
 
-        {/* Labels */}
-        <TabsContent value="labels">
           <Card>
             <CardHeader>
               <CardTitle>Propiedades</CardTitle>
