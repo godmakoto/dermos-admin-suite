@@ -28,7 +28,7 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
-import { X, Plus, Minus, ChevronDown, Search, MessageCircle, XCircle } from "lucide-react";
+import { X, Plus, Minus, ChevronDown, Search, MessageCircle } from "lucide-react";
 import { Order, OrderItem } from "@/types";
 import { useApp } from "@/contexts/AppContext";
 import { useToast } from "@/hooks/use-toast";
@@ -508,51 +508,41 @@ export const OrderModal = ({ open, onClose, order, onOrderSaved }: OrderModalPro
                     >
                       <div className="flex flex-col h-full bg-background">
                         {/* Fixed Header with Search */}
-                        <div className="flex-shrink-0 sticky top-0 z-20 bg-background border-b shadow-sm">
-                          <div className="flex items-center gap-3 px-3 py-3">
-                            {/* Search Input - Pill Style */}
+                        <div className="flex-shrink-0 sticky top-0 z-20 bg-background border-b">
+                          <div className="flex items-center gap-3 px-4 py-4">
+                            {/* Search Input */}
                             <div className="flex-1 relative">
-                              <div className="flex items-center h-[52px] w-full rounded-full bg-muted/60 border border-border/80 shadow-sm px-4 gap-3">
-                                <Search className="h-5 w-5 text-muted-foreground/70 flex-shrink-0" />
+                              <div className="flex items-center h-12 w-full rounded-lg bg-background border border-border px-3 gap-3">
+                                <Search className="h-4 w-4 text-muted-foreground flex-shrink-0" />
                                 <input
                                   type="text"
                                   placeholder="Buscar producto..."
                                   value={mobileSearchQuery}
                                   onChange={(e) => setMobileSearchQuery(e.target.value)}
                                   autoFocus
-                                  autoComplete="off"
+                                  autoComplete="chrome-off"
                                   autoCorrect="off"
                                   autoCapitalize="off"
                                   spellCheck={false}
                                   data-form-type="other"
-                                  className="flex-1 h-full bg-transparent text-base outline-none placeholder:text-muted-foreground/60"
+                                  className="flex-1 h-full bg-transparent text-base outline-none placeholder:text-muted-foreground"
                                 />
-                                {mobileSearchQuery && (
-                                  <button
-                                    type="button"
-                                    onClick={() => setMobileSearchQuery("")}
-                                    className="flex-shrink-0 p-1 rounded-full hover:bg-muted transition-colors"
-                                    aria-label="Limpiar búsqueda"
-                                  >
-                                    <XCircle className="h-5 w-5 text-muted-foreground" />
-                                  </button>
-                                )}
                               </div>
                             </div>
                             {/* Close Button */}
                             <button
                               type="button"
                               onClick={() => setProductSearchOpen(false)}
-                              className="flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-secondary hover:bg-secondary/80 transition-colors"
+                              className="flex-shrink-0 flex items-center justify-center h-10 w-10 rounded-lg hover:bg-accent transition-colors"
                               aria-label="Cerrar"
                             >
-                              <X className="h-6 w-6 text-foreground" />
+                              <X className="h-5 w-5 text-foreground" />
                             </button>
                           </div>
                         </div>
 
                         {/* Scrollable Product List */}
-                        <div className="flex-1 overflow-y-auto overscroll-contain px-3 py-3">
+                        <div className="flex-1 overflow-y-auto overscroll-contain px-4 py-3">
                           {(() => {
                             const filteredProducts = products.filter((product) =>
                               product.name.toLowerCase().includes(mobileSearchQuery.toLowerCase())
@@ -567,7 +557,7 @@ export const OrderModal = ({ open, onClose, order, onOrderSaved }: OrderModalPro
                             }
 
                             return (
-                              <div className="space-y-2">
+                              <div className="space-y-2.5">
                                 {filteredProducts.map((product) => {
                                   const availableStock = getAvailableStock(product.id);
                                   const hasStockTracking = product.trackStock;
@@ -579,13 +569,13 @@ export const OrderModal = ({ open, onClose, order, onOrderSaved }: OrderModalPro
                                       type="button"
                                       onClick={() => !outOfStock && addProduct(product.id)}
                                       disabled={outOfStock}
-                                      className={`w-full flex items-center gap-3 p-3 rounded-xl border transition-colors text-left ${
+                                      className={`w-full flex items-center gap-3 p-3.5 rounded-lg border transition-colors text-left ${
                                         outOfStock
                                           ? 'opacity-50 cursor-not-allowed bg-muted/30'
                                           : 'bg-card hover:bg-accent active:bg-accent border-border'
                                       }`}
                                     >
-                                      <div className="h-14 w-14 rounded-xl overflow-hidden bg-muted flex-shrink-0 border">
+                                      <div className="h-14 w-14 rounded-lg overflow-hidden bg-muted flex-shrink-0 border">
                                         {product.images && product.images.length > 0 ? (
                                           <img
                                             src={product.images[0]}
@@ -600,7 +590,7 @@ export const OrderModal = ({ open, onClose, order, onOrderSaved }: OrderModalPro
                                       </div>
                                       <div className="flex flex-col min-w-0 flex-1">
                                         <span className="truncate font-medium text-base">{product.name}</span>
-                                        <div className="flex items-center gap-2 mt-1.5">
+                                        <div className="flex items-center gap-2 mt-1">
                                           {product.salePrice ? (
                                             <>
                                               <span className="text-sm text-muted-foreground line-through">
