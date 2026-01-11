@@ -240,10 +240,10 @@ const Products = () => {
         {/* Total */}
         <button
           onClick={() => setStockFilter("all")}
-          className={`flex items-center justify-between gap-2 px-3 py-2.5 rounded-lg text-sm transition-all ${
+          className={`flex items-center justify-between gap-2 px-3 py-2.5 rounded-lg text-sm transition-all border-2 ${
             stockFilter === "all"
-              ? "bg-secondary ring-2 ring-foreground/20"
-              : "bg-secondary/50 hover:bg-secondary"
+              ? "bg-secondary border-secondary"
+              : "bg-secondary/50 border-secondary/50 hover:bg-secondary hover:border-secondary"
           }`}
         >
           <span className="text-muted-foreground font-medium">Total</span>
