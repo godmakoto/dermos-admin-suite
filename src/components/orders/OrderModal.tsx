@@ -480,7 +480,7 @@ export const OrderModal = ({ open, onClose, order, onOrderSaved }: OrderModalPro
                             className="h-12 text-base border-0 focus-visible:ring-0"
                           />
                         </div>
-                        <CommandList className="flex-1 overflow-y-auto px-2 pb-2 min-h-0">
+                        <CommandList className="flex-1 overflow-y-auto px-2 pb-2 min-h-0 max-h-none">
                           <CommandEmpty className="py-8 text-center text-muted-foreground">
                             No se encontraron productos.
                           </CommandEmpty>
