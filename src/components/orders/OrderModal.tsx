@@ -28,7 +28,7 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
-import { X, Plus, Minus, ChevronDown, Search, MessageCircle } from "lucide-react";
+import { X, Plus, Minus, ChevronDown, Search, MessageCircle, XCircle } from "lucide-react";
 import { Order, OrderItem } from "@/types";
 import { useApp } from "@/contexts/AppContext";
 import { useToast } from "@/hooks/use-toast";
@@ -55,6 +55,7 @@ export const OrderModal = ({ open, onClose, order, onOrderSaved }: OrderModalPro
   });
   const [productSearchOpen, setProductSearchOpen] = useState(false);
   const [justSaved, setJustSaved] = useState(false);
+  const [mobileSearchQuery, setMobileSearchQuery] = useState("");
 
   const prevOpenRef = useRef(false);
   const currentOrderIdRef = useRef<string | null>(null);
@@ -487,92 +488,148 @@ export const OrderModal = ({ open, onClose, order, onOrderSaved }: OrderModalPro
                   <Button
                     variant="outline"
                     className="w-full justify-between"
-                    onClick={() => setProductSearchOpen(true)}
+                    onClick={() => {
+                      setMobileSearchQuery("");
+                      setProductSearchOpen(true);
+                    }}
                   >
                     <span className="text-muted-foreground">Agregar producto</span>
                     <ChevronDown className="h-4 w-4 text-muted-foreground" />
                   </Button>
 
-                  <Dialog open={productSearchOpen} onOpenChange={setProductSearchOpen}>
+                  <Dialog open={productSearchOpen} onOpenChange={(open) => {
+                    if (!open) setMobileSearchQuery("");
+                    setProductSearchOpen(open);
+                  }}>
                     <DialogContent
-                      className="p-0 gap-0 overflow-hidden left-0 top-0 translate-x-0 translate-y-0 w-screen h-[var(--dialog-vh,100dvh)] max-w-none rounded-none border-0 overscroll-contain sm:left-[50%] sm:top-[50%] sm:translate-x-[-50%] sm:translate-y-[-50%] sm:w-[calc(100vw-2rem)] sm:max-w-md sm:h-[85vh] sm:max-h-[600px] sm:rounded-2xl sm:border"
-                      overlayClassName="bg-black/70"
-                      hideCloseButton={false}
+                      className="p-0 gap-0 overflow-hidden left-0 top-0 translate-x-0 translate-y-0 w-screen h-[var(--dialog-vh,100dvh)] max-w-none rounded-none border-0 overscroll-contain"
+                      overlayClassName="bg-black/80"
+                      hideCloseButton
                     >
-                      <Command className="rounded-2xl border-0 h-full flex flex-col">
-                        <div className="flex-shrink-0 bg-background z-10 border-b px-2 pt-4 pb-3">
-                          <CommandInput
-                            placeholder="Buscar producto..."
-                            className="h-12 text-base border-0 focus-visible:ring-0"
-                            autoComplete="chrome-off"
-                            autoCorrect="off"
-                            autoCapitalize="off"
-                            data-form-type="other"
-                          />
+                      <div className="flex flex-col h-full bg-background">
+                        {/* Fixed Header with Search */}
+                        <div className="flex-shrink-0 sticky top-0 z-20 bg-background border-b shadow-sm">
+                          <div className="flex items-center gap-3 px-3 py-3">
+                            {/* Search Input - Pill Style */}
+                            <div className="flex-1 relative">
+                              <div className="flex items-center h-[52px] w-full rounded-full bg-muted/60 border border-border/80 shadow-sm px-4 gap-3">
+                                <Search className="h-5 w-5 text-muted-foreground/70 flex-shrink-0" />
+                                <input
+                                  type="text"
+                                  placeholder="Buscar producto..."
+                                  value={mobileSearchQuery}
+                                  onChange={(e) => setMobileSearchQuery(e.target.value)}
+                                  autoFocus
+                                  autoComplete="off"
+                                  autoCorrect="off"
+                                  autoCapitalize="off"
+                                  spellCheck={false}
+                                  data-form-type="other"
+                                  className="flex-1 h-full bg-transparent text-base outline-none placeholder:text-muted-foreground/60"
+                                />
+                                {mobileSearchQuery && (
+                                  <button
+                                    type="button"
+                                    onClick={() => setMobileSearchQuery("")}
+                                    className="flex-shrink-0 p-1 rounded-full hover:bg-muted transition-colors"
+                                    aria-label="Limpiar búsqueda"
+                                  >
+                                    <XCircle className="h-5 w-5 text-muted-foreground" />
+                                  </button>
+                                )}
+                              </div>
+                            </div>
+                            {/* Close Button */}
+                            <button
+                              type="button"
+                              onClick={() => setProductSearchOpen(false)}
+                              className="flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-secondary hover:bg-secondary/80 transition-colors"
+                              aria-label="Cerrar"
+                            >
+                              <X className="h-6 w-6 text-foreground" />
+                            </button>
+                          </div>
                         </div>
-                        <CommandList className="flex-1 overflow-y-auto px-2 pb-2 min-h-0 max-h-none">
-                          <CommandEmpty className="py-8 text-center text-muted-foreground">
-                            No se encontraron productos.
-                          </CommandEmpty>
-                          <CommandGroup className="[&_[cmdk-group-heading]]:hidden">
-                            {products.map((product) => {
-                              const availableStock = getAvailableStock(product.id);
-                              const hasStockTracking = product.trackStock;
-                              const outOfStock = hasStockTracking && availableStock <= 0;
 
+                        {/* Scrollable Product List */}
+                        <div className="flex-1 overflow-y-auto overscroll-contain px-3 py-3">
+                          {(() => {
+                            const filteredProducts = products.filter((product) =>
+                              product.name.toLowerCase().includes(mobileSearchQuery.toLowerCase())
+                            );
+
+                            if (filteredProducts.length === 0) {
                               return (
-                                <CommandItem
-                                  key={product.id}
-                                  value={product.name}
-                                  onSelect={() => addProduct(product.id)}
-                                  className="cursor-pointer py-3 px-3 mb-2 rounded-xl data-[selected=true]:bg-accent"
-                                  disabled={outOfStock}
-                                >
-                                  <div className="flex items-center gap-3 w-full">
-                                    <div className="h-14 w-14 rounded-xl overflow-hidden bg-muted flex-shrink-0 border">
-                                      {product.images && product.images.length > 0 ? (
-                                        <img
-                                          src={product.images[0]}
-                                          alt={product.name}
-                                          className="h-full w-full object-cover"
-                                        />
-                                      ) : (
-                                        <div className="h-full w-full flex items-center justify-center text-muted-foreground text-xs">
-                                          Sin img
-                                        </div>
-                                      )}
-                                    </div>
-                                    <div className="flex flex-col min-w-0 flex-1">
-                                      <span className="truncate font-medium text-base">{product.name}</span>
-                                      <div className="flex items-center gap-2 mt-1.5">
-                                        {product.salePrice ? (
-                                          <>
-                                            <span className="text-sm text-muted-foreground line-through">
-                                              Bs {product.price.toFixed(1)}
-                                            </span>
-                                            <span className="text-sm font-semibold text-foreground">
-                                              Bs {product.salePrice.toFixed(1)}
-                                            </span>
-                                          </>
+                                <div className="py-12 text-center text-muted-foreground">
+                                  No se encontraron productos.
+                                </div>
+                              );
+                            }
+
+                            return (
+                              <div className="space-y-2">
+                                {filteredProducts.map((product) => {
+                                  const availableStock = getAvailableStock(product.id);
+                                  const hasStockTracking = product.trackStock;
+                                  const outOfStock = hasStockTracking && availableStock <= 0;
+
+                                  return (
+                                    <button
+                                      key={product.id}
+                                      type="button"
+                                      onClick={() => !outOfStock && addProduct(product.id)}
+                                      disabled={outOfStock}
+                                      className={`w-full flex items-center gap-3 p-3 rounded-xl border transition-colors text-left ${
+                                        outOfStock
+                                          ? 'opacity-50 cursor-not-allowed bg-muted/30'
+                                          : 'bg-card hover:bg-accent active:bg-accent border-border'
+                                      }`}
+                                    >
+                                      <div className="h-14 w-14 rounded-xl overflow-hidden bg-muted flex-shrink-0 border">
+                                        {product.images && product.images.length > 0 ? (
+                                          <img
+                                            src={product.images[0]}
+                                            alt={product.name}
+                                            className="h-full w-full object-cover"
+                                          />
                                         ) : (
-                                          <span className="text-sm text-muted-foreground">
-                                            Bs {product.price.toFixed(1)}
-                                          </span>
-                                        )}
-                                        {hasStockTracking && (
-                                          <span className={`text-sm ${outOfStock ? 'text-destructive font-medium' : 'text-muted-foreground'}`}>
-                                            • Stock: {availableStock}
-                                          </span>
+                                          <div className="h-full w-full flex items-center justify-center text-muted-foreground text-xs">
+                                            Sin img
+                                          </div>
                                         )}
                                       </div>
-                                    </div>
-                                  </div>
-                                </CommandItem>
-                              );
-                            })}
-                          </CommandGroup>
-                        </CommandList>
-                      </Command>
+                                      <div className="flex flex-col min-w-0 flex-1">
+                                        <span className="truncate font-medium text-base">{product.name}</span>
+                                        <div className="flex items-center gap-2 mt-1.5">
+                                          {product.salePrice ? (
+                                            <>
+                                              <span className="text-sm text-muted-foreground line-through">
+                                                Bs {product.price.toFixed(1)}
+                                              </span>
+                                              <span className="text-sm font-semibold text-foreground">
+                                                Bs {product.salePrice.toFixed(1)}
+                                              </span>
+                                            </>
+                                          ) : (
+                                            <span className="text-sm text-muted-foreground">
+                                              Bs {product.price.toFixed(1)}
+                                            </span>
+                                          )}
+                                          {hasStockTracking && (
+                                            <span className={`text-sm ${outOfStock ? 'text-destructive font-medium' : 'text-muted-foreground'}`}>
+                                              • Stock: {availableStock}
+                                            </span>
+                                          )}
+                                        </div>
+                                      </div>
+                                    </button>
+                                  );
+                                })}
+                              </div>
+                            );
+                          })()}
+                        </div>
+                      </div>
                     </DialogContent>
                   </Dialog>
                 </>
