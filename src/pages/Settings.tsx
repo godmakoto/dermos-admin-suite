@@ -202,26 +202,26 @@ const Settings = () => {
       />
 
       <Tabs defaultValue="categories" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-6">
-          <TabsTrigger value="categories" className="gap-2">
+        <TabsList className="grid w-full grid-cols-5 lg:grid-cols-5">
+          <TabsTrigger value="categories" className="gap-2 flex-1 justify-center">
             <Layers className="h-4 w-4" />
-            <span className="hidden sm:inline">Categorías</span>
+            <span className="hidden lg:inline">Categorías</span>
           </TabsTrigger>
-          <TabsTrigger value="brands" className="gap-2">
+          <TabsTrigger value="brands" className="gap-2 flex-1 justify-center">
             <Bookmark className="h-4 w-4" />
-            <span className="hidden sm:inline">Marcas y Propiedades</span>
+            <span className="hidden lg:inline">Marcas y Propiedades</span>
           </TabsTrigger>
-          <TabsTrigger value="statuses" className="gap-2">
+          <TabsTrigger value="statuses" className="gap-2 flex-1 justify-center">
             <Flag className="h-4 w-4" />
-            <span className="hidden sm:inline">Estados</span>
+            <span className="hidden lg:inline">Estados</span>
           </TabsTrigger>
-          <TabsTrigger value="data" className="gap-2">
+          <TabsTrigger value="data" className="gap-2 flex-1 justify-center">
             <Database className="h-4 w-4" />
-            <span className="hidden sm:inline">Datos</span>
+            <span className="hidden lg:inline">Datos</span>
           </TabsTrigger>
-          <TabsTrigger value="appearance" className="gap-2">
+          <TabsTrigger value="appearance" className="gap-2 flex-1 justify-center">
             <Moon className="h-4 w-4" />
-            <span className="hidden sm:inline">Apariencia</span>
+            <span className="hidden lg:inline">Apariencia</span>
           </TabsTrigger>
         </TabsList>
 
