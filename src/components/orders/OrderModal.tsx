@@ -409,7 +409,7 @@ export const OrderModal = ({ open, onClose, order, onOrderSaved }: OrderModalPro
                     onTouchMove={(e) => e.stopPropagation()}
                   >
                     <Command>
-                      <CommandInput placeholder="Buscar producto..." />
+                      <CommandInput placeholder="Buscar producto..." autoComplete="off" />
                       <CommandList className="max-h-[300px] overflow-y-auto">
                         <CommandEmpty>No se encontraron productos.</CommandEmpty>
                         <CommandGroup>
@@ -498,6 +498,7 @@ export const OrderModal = ({ open, onClose, order, onOrderSaved }: OrderModalPro
                           <CommandInput
                             placeholder="Buscar producto..."
                             className="h-12 text-base border-0 focus-visible:ring-0"
+                            autoComplete="off"
                           />
                         </div>
                         <CommandList className="flex-1 overflow-y-auto px-2 pb-2 min-h-0 max-h-none">
