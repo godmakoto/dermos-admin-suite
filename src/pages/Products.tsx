@@ -157,16 +157,32 @@ const Products = () => {
     setModalOpen(true);
   };
 
-  const handleDelete = (id: string, e: React.MouseEvent) => {
+  const handleDelete = async (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    deleteProduct(id);
-    toast({ title: "Producto eliminado", description: "El producto se ha eliminado correctamente." });
+    try {
+      await deleteProduct(id);
+      toast({ title: "Producto eliminado", description: "El producto se ha eliminado correctamente." });
+    } catch (error) {
+      toast({ 
+        title: "Error", 
+        description: "No se pudo eliminar el producto.",
+        variant: "destructive"
+      });
+    }
   };
 
-  const handleDuplicate = (id: string, e: React.MouseEvent) => {
+  const handleDuplicate = async (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    duplicateProduct(id);
-    toast({ title: "Producto duplicado", description: "Se ha creado una copia del producto." });
+    try {
+      await duplicateProduct(id);
+      toast({ title: "Producto duplicado", description: "Se ha creado una copia del producto." });
+    } catch (error) {
+      toast({ 
+        title: "Error", 
+        description: "No se pudo duplicar el producto.",
+        variant: "destructive"
+      });
+    }
   };
 
   // Multi-selection handlers
@@ -193,10 +209,11 @@ const Products = () => {
     setBulkEditModalOpen(true);
   };
 
-  const handleApplyBulkEdit = () => {
+  const handleApplyBulkEdit = async () => {
     let updatedCount = 0;
+    const errors: string[] = [];
 
-    selectedProducts.forEach(productId => {
+    for (const productId of selectedProducts) {
       const product = products.find(p => p.id === productId);
       if (product) {
         const updates: Partial<Product> = {};
@@ -206,20 +223,32 @@ const Products = () => {
         }
 
         if (Object.keys(updates).length > 0) {
-          updateProduct({ ...product, ...updates });
-          updatedCount++;
+          try {
+            await updateProduct({ ...product, ...updates });
+            updatedCount++;
+          } catch (error) {
+            errors.push(product.name);
+          }
         }
       }
-    });
+    }
 
     setBulkEditModalOpen(false);
     setSelectedProducts([]);
     setBulkEditData({ brand: "" });
 
-    toast({
-      title: "Productos actualizados",
-      description: `${updatedCount} ${updatedCount === 1 ? 'producto actualizado' : 'productos actualizados'} correctamente.`,
-    });
+    if (errors.length > 0) {
+      toast({
+        title: "Algunos productos no se actualizaron",
+        description: `${updatedCount} actualizados, ${errors.length} fallidos.`,
+        variant: "destructive"
+      });
+    } else {
+      toast({
+        title: "Productos actualizados",
+        description: `${updatedCount} ${updatedCount === 1 ? 'producto actualizado' : 'productos actualizados'} correctamente.`,
+      });
+    }
   };
 
   // Stock summary

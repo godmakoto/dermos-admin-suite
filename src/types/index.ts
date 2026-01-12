@@ -1,5 +1,23 @@
 export type ProductStatus = "Activo" | "Inactivo" | "Agotado";
 
+// Supabase database schema for products table
+export interface SupabaseProduct {
+  id: string; // UUID
+  product_id: string; // product code
+  title: string;
+  offer_price: number | null;
+  regular_price: number;
+  long_description: string;
+  image_1: string;
+  image_2: string | null;
+  image_3: string | null;
+  image_4: string | null;
+  image_5: string | null;
+  image_6: string | null;
+  image_7: string | null;
+  created_at: string; // ISO timestamp
+}
+
 export interface Product {
   id: string;
   name: string;
