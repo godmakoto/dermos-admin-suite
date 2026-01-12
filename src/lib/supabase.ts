@@ -4,9 +4,12 @@ import { createClient, SupabaseClient } from '@supabase/supabase-js';
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
 
+// Error message for missing Supabase configuration
+const SUPABASE_NOT_CONFIGURED_ERROR = 'Supabase no está configurado. Agrega VITE_SUPABASE_URL y VITE_SUPABASE_ANON_KEY a tu archivo .env';
+
 // Only create the client if both URL and key are provided
 export const supabase: SupabaseClient | null = 
-  supabaseUrl && supabaseAnonKey 
+  supabaseUrl.trim() && supabaseAnonKey.trim() 
     ? createClient(supabaseUrl, supabaseAnonKey) 
     : null;
 
@@ -28,7 +31,7 @@ export async function uploadImage(
   bucket: string = 'product-images'
 ): Promise<string> {
   if (!supabase) {
-    throw new Error('Supabase no está configurado. Agrega VITE_SUPABASE_URL y VITE_SUPABASE_ANON_KEY a tu archivo .env');
+    throw new Error(SUPABASE_NOT_CONFIGURED_ERROR);
   }
   
   try {
@@ -71,7 +74,7 @@ export async function deleteImage(
   bucket: string = 'product-images'
 ): Promise<void> {
   if (!supabase) {
-    throw new Error('Supabase no está configurado. Agrega VITE_SUPABASE_URL y VITE_SUPABASE_ANON_KEY a tu archivo .env');
+    throw new Error(SUPABASE_NOT_CONFIGURED_ERROR);
   }
   
   try {
