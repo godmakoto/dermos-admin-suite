@@ -295,12 +295,14 @@ export const ProductCard = ({
               </p>
             )}
           </div>
-          <Badge
-            variant="outline"
-            className={`flex-shrink-0 rounded-lg text-xs border px-2.5 py-1 font-normal whitespace-nowrap ${stockLevel.color}`}
-          >
-            {product.stock} • {stockLevel.label}
-          </Badge>
+          {product.trackStock && (
+            <Badge
+              variant="outline"
+              className={`flex-shrink-0 rounded-lg text-xs border px-2.5 py-1 font-normal whitespace-nowrap ${stockLevel.color}`}
+            >
+              {product.stock} • {stockLevel.label}
+            </Badge>
+          )}
         </div>
       </div>
     </div>

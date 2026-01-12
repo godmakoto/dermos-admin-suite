@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef, useCallback, useEffect } from "react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
@@ -53,6 +53,10 @@ const Products = () => {
   const [statusFilter, setStatusFilter] = useState("all");
   const [sortOrder, setSortOrder] = useState("default");
 
+  // Infinite scroll states
+  const [displayedCount, setDisplayedCount] = useState(20); // Show 20 products initially
+  const observerTarget = useRef<HTMLDivElement>(null);
+
   const isSelectionMode = selectedProducts.length > 0;
 
   // Handlers that close the popover after changing filter
@@ -84,9 +88,9 @@ const Products = () => {
   const filteredProducts = useMemo(() => {
     let result = [...products];
 
-    // Hide out of stock filter (from settings)
+    // Hide out of stock filter (from settings - only applies to products with stock tracking)
     if (hideOutOfStock) {
-      result = result.filter((p) => p.stock > 0);
+      result = result.filter((p) => !p.trackStock || p.stock > 0);
     }
 
     // Search filter
@@ -112,16 +116,16 @@ const Products = () => {
       result = result.filter((p) => p.brand === brandFilter);
     }
 
-    // Stock filter
+    // Stock filter (only apply to products with stock tracking enabled)
     if (stockFilter !== "all") {
       if (stockFilter === "inStock") {
-        result = result.filter((p) => p.stock > 0);
+        result = result.filter((p) => p.trackStock && p.stock > 0);
       } else if (stockFilter === "outOfStock") {
-        result = result.filter((p) => p.stock === 0);
+        result = result.filter((p) => p.trackStock && p.stock === 0);
       } else if (stockFilter === "lowStock") {
-        result = result.filter((p) => p.stock >= 1 && p.stock <= 10);
+        result = result.filter((p) => p.trackStock && p.stock >= 1 && p.stock <= 10);
       } else if (stockFilter === "goodStock") {
-        result = result.filter((p) => p.stock > 10);
+        result = result.filter((p) => p.trackStock && p.stock > 10);
       }
     }
 
@@ -146,6 +150,40 @@ const Products = () => {
 
     return result;
   }, [products, searchQuery, categoryFilter, brandFilter, stockFilter, statusFilter, sortOrder, hideOutOfStock]);
+
+  // Reset displayed count when filters change
+  useEffect(() => {
+    setDisplayedCount(20);
+  }, [searchQuery, categoryFilter, brandFilter, stockFilter, statusFilter, sortOrder]);
+
+  // Infinite scroll observer
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && displayedCount < filteredProducts.length) {
+          // Load 20 more products
+          setDisplayedCount((prev) => Math.min(prev + 20, filteredProducts.length));
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    const currentTarget = observerTarget.current;
+    if (currentTarget) {
+      observer.observe(currentTarget);
+    }
+
+    return () => {
+      if (currentTarget) {
+        observer.unobserve(currentTarget);
+      }
+    };
+  }, [displayedCount, filteredProducts.length]);
+
+  // Slice filtered products to show only the displayed count
+  const visibleProducts = useMemo(() => {
+    return filteredProducts.slice(0, displayedCount);
+  }, [filteredProducts, displayedCount]);
 
   const handleEdit = (product: Product) => {
     setSelectedProduct(product);
@@ -251,11 +289,11 @@ const Products = () => {
     }
   };
 
-  // Stock summary
+  // Stock summary (only count products with stock tracking enabled)
   const totalProducts = products.length;
-  const stockBajo = products.filter((p) => p.stock >= 1 && p.stock <= 10).length;
-  const agotados = products.filter((p) => p.stock === 0).length;
-  const buenStock = products.filter((p) => p.stock > 10).length;
+  const stockBajo = products.filter((p) => p.trackStock && p.stock >= 1 && p.stock <= 10).length;
+  const agotados = products.filter((p) => p.trackStock && p.stock === 0).length;
+  const buenStock = products.filter((p) => p.trackStock && p.stock > 10).length;
 
   return (
     <AppLayout>
@@ -441,19 +479,37 @@ const Products = () => {
       {/* Product Cards */}
       <div className="space-y-2">
         {filteredProducts.length > 0 ? (
-          filteredProducts.map((product) => (
-            <ProductCard
-              key={product.id}
-              product={product}
-              onClick={() => !isSelectionMode && handleEdit(product)}
-              onDelete={(e) => handleDelete(product.id, e)}
-              onDuplicate={(e) => handleDuplicate(product.id, e)}
-              isSelected={selectedProducts.includes(product.id)}
-              onSelect={(checked) => handleSelectProduct(product.id, checked)}
-              onLongPress={() => handleLongPress(product.id)}
-              isSelectionMode={isSelectionMode}
-            />
-          ))
+          <>
+            {visibleProducts.map((product) => (
+              <ProductCard
+                key={product.id}
+                product={product}
+                onClick={() => !isSelectionMode && handleEdit(product)}
+                onDelete={(e) => handleDelete(product.id, e)}
+                onDuplicate={(e) => handleDuplicate(product.id, e)}
+                isSelected={selectedProducts.includes(product.id)}
+                onSelect={(checked) => handleSelectProduct(product.id, checked)}
+                onLongPress={() => handleLongPress(product.id)}
+                isSelectionMode={isSelectionMode}
+              />
+            ))}
+
+            {/* Intersection observer target */}
+            {displayedCount < filteredProducts.length && (
+              <div ref={observerTarget} className="flex justify-center py-4">
+                <div className="text-sm text-muted-foreground">
+                  Cargando más productos... ({displayedCount} de {filteredProducts.length})
+                </div>
+              </div>
+            )}
+
+            {/* Show completion message when all products are loaded */}
+            {displayedCount >= filteredProducts.length && filteredProducts.length > 20 && (
+              <div className="text-center py-4 text-sm text-muted-foreground">
+                Mostrando todos los {filteredProducts.length} productos
+              </div>
+            )}
+          </>
         ) : (
           <div className="rounded-lg border border-dashed border-border p-8 text-center text-muted-foreground">
             No hay productos
