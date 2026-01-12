@@ -65,6 +65,10 @@ interface AppContextType {
   // Theme
   isDarkMode: boolean;
   toggleDarkMode: () => void;
+
+  // Display Settings
+  hideOutOfStock: boolean;
+  toggleHideOutOfStock: () => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -79,12 +83,18 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [orderStatuses, setOrderStatuses] = useState<OrderStatus[]>(mockOrderStatuses);
   const [productCarouselStates, setProductCarouselStates] = useState<ProductCarouselState[]>(mockProductCarouselStates);
   const [isDarkMode, setIsDarkMode] = useState(false);
+  const [hideOutOfStock, setHideOutOfStock] = useState(false);
 
   useEffect(() => {
     const savedTheme = localStorage.getItem("theme");
     if (savedTheme === "dark") {
       setIsDarkMode(true);
       document.documentElement.classList.add("dark");
+    }
+
+    const savedHideOutOfStock = localStorage.getItem("hideOutOfStock");
+    if (savedHideOutOfStock === "true") {
+      setHideOutOfStock(true);
     }
   }, []);
 
@@ -98,6 +108,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         document.documentElement.classList.remove("dark");
         localStorage.setItem("theme", "light");
       }
+      return newValue;
+    });
+  };
+
+  const toggleHideOutOfStock = () => {
+    setHideOutOfStock((prev) => {
+      const newValue = !prev;
+      localStorage.setItem("hideOutOfStock", newValue.toString());
       return newValue;
     });
   };
@@ -322,6 +340,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         resetStore,
         isDarkMode,
         toggleDarkMode,
+        hideOutOfStock,
+        toggleHideOutOfStock,
       }}
     >
       {children}

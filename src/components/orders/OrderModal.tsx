@@ -32,6 +32,7 @@ import { X, Plus, Minus, ChevronDown, Search, MessageCircle } from "lucide-react
 import { Order, OrderItem } from "@/types";
 import { useApp } from "@/contexts/AppContext";
 import { useToast } from "@/hooks/use-toast";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface OrderModalProps {
   open: boolean;
@@ -43,7 +44,8 @@ interface OrderModalProps {
 export const OrderModal = ({ open, onClose, order, onOrderSaved }: OrderModalProps) => {
   const { products, orderStatuses, updateOrder, addOrder, orders } = useApp();
   const { toast } = useToast();
-  
+  const isMobile = useIsMobile();
+
   const isEditing = !!order;
 
   const [formData, setFormData] = useState({
@@ -53,6 +55,7 @@ export const OrderModal = ({ open, onClose, order, onOrderSaved }: OrderModalPro
   });
   const [productSearchOpen, setProductSearchOpen] = useState(false);
   const [justSaved, setJustSaved] = useState(false);
+  const [mobileSearchQuery, setMobileSearchQuery] = useState("");
 
   const prevOpenRef = useRef(false);
   const currentOrderIdRef = useRef<string | null>(null);
@@ -100,6 +103,26 @@ export const OrderModal = ({ open, onClose, order, onOrderSaved }: OrderModalPro
     }
   }, [open, order?.id]);
 
+  // Ajusta el alto del dialog en móvil cuando aparece el teclado (VisualViewport)
+  useEffect(() => {
+    if (!productSearchOpen || !isMobile) return;
+
+    const vv = window.visualViewport;
+    const setVh = () => {
+      const height = vv?.height ?? window.innerHeight;
+      document.documentElement.style.setProperty("--dialog-vh", `${Math.round(height)}px`);
+    };
+
+    setVh();
+    vv?.addEventListener("resize", setVh);
+    vv?.addEventListener("scroll", setVh);
+
+    return () => {
+      vv?.removeEventListener("resize", setVh);
+      vv?.removeEventListener("scroll", setVh);
+      document.documentElement.style.removeProperty("--dialog-vh");
+    };
+  }, [productSearchOpen, isMobile]);
   const calculateSubtotal = () => {
     // Subtotal usando precios originales (sin descuentos)
     return formData.items.reduce((sum, item) => {
@@ -370,84 +393,237 @@ export const OrderModal = ({ open, onClose, order, onOrderSaved }: OrderModalPro
           <div className="space-y-3">
             <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
               <Label>Productos</Label>
-              <Popover open={productSearchOpen} onOpenChange={setProductSearchOpen}>
-                <PopoverTrigger asChild>
-                  <Button variant="outline" className="w-full md:w-64 justify-between">
+
+              {/* Desktop: Popover */}
+              {!isMobile && (
+                <Popover open={productSearchOpen} onOpenChange={setProductSearchOpen}>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" className="w-full md:w-64 justify-between">
+                      <span className="text-muted-foreground">Agregar producto</span>
+                      <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent
+                    className="w-96 p-0 z-[200]"
+                    align="end"
+                    onWheel={(e) => e.stopPropagation()}
+                    onTouchMove={(e) => e.stopPropagation()}
+                  >
+                    <Command>
+                      <CommandInput
+                        placeholder="Buscar producto..."
+                        autoComplete="chrome-off"
+                        autoCorrect="off"
+                        autoCapitalize="off"
+                        data-form-type="other"
+                      />
+                      <CommandList className="max-h-[300px] overflow-y-auto">
+                        <CommandEmpty>No se encontraron productos.</CommandEmpty>
+                        <CommandGroup>
+                          {products.map((product) => {
+                            const availableStock = getAvailableStock(product.id);
+                            const hasStockTracking = product.trackStock;
+                            const outOfStock = hasStockTracking && availableStock <= 0;
+
+                            return (
+                              <CommandItem
+                                key={product.id}
+                                value={product.name}
+                                onSelect={() => addProduct(product.id)}
+                                className="cursor-pointer"
+                                disabled={outOfStock}
+                              >
+                                <div className="flex items-center gap-3 w-full">
+                                  <div className="h-10 w-10 rounded-md overflow-hidden bg-muted flex-shrink-0">
+                                    {product.images && product.images.length > 0 ? (
+                                      <img
+                                        src={product.images[0]}
+                                        alt={product.name}
+                                        className="h-full w-full object-cover"
+                                      />
+                                    ) : (
+                                      <div className="h-full w-full flex items-center justify-center text-muted-foreground text-xs">
+                                        Sin img
+                                      </div>
+                                    )}
+                                  </div>
+                                  <div className="flex flex-col min-w-0 flex-1">
+                                    <span className="truncate">{product.name}</span>
+                                    <div className="flex items-center gap-2">
+                                      {product.salePrice ? (
+                                        <>
+                                          <span className="text-xs text-muted-foreground line-through">
+                                            Bs {product.price.toFixed(1)}
+                                          </span>
+                                          <span className="text-xs font-semibold text-foreground">
+                                            Bs {product.salePrice.toFixed(1)}
+                                          </span>
+                                        </>
+                                      ) : (
+                                        <span className="text-xs text-muted-foreground">
+                                          Bs {product.price.toFixed(1)}
+                                        </span>
+                                      )}
+                                      {hasStockTracking && (
+                                        <span className={`text-xs ${outOfStock ? 'text-destructive' : 'text-muted-foreground'}`}>
+                                          • Stock: {availableStock}
+                                        </span>
+                                      )}
+                                    </div>
+                                  </div>
+                                </div>
+                              </CommandItem>
+                            );
+                          })}
+                        </CommandGroup>
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
+              )}
+
+              {/* Mobile: Button + Dialog */}
+              {isMobile && (
+                <>
+                  <Button
+                    variant="outline"
+                    className="w-full justify-between"
+                    onClick={() => {
+                      setMobileSearchQuery("");
+                      setProductSearchOpen(true);
+                    }}
+                  >
                     <span className="text-muted-foreground">Agregar producto</span>
                     <ChevronDown className="h-4 w-4 text-muted-foreground" />
                   </Button>
-                </PopoverTrigger>
-                <PopoverContent
-                  className="w-[calc(100vw-2rem)] md:w-96 p-0 z-[200]"
-                  align="end"
-                  onWheel={(e) => e.stopPropagation()}
-                  onTouchMove={(e) => e.stopPropagation()}
-                >
-                  <Command>
-                    <CommandInput placeholder="Buscar producto..." />
-                    <CommandList className="max-h-[300px] overflow-y-auto">
-                      <CommandEmpty>No se encontraron productos.</CommandEmpty>
-                      <CommandGroup>
-                        {products.map((product) => {
-                          const availableStock = getAvailableStock(product.id);
-                          const hasStockTracking = product.trackStock;
-                          const outOfStock = hasStockTracking && availableStock <= 0;
 
-                          return (
-                            <CommandItem
-                              key={product.id}
-                              value={product.name}
-                              onSelect={() => addProduct(product.id)}
-                              className="cursor-pointer"
-                              disabled={outOfStock}
-                            >
-                              <div className="flex items-center gap-3 w-full">
-                                <div className="h-10 w-10 rounded-md overflow-hidden bg-muted flex-shrink-0">
-                                  {product.images && product.images.length > 0 ? (
-                                    <img
-                                      src={product.images[0]}
-                                      alt={product.name}
-                                      className="h-full w-full object-cover"
-                                    />
-                                  ) : (
-                                    <div className="h-full w-full flex items-center justify-center text-muted-foreground text-xs">
-                                      Sin img
-                                    </div>
-                                  )}
-                                </div>
-                                <div className="flex flex-col min-w-0 flex-1">
-                                  <span className="truncate">{product.name}</span>
-                                  <div className="flex items-center gap-2">
-                                    {product.salePrice ? (
-                                      <>
-                                        <span className="text-xs text-muted-foreground line-through">
-                                          Bs {product.price.toFixed(1)}
-                                        </span>
-                                        <span className="text-xs font-semibold text-foreground">
-                                          Bs {product.salePrice.toFixed(1)}
-                                        </span>
-                                      </>
-                                    ) : (
-                                      <span className="text-xs text-muted-foreground">
-                                        Bs {product.price.toFixed(1)}
-                                      </span>
-                                    )}
-                                    {hasStockTracking && (
-                                      <span className={`text-xs ${outOfStock ? 'text-destructive' : 'text-muted-foreground'}`}>
-                                        • Stock: {availableStock}
-                                      </span>
-                                    )}
-                                  </div>
-                                </div>
+                  <Dialog open={productSearchOpen} onOpenChange={(open) => {
+                    if (!open) setMobileSearchQuery("");
+                    setProductSearchOpen(open);
+                  }}>
+                    <DialogContent
+                      className="p-0 gap-0 overflow-hidden left-0 top-0 translate-x-0 translate-y-0 w-screen h-[var(--dialog-vh,100dvh)] max-w-none rounded-none border-0 overscroll-contain"
+                      overlayClassName="bg-black/80"
+                      hideCloseButton
+                    >
+                      <div className="flex flex-col h-full bg-background">
+                        {/* Fixed Header with Search */}
+                        <div className="flex-shrink-0 sticky top-0 z-20 bg-background border-b">
+                          <div className="flex items-center gap-3 px-4 py-4">
+                            {/* Search Input */}
+                            <div className="flex-1 relative">
+                              <div className="flex items-center h-12 w-full rounded-lg bg-background border border-border px-3 gap-3">
+                                <Search className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                                <input
+                                  type="text"
+                                  placeholder="Buscar producto..."
+                                  value={mobileSearchQuery}
+                                  onChange={(e) => setMobileSearchQuery(e.target.value)}
+                                  autoFocus
+                                  autoComplete="chrome-off"
+                                  autoCorrect="off"
+                                  autoCapitalize="off"
+                                  spellCheck={false}
+                                  data-form-type="other"
+                                  className="flex-1 h-full bg-transparent text-base outline-none placeholder:text-muted-foreground"
+                                />
                               </div>
-                            </CommandItem>
-                          );
-                        })}
-                      </CommandGroup>
-                    </CommandList>
-                  </Command>
-                </PopoverContent>
-              </Popover>
+                            </div>
+                            {/* Close Button */}
+                            <button
+                              type="button"
+                              onClick={() => setProductSearchOpen(false)}
+                              className="flex-shrink-0 flex items-center justify-center h-10 w-10 rounded-lg hover:bg-accent transition-colors"
+                              aria-label="Cerrar"
+                            >
+                              <X className="h-5 w-5 text-foreground" />
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Scrollable Product List */}
+                        <div className="flex-1 overflow-y-auto overscroll-contain px-4 py-3">
+                          {(() => {
+                            const filteredProducts = products.filter((product) =>
+                              product.name.toLowerCase().includes(mobileSearchQuery.toLowerCase())
+                            );
+
+                            if (filteredProducts.length === 0) {
+                              return (
+                                <div className="py-12 text-center text-muted-foreground">
+                                  No se encontraron productos.
+                                </div>
+                              );
+                            }
+
+                            return (
+                              <div className="space-y-2.5">
+                                {filteredProducts.map((product) => {
+                                  const availableStock = getAvailableStock(product.id);
+                                  const hasStockTracking = product.trackStock;
+                                  const outOfStock = hasStockTracking && availableStock <= 0;
+
+                                  return (
+                                    <button
+                                      key={product.id}
+                                      type="button"
+                                      onClick={() => !outOfStock && addProduct(product.id)}
+                                      disabled={outOfStock}
+                                      className={`w-full flex items-center gap-3 p-3.5 rounded-lg border transition-colors text-left ${
+                                        outOfStock
+                                          ? 'opacity-50 cursor-not-allowed bg-muted/30'
+                                          : 'bg-card hover:bg-accent active:bg-accent border-border'
+                                      }`}
+                                    >
+                                      <div className="h-14 w-14 rounded-lg overflow-hidden bg-muted flex-shrink-0 border">
+                                        {product.images && product.images.length > 0 ? (
+                                          <img
+                                            src={product.images[0]}
+                                            alt={product.name}
+                                            className="h-full w-full object-cover"
+                                          />
+                                        ) : (
+                                          <div className="h-full w-full flex items-center justify-center text-muted-foreground text-xs">
+                                            Sin img
+                                          </div>
+                                        )}
+                                      </div>
+                                      <div className="flex flex-col min-w-0 flex-1">
+                                        <span className="truncate font-medium text-base">{product.name}</span>
+                                        <div className="flex items-center gap-2 mt-1">
+                                          {product.salePrice ? (
+                                            <>
+                                              <span className="text-sm text-muted-foreground line-through">
+                                                Bs {product.price.toFixed(1)}
+                                              </span>
+                                              <span className="text-sm font-semibold text-foreground">
+                                                Bs {product.salePrice.toFixed(1)}
+                                              </span>
+                                            </>
+                                          ) : (
+                                            <span className="text-sm text-muted-foreground">
+                                              Bs {product.price.toFixed(1)}
+                                            </span>
+                                          )}
+                                          {hasStockTracking && (
+                                            <span className={`text-sm ${outOfStock ? 'text-destructive font-medium' : 'text-muted-foreground'}`}>
+                                              • Stock: {availableStock}
+                                            </span>
+                                          )}
+                                        </div>
+                                      </div>
+                                    </button>
+                                  );
+                                })}
+                              </div>
+                            );
+                          })()}
+                        </div>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
+                </>
+              )}
             </div>
 
             <div className="space-y-2">

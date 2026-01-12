@@ -240,6 +240,10 @@ const Orders = () => {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-9 h-10"
+            autoComplete="chrome-off"
+            autoCorrect="off"
+            autoCapitalize="off"
+            data-form-type="other"
           />
         </div>
 

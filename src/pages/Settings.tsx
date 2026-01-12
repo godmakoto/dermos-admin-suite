@@ -55,6 +55,8 @@ const Settings = () => {
     importProducts,
     isDarkMode,
     toggleDarkMode,
+    hideOutOfStock,
+    toggleHideOutOfStock,
   } = useApp();
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -64,6 +66,13 @@ const Settings = () => {
   const [newBrand, setNewBrand] = useState("");
   const [newLabel, setNewLabel] = useState({ name: "", color: "#6b7280" });
   const [newCarouselState, setNewCarouselState] = useState({ name: "", type: "carousel" as "carousel" | "banner", color: "#6b7280" });
+
+  // Delete confirmation states
+  const [deleteConfirm, setDeleteConfirm] = useState<{
+    type: 'category' | 'subcategory' | 'brand' | 'label' | 'carouselState' | null;
+    id: string;
+    name: string;
+  } | null>(null);
 
   const handleAddCategory = () => {
     if (newCategory.trim()) {
@@ -127,6 +136,35 @@ const Settings = () => {
   const handleResetStore = () => {
     resetStore();
     toast({ title: "Tienda reiniciada", description: "Todos los datos han sido eliminados." });
+  };
+
+  const handleConfirmDelete = () => {
+    if (!deleteConfirm) return;
+
+    switch (deleteConfirm.type) {
+      case 'category':
+        deleteCategory(deleteConfirm.id);
+        toast({ title: "Categoría eliminada" });
+        break;
+      case 'subcategory':
+        deleteSubcategory(deleteConfirm.id);
+        toast({ title: "Subcategoría eliminada" });
+        break;
+      case 'brand':
+        deleteBrand(deleteConfirm.id);
+        toast({ title: "Marca eliminada" });
+        break;
+      case 'label':
+        deleteLabel(deleteConfirm.id);
+        toast({ title: "Propiedad eliminada" });
+        break;
+      case 'carouselState':
+        deleteProductCarouselState(deleteConfirm.id);
+        toast({ title: "Estado de carrusel eliminado" });
+        break;
+    }
+
+    setDeleteConfirm(null);
   };
 
   const handleImportCSV = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -200,30 +238,26 @@ const Settings = () => {
       />
 
       <Tabs defaultValue="categories" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-6">
-          <TabsTrigger value="categories" className="gap-2">
+        <TabsList className="grid w-full grid-cols-5 lg:grid-cols-5">
+          <TabsTrigger value="categories" className="gap-2 flex-1 justify-center">
             <Layers className="h-4 w-4" />
-            <span className="hidden sm:inline">Categorías</span>
+            <span className="hidden lg:inline">Categorías</span>
           </TabsTrigger>
-          <TabsTrigger value="brands" className="gap-2">
+          <TabsTrigger value="brands" className="gap-2 flex-1 justify-center">
             <Bookmark className="h-4 w-4" />
-            <span className="hidden sm:inline">Marcas</span>
+            <span className="hidden lg:inline">Marcas y Propiedades</span>
           </TabsTrigger>
-          <TabsTrigger value="labels" className="gap-2">
-            <Tag className="h-4 w-4" />
-            <span className="hidden sm:inline">Propiedades</span>
-          </TabsTrigger>
-          <TabsTrigger value="statuses" className="gap-2">
+          <TabsTrigger value="statuses" className="gap-2 flex-1 justify-center">
             <Flag className="h-4 w-4" />
-            <span className="hidden sm:inline">Estados</span>
+            <span className="hidden lg:inline">Estados</span>
           </TabsTrigger>
-          <TabsTrigger value="data" className="gap-2">
+          <TabsTrigger value="data" className="gap-2 flex-1 justify-center">
             <Database className="h-4 w-4" />
-            <span className="hidden sm:inline">Datos</span>
+            <span className="hidden lg:inline">Datos</span>
           </TabsTrigger>
-          <TabsTrigger value="appearance" className="gap-2">
+          <TabsTrigger value="appearance" className="gap-2 flex-1 justify-center">
             <Moon className="h-4 w-4" />
-            <span className="hidden sm:inline">Apariencia</span>
+            <span className="hidden lg:inline">Apariencia</span>
           </TabsTrigger>
         </TabsList>
 
@@ -254,7 +288,7 @@ const Settings = () => {
                   >
                     <span className="text-sm">{cat.name}</span>
                     <button
-                      onClick={() => deleteCategory(cat.id)}
+                      onClick={() => setDeleteConfirm({ type: 'category', id: cat.id, name: cat.name })}
                       className="text-muted-foreground hover:text-destructive"
                     >
                       <X className="h-3 w-3" />
@@ -321,7 +355,7 @@ const Settings = () => {
                           >
                             <span className="text-sm">{sub.name}</span>
                             <button
-                              onClick={() => deleteSubcategory(sub.id)}
+                              onClick={() => setDeleteConfirm({ type: 'subcategory', id: sub.id, name: sub.name })}
                               className="text-muted-foreground hover:text-destructive"
                             >
                               <X className="h-3 w-3" />
@@ -337,8 +371,8 @@ const Settings = () => {
           </Card>
         </TabsContent>
 
-        {/* Brands */}
-        <TabsContent value="brands">
+        {/* Brands & Labels */}
+        <TabsContent value="brands" className="space-y-6">
           <Card>
             <CardHeader>
               <CardTitle>Marcas</CardTitle>
@@ -364,7 +398,7 @@ const Settings = () => {
                   >
                     <span className="text-sm">{brand.name}</span>
                     <button
-                      onClick={() => deleteBrand(brand.id)}
+                      onClick={() => setDeleteConfirm({ type: 'brand', id: brand.id, name: brand.name })}
                       className="text-muted-foreground hover:text-destructive"
                     >
                       <X className="h-3 w-3" />
@@ -374,10 +408,7 @@ const Settings = () => {
               </div>
             </CardContent>
           </Card>
-        </TabsContent>
 
-        {/* Labels */}
-        <TabsContent value="labels">
           <Card>
             <CardHeader>
               <CardTitle>Propiedades</CardTitle>
@@ -404,7 +435,7 @@ const Settings = () => {
                   >
                     <span className="text-sm">{label.name}</span>
                     <button
-                      onClick={() => deleteLabel(label.id)}
+                      onClick={() => setDeleteConfirm({ type: 'label', id: label.id, name: label.name })}
                       className="text-muted-foreground hover:text-destructive"
                     >
                       <X className="h-3 w-3" />
@@ -463,7 +494,7 @@ const Settings = () => {
                       ({state.type === "carousel" ? "Carrusel" : "Banner"})
                     </span>
                     <button
-                      onClick={() => deleteProductCarouselState(state.id)}
+                      onClick={() => setDeleteConfirm({ type: 'carouselState', id: state.id, name: state.name })}
                       className="text-muted-foreground hover:text-destructive"
                     >
                       <X className="h-3 w-3" />
@@ -619,7 +650,7 @@ const Settings = () => {
               <CardTitle>Apariencia</CardTitle>
               <CardDescription>Personaliza la apariencia del panel</CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="space-y-6">
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
                   <Label htmlFor="dark-mode">Modo Oscuro</Label>
@@ -633,10 +664,56 @@ const Settings = () => {
                   onCheckedChange={toggleDarkMode}
                 />
               </div>
+
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label htmlFor="hide-out-of-stock">Ocultar productos sin stock</Label>
+                  <p className="text-sm text-muted-foreground">
+                    Los productos sin stock no se mostrarán en la lista de productos
+                  </p>
+                </div>
+                <Switch
+                  id="hide-out-of-stock"
+                  checked={hideOutOfStock}
+                  onCheckedChange={toggleHideOutOfStock}
+                />
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
       </Tabs>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={deleteConfirm !== null} onOpenChange={(open) => !open && setDeleteConfirm(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
+            <AlertDialogDescription>
+              {deleteConfirm && (
+                <>
+                  Estás a punto de eliminar{" "}
+                  {deleteConfirm.type === 'category' && 'la categoría'}
+                  {deleteConfirm.type === 'subcategory' && 'la subcategoría'}
+                  {deleteConfirm.type === 'brand' && 'la marca'}
+                  {deleteConfirm.type === 'label' && 'la propiedad'}
+                  {deleteConfirm.type === 'carouselState' && 'el estado de carrusel'}
+                  {' '}<strong>"{deleteConfirm.name}"</strong>.
+                  {' '}Esta acción no se puede deshacer.
+                </>
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleConfirmDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Eliminar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </AppLayout>
   );
 };

@@ -32,7 +32,7 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 
 const Products = () => {
-  const { products, categories, brands, deleteProduct, duplicateProduct, updateProduct } = useApp();
+  const { products, categories, brands, deleteProduct, duplicateProduct, updateProduct, hideOutOfStock } = useApp();
   const { toast } = useToast();
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
@@ -83,6 +83,11 @@ const Products = () => {
 
   const filteredProducts = useMemo(() => {
     let result = [...products];
+
+    // Hide out of stock filter (from settings)
+    if (hideOutOfStock) {
+      result = result.filter((p) => p.stock > 0);
+    }
 
     // Search filter
     if (searchQuery) {
@@ -140,7 +145,7 @@ const Products = () => {
     }
 
     return result;
-  }, [products, searchQuery, categoryFilter, brandFilter, stockFilter, statusFilter, sortOrder]);
+  }, [products, searchQuery, categoryFilter, brandFilter, stockFilter, statusFilter, sortOrder, hideOutOfStock]);
 
   const handleEdit = (product: Product) => {
     setSelectedProduct(product);
@@ -240,10 +245,10 @@ const Products = () => {
         {/* Total */}
         <button
           onClick={() => setStockFilter("all")}
-          className={`flex items-center justify-between gap-2 px-3 py-2.5 rounded-lg text-sm transition-all ${
+          className={`flex items-center justify-between gap-2 px-3 py-2.5 rounded-lg text-sm transition-all border-2 ${
             stockFilter === "all"
-              ? "bg-secondary ring-2 ring-foreground/20"
-              : "bg-secondary/50 hover:bg-secondary"
+              ? "bg-secondary border-secondary"
+              : "bg-secondary/50 border-secondary/50 hover:bg-secondary hover:border-secondary"
           }`}
         >
           <span className="text-muted-foreground font-medium">Total</span>
@@ -299,6 +304,10 @@ const Products = () => {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-9 h-10"
+            autoComplete="chrome-off"
+            autoCorrect="off"
+            autoCapitalize="off"
+            data-form-type="other"
           />
         </div>
         
