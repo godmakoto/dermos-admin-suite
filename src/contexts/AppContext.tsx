@@ -12,6 +12,7 @@ import {
 } from "@/data/mockData";
 import * as productService from "@/services/productService";
 import * as categoryService from "@/services/categoryService";
+import * as brandService from "@/services/brandService";
 import { supabase } from "@/lib/supabase";
 
 interface AppContextType {
@@ -141,6 +142,41 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     };
 
     loadCategoriesAndSubcategories();
+  }, []);
+
+  // Load brands, labels, carousel states, and order statuses from Supabase on mount
+  useEffect(() => {
+    const loadBrandsAndLabels = async () => {
+      if (supabase) {
+        try {
+          const [fetchedBrands, fetchedLabels, fetchedCarouselStates, fetchedOrderStatuses] = await Promise.all([
+            brandService.getBrands(),
+            brandService.getLabels(),
+            brandService.getProductCarouselStates(),
+            brandService.getOrderStatuses(),
+          ]);
+          setBrands(fetchedBrands);
+          setLabels(fetchedLabels);
+          setProductCarouselStates(fetchedCarouselStates);
+          setOrderStatuses(fetchedOrderStatuses);
+        } catch (error) {
+          console.error('Failed to load brands/labels from Supabase:', error);
+          // Fallback to mock data if Supabase fails
+          setBrands(mockBrands);
+          setLabels(mockLabels);
+          setProductCarouselStates(mockProductCarouselStates);
+          setOrderStatuses(mockOrderStatuses);
+        }
+      } else {
+        // Use mock data if Supabase is not configured
+        setBrands(mockBrands);
+        setLabels(mockLabels);
+        setProductCarouselStates(mockProductCarouselStates);
+        setOrderStatuses(mockOrderStatuses);
+      }
+    };
+
+    loadBrandsAndLabels();
   }, []);
 
   useEffect(() => {
@@ -466,43 +502,136 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   // Brands
-  const addBrand = (brand: Brand) => {
-    setBrands((prev) => [...prev, brand]);
+  const addBrand = async (brand: Brand) => {
+    if (supabase) {
+      try {
+        const newBrand = await brandService.createBrand(brand.name);
+        setBrands((prev) => [...prev, newBrand]);
+      } catch (error) {
+        console.error('Failed to create brand:', error);
+        throw error;
+      }
+    } else {
+      setBrands((prev) => [...prev, brand]);
+    }
   };
 
-  const deleteBrand = (id: string) => {
-    setBrands((prev) => prev.filter((b) => b.id !== id));
+  const deleteBrand = async (id: string) => {
+    if (supabase) {
+      try {
+        await brandService.deleteBrand(id);
+        setBrands((prev) => prev.filter((b) => b.id !== id));
+      } catch (error) {
+        console.error('Failed to delete brand:', error);
+        throw error;
+      }
+    } else {
+      setBrands((prev) => prev.filter((b) => b.id !== id));
+    }
   };
 
   // Labels
-  const addLabel = (label: Label) => {
-    setLabels((prev) => [...prev, label]);
+  const addLabel = async (label: Label) => {
+    if (supabase) {
+      try {
+        const newLabel = await brandService.createLabel(label.name, label.color);
+        setLabels((prev) => [...prev, newLabel]);
+      } catch (error) {
+        console.error('Failed to create label:', error);
+        throw error;
+      }
+    } else {
+      setLabels((prev) => [...prev, label]);
+    }
   };
 
-  const deleteLabel = (id: string) => {
-    setLabels((prev) => prev.filter((l) => l.id !== id));
+  const deleteLabel = async (id: string) => {
+    if (supabase) {
+      try {
+        await brandService.deleteLabel(id);
+        setLabels((prev) => prev.filter((l) => l.id !== id));
+      } catch (error) {
+        console.error('Failed to delete label:', error);
+        throw error;
+      }
+    } else {
+      setLabels((prev) => prev.filter((l) => l.id !== id));
+    }
   };
 
-  const deleteAllLabels = () => {
-    setLabels([]);
+  const deleteAllLabels = async () => {
+    if (supabase) {
+      try {
+        // Delete all labels one by one
+        for (const label of labels) {
+          await brandService.deleteLabel(label.id);
+        }
+        setLabels([]);
+      } catch (error) {
+        console.error('Failed to delete all labels:', error);
+        throw error;
+      }
+    } else {
+      setLabels([]);
+    }
   };
 
   // Order Statuses
-  const addOrderStatus = (status: OrderStatus) => {
-    setOrderStatuses((prev) => [...prev, status]);
+  const addOrderStatus = async (status: OrderStatus) => {
+    if (supabase) {
+      try {
+        const newStatus = await brandService.createOrderStatus(status.name, status.color);
+        setOrderStatuses((prev) => [...prev, newStatus]);
+      } catch (error) {
+        console.error('Failed to create order status:', error);
+        throw error;
+      }
+    } else {
+      setOrderStatuses((prev) => [...prev, status]);
+    }
   };
 
-  const deleteOrderStatus = (id: string) => {
-    setOrderStatuses((prev) => prev.filter((s) => s.id !== id));
+  const deleteOrderStatus = async (id: string) => {
+    if (supabase) {
+      try {
+        await brandService.deleteOrderStatus(id);
+        setOrderStatuses((prev) => prev.filter((s) => s.id !== id));
+      } catch (error) {
+        console.error('Failed to delete order status:', error);
+        throw error;
+      }
+    } else {
+      setOrderStatuses((prev) => prev.filter((s) => s.id !== id));
+    }
   };
 
   // Product Carousel States
-  const addProductCarouselState = (state: ProductCarouselState) => {
-    setProductCarouselStates((prev) => [...prev, state]);
+  const addProductCarouselState = async (state: ProductCarouselState) => {
+    if (supabase) {
+      try {
+        const newState = await brandService.createProductCarouselState(state.name, state.type, state.color);
+        setProductCarouselStates((prev) => [...prev, newState]);
+      } catch (error) {
+        console.error('Failed to create carousel state:', error);
+        throw error;
+      }
+    } else {
+      setProductCarouselStates((prev) => [...prev, state]);
+    }
   };
 
-  const deleteProductCarouselState = (id: string) => {
-    setProductCarouselStates((prev) => prev.filter((s) => s.id !== id));
+  const deleteProductCarouselState = async (id: string) => {
+    if (supabase) {
+      try {
+        await brandService.deleteProductCarouselState(id);
+        setProductCarouselStates((prev) => prev.filter((s) => s.id !== id));
+      } catch (error) {
+        console.error('Failed to delete carousel state:', error);
+        throw error;
+      }
+    } else {
+      setProductCarouselStates((prev) => prev.filter((s) => s.id !== id));
+    }
   };
 
   // Reset Store
