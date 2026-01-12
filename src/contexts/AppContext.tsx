@@ -11,6 +11,7 @@ import {
   mockProductCarouselStates,
 } from "@/data/mockData";
 import * as productService from "@/services/productService";
+import * as categoryService from "@/services/categoryService";
 import { supabase } from "@/lib/supabase";
 
 interface AppContextType {
@@ -113,6 +114,33 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     };
 
     loadProducts();
+  }, []);
+
+  // Load categories and subcategories from Supabase on mount
+  useEffect(() => {
+    const loadCategoriesAndSubcategories = async () => {
+      if (supabase) {
+        try {
+          const [fetchedCategories, fetchedSubcategories] = await Promise.all([
+            categoryService.getCategories(),
+            categoryService.getSubcategories(),
+          ]);
+          setCategories(fetchedCategories);
+          setSubcategories(fetchedSubcategories);
+        } catch (error) {
+          console.error('Failed to load categories from Supabase:', error);
+          // Fallback to mock data if Supabase fails
+          setCategories(mockCategories);
+          setSubcategories(mockSubcategories);
+        }
+      } else {
+        // Use mock data if Supabase is not configured
+        setCategories(mockCategories);
+        setSubcategories(mockSubcategories);
+      }
+    };
+
+    loadCategoriesAndSubcategories();
   }, []);
 
   useEffect(() => {
@@ -340,29 +368,101 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   // Categories
-  const addCategory = (category: Category) => {
-    setCategories((prev) => [...prev, category]);
+  const addCategory = async (category: Category) => {
+    if (supabase) {
+      try {
+        const newCategory = await categoryService.createCategory(category.name);
+        setCategories((prev) => [...prev, newCategory]);
+      } catch (error) {
+        console.error('Failed to create category:', error);
+        throw error;
+      }
+    } else {
+      setCategories((prev) => [...prev, category]);
+    }
   };
 
-  const deleteCategory = (id: string) => {
-    setCategories((prev) => prev.filter((c) => c.id !== id));
+  const deleteCategory = async (id: string) => {
+    if (supabase) {
+      try {
+        await categoryService.deleteCategory(id);
+        setCategories((prev) => prev.filter((c) => c.id !== id));
+        // Also remove related subcategories from local state
+        setSubcategories((prev) => prev.filter((s) => s.categoryId !== id));
+      } catch (error) {
+        console.error('Failed to delete category:', error);
+        throw error;
+      }
+    } else {
+      setCategories((prev) => prev.filter((c) => c.id !== id));
+    }
   };
 
-  const deleteAllCategories = () => {
-    setCategories([]);
+  const deleteAllCategories = async () => {
+    if (supabase) {
+      try {
+        // Delete all categories one by one
+        for (const category of categories) {
+          await categoryService.deleteCategory(category.id);
+        }
+        setCategories([]);
+        setSubcategories([]); // Clear subcategories too
+      } catch (error) {
+        console.error('Failed to delete all categories:', error);
+        throw error;
+      }
+    } else {
+      setCategories([]);
+    }
   };
 
   // Subcategories
-  const addSubcategory = (subcategory: Subcategory) => {
-    setSubcategories((prev) => [...prev, subcategory]);
+  const addSubcategory = async (subcategory: Subcategory) => {
+    if (supabase) {
+      try {
+        const newSubcategory = await categoryService.createSubcategory(
+          subcategory.name,
+          subcategory.categoryId
+        );
+        setSubcategories((prev) => [...prev, newSubcategory]);
+      } catch (error) {
+        console.error('Failed to create subcategory:', error);
+        throw error;
+      }
+    } else {
+      setSubcategories((prev) => [...prev, subcategory]);
+    }
   };
 
-  const deleteSubcategory = (id: string) => {
-    setSubcategories((prev) => prev.filter((s) => s.id !== id));
+  const deleteSubcategory = async (id: string) => {
+    if (supabase) {
+      try {
+        await categoryService.deleteSubcategory(id);
+        setSubcategories((prev) => prev.filter((s) => s.id !== id));
+      } catch (error) {
+        console.error('Failed to delete subcategory:', error);
+        throw error;
+      }
+    } else {
+      setSubcategories((prev) => prev.filter((s) => s.id !== id));
+    }
   };
 
-  const deleteAllSubcategories = () => {
-    setSubcategories([]);
+  const deleteAllSubcategories = async () => {
+    if (supabase) {
+      try {
+        // Delete all subcategories one by one
+        for (const subcategory of subcategories) {
+          await categoryService.deleteSubcategory(subcategory.id);
+        }
+        setSubcategories([]);
+      } catch (error) {
+        console.error('Failed to delete all subcategories:', error);
+        throw error;
+      }
+    } else {
+      setSubcategories([]);
+    }
   };
 
   // Brands
