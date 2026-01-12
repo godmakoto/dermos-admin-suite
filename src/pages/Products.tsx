@@ -84,9 +84,9 @@ const Products = () => {
   const filteredProducts = useMemo(() => {
     let result = [...products];
 
-    // Hide out of stock filter (from settings)
+    // Hide out of stock filter (from settings - only applies to products with stock tracking)
     if (hideOutOfStock) {
-      result = result.filter((p) => p.stock > 0);
+      result = result.filter((p) => !p.trackStock || p.stock > 0);
     }
 
     // Search filter
@@ -112,16 +112,16 @@ const Products = () => {
       result = result.filter((p) => p.brand === brandFilter);
     }
 
-    // Stock filter
+    // Stock filter (only apply to products with stock tracking enabled)
     if (stockFilter !== "all") {
       if (stockFilter === "inStock") {
-        result = result.filter((p) => p.stock > 0);
+        result = result.filter((p) => p.trackStock && p.stock > 0);
       } else if (stockFilter === "outOfStock") {
-        result = result.filter((p) => p.stock === 0);
+        result = result.filter((p) => p.trackStock && p.stock === 0);
       } else if (stockFilter === "lowStock") {
-        result = result.filter((p) => p.stock >= 1 && p.stock <= 10);
+        result = result.filter((p) => p.trackStock && p.stock >= 1 && p.stock <= 10);
       } else if (stockFilter === "goodStock") {
-        result = result.filter((p) => p.stock > 10);
+        result = result.filter((p) => p.trackStock && p.stock > 10);
       }
     }
 
@@ -251,11 +251,11 @@ const Products = () => {
     }
   };
 
-  // Stock summary
+  // Stock summary (only count products with stock tracking enabled)
   const totalProducts = products.length;
-  const stockBajo = products.filter((p) => p.stock >= 1 && p.stock <= 10).length;
-  const agotados = products.filter((p) => p.stock === 0).length;
-  const buenStock = products.filter((p) => p.stock > 10).length;
+  const stockBajo = products.filter((p) => p.trackStock && p.stock >= 1 && p.stock <= 10).length;
+  const agotados = products.filter((p) => p.trackStock && p.stock === 0).length;
+  const buenStock = products.filter((p) => p.trackStock && p.stock > 10).length;
 
   return (
     <AppLayout>
