@@ -28,7 +28,7 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
-import { X, Plus, Minus, ChevronDown, Search, MessageCircle } from "lucide-react";
+import { X, Plus, Minus, ChevronDown, Search, MessageCircle, XCircle } from "lucide-react";
 import { Order, OrderItem } from "@/types";
 import { useApp } from "@/contexts/AppContext";
 import { useToast } from "@/hooks/use-toast";
