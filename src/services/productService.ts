@@ -44,12 +44,12 @@ export function supabaseToProduct(supabaseProduct: SupabaseProduct): Product {
 export function productToSupabase(product: Partial<Product>): Partial<SupabaseProduct> {
   const images = product.images || [];
   return {
-    product_id: product.id || '',
+    product_id: product.id || crypto.randomUUID(),
     title: product.name,
     offer_price: product.salePrice || null,
     regular_price: product.price,
     long_description: product.longDescription || '',
-    image_1: images[0] || '',
+    image_1: images[0] || null,
     image_2: images[1] || null,
     image_3: images[2] || null,
     image_4: images[3] || null,

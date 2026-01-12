@@ -209,9 +209,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const deleteAllProducts = async () => {
     if (supabase) {
-      // For Supabase, we delete products one by one
+      // For Supabase, we delete products sequentially to avoid rate limits
       try {
-        await Promise.all(products.map(p => productService.deleteProduct(p.id)));
+        for (const product of products) {
+          await productService.deleteProduct(product.id);
+        }
         setProducts([]);
       } catch (error) {
         console.error('Failed to delete all products:', error);
@@ -241,9 +243,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const duplicateProduct = async (id: string) => {
     const product = products.find((p) => p.id === id);
     if (product) {
-      const newProduct: Partial<Product> = {
+      const newProduct: Product = {
         ...product,
-        id: undefined, // Let Supabase generate new ID
+        id: crypto.randomUUID(), // Generate new UUID for Supabase
         name: `${product.name} (Copia)`,
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -251,7 +253,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       
       if (supabase) {
         try {
-          const created = await productService.createProduct(newProduct as Product);
+          const created = await productService.createProduct(newProduct);
           setProducts((prev) => [created, ...prev]);
         } catch (error) {
           console.error('Failed to duplicate product:', error);
@@ -259,7 +261,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         }
       } else {
         const localProduct: Product = {
-          ...newProduct as Product,
+          ...newProduct,
           id: `${Date.now()}`,
         };
         setProducts((prev) => [...prev, localProduct]);
