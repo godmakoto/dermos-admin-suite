@@ -1,11 +1,21 @@
-import { createClient } from '@supabase/supabase-js';
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
 // Supabase configuration
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
 
-// Create Supabase client
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+// Only create the client if both URL and key are provided
+export const supabase: SupabaseClient | null = 
+  supabaseUrl && supabaseAnonKey 
+    ? createClient(supabaseUrl, supabaseAnonKey) 
+    : null;
+
+/**
+ * Check if Supabase is properly configured
+ */
+export function isSupabaseConfigured(): boolean {
+  return supabase !== null;
+}
 
 /**
  * Upload an image file to Supabase Storage
@@ -17,6 +27,10 @@ export async function uploadImage(
   file: File,
   bucket: string = 'product-images'
 ): Promise<string> {
+  if (!supabase) {
+    throw new Error('Supabase no está configurado. Agrega VITE_SUPABASE_URL y VITE_SUPABASE_ANON_KEY a tu archivo .env');
+  }
+  
   try {
     // Generate a unique filename
     const fileExt = file.name.split('.').pop();
@@ -56,6 +70,10 @@ export async function deleteImage(
   imageUrl: string,
   bucket: string = 'product-images'
 ): Promise<void> {
+  if (!supabase) {
+    throw new Error('Supabase no está configurado. Agrega VITE_SUPABASE_URL y VITE_SUPABASE_ANON_KEY a tu archivo .env');
+  }
+  
   try {
     // Extract the file path from the URL
     const url = new URL(imageUrl);

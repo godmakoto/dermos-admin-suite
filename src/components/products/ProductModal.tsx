@@ -21,7 +21,7 @@ import { X, GripVertical, Link as LinkIcon, Upload, Loader2 } from "lucide-react
 import { Product } from "@/types";
 import { useApp } from "@/contexts/AppContext";
 import { useToast } from "@/hooks/use-toast";
-import { uploadImage } from "@/lib/supabase";
+import { uploadImage, isSupabaseConfigured } from "@/lib/supabase";
 
 interface ProductModalProps {
   open: boolean;
@@ -545,38 +545,48 @@ export const ProductModal = ({ open, onClose, product }: ProductModalProps) => {
                   {/* Upload image file */}
                   <div className="space-y-2">
                     <Label>Subir imagen desde tu dispositivo</Label>
-                    <div className="flex flex-col gap-2">
-                      <input
-                        ref={fileInputRef}
-                        type="file"
-                        accept="image/jpeg,image/jpg,image/png,image/webp,image/gif"
-                        onChange={handleFileUpload}
-                        className="hidden"
-                        disabled={isUploading}
-                      />
-                      <Button
-                        type="button"
-                        onClick={() => fileInputRef.current?.click()}
-                        variant="outline"
-                        disabled={isUploading}
-                        className="w-full"
-                      >
-                        {isUploading ? (
-                          <>
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                            Subiendo...
-                          </>
-                        ) : (
-                          <>
-                            <Upload className="mr-2 h-4 w-4" />
-                            Seleccionar imagen
-                          </>
-                        )}
-                      </Button>
-                      <p className="text-xs text-muted-foreground">
-                        Formatos permitidos: JPG, PNG, WEBP, GIF. Tamaño máximo: 5MB
-                      </p>
-                    </div>
+                    {isSupabaseConfigured() ? (
+                      <div className="flex flex-col gap-2">
+                        <input
+                          ref={fileInputRef}
+                          type="file"
+                          accept="image/jpeg,image/jpg,image/png,image/webp,image/gif"
+                          onChange={handleFileUpload}
+                          className="hidden"
+                          disabled={isUploading}
+                        />
+                        <Button
+                          type="button"
+                          onClick={() => fileInputRef.current?.click()}
+                          variant="outline"
+                          disabled={isUploading}
+                          className="w-full"
+                        >
+                          {isUploading ? (
+                            <>
+                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                              Subiendo...
+                            </>
+                          ) : (
+                            <>
+                              <Upload className="mr-2 h-4 w-4" />
+                              Seleccionar imagen
+                            </>
+                          )}
+                        </Button>
+                        <p className="text-xs text-muted-foreground">
+                          Formatos permitidos: JPG, PNG, WEBP, GIF. Tamaño máximo: 5MB
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="rounded-lg border border-muted bg-muted/30 p-4">
+                        <p className="text-sm text-muted-foreground">
+                          La funcionalidad de subida de imágenes requiere configurar Supabase.
+                          Agrega <code className="rounded bg-muted px-1 py-0.5 text-xs">VITE_SUPABASE_URL</code> y{' '}
+                          <code className="rounded bg-muted px-1 py-0.5 text-xs">VITE_SUPABASE_ANON_KEY</code> a tu archivo .env para habilitar esta función.
+                        </p>
+                      </div>
+                    )}
                   </div>
 
                   {/* Image list */}
