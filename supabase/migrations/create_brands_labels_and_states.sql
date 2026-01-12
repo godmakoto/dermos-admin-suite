@@ -8,11 +8,10 @@ CREATE TABLE IF NOT EXISTS public.brands (
     created_at timestamp with time zone DEFAULT now()
 );
 
--- Create labels table (propiedades)
+-- Create labels table (propiedades/características del producto)
 CREATE TABLE IF NOT EXISTS public.labels (
     id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
     name text NOT NULL UNIQUE,
-    color text NOT NULL,
     created_at timestamp with time zone DEFAULT now()
 );
 
@@ -45,12 +44,20 @@ INSERT INTO public.brands (name) VALUES
     ('Evelyn Cosmetics')
 ON CONFLICT (name) DO NOTHING;
 
--- Insert default labels (propiedades)
-INSERT INTO public.labels (name, color) VALUES
-    ('Nuevo', '#22c55e'),
-    ('Bestseller', '#3b82f6'),
-    ('Oferta', '#ef4444'),
-    ('Agotado', '#6b7280')
+-- Insert default labels (propiedades/características para filtrado)
+INSERT INTO public.labels (name) VALUES
+    ('Libre de parabenos'),
+    ('Vegano'),
+    ('Cruelty-free'),
+    ('Sin fragancia'),
+    ('Hipoalergénico'),
+    ('Dermatológicamente testado'),
+    ('Oil-free'),
+    ('Non-comedogénico'),
+    ('Para piel sensible'),
+    ('Con SPF'),
+    ('Antioxidante'),
+    ('Hidratante')
 ON CONFLICT (name) DO NOTHING;
 
 -- Insert default product carousel states
@@ -70,11 +77,10 @@ ON CONFLICT (name) DO NOTHING;
 
 -- Add comments to document the tables
 COMMENT ON TABLE public.brands IS 'Product brands';
-COMMENT ON TABLE public.labels IS 'Product labels/properties (Nuevo, Bestseller, etc.)';
+COMMENT ON TABLE public.labels IS 'Product properties/characteristics for search filtering (e.g., Vegano, Libre de parabenos, Hipoalergénico)';
 COMMENT ON TABLE public.product_carousel_states IS 'States for product carousel display on the website';
 COMMENT ON TABLE public.order_statuses IS 'Order status options';
 
-COMMENT ON COLUMN public.labels.color IS 'Hex color code for label display';
 COMMENT ON COLUMN public.product_carousel_states.type IS 'Display type: carousel or banner';
 COMMENT ON COLUMN public.product_carousel_states.color IS 'Hex color code for state display';
 COMMENT ON COLUMN public.order_statuses.color IS 'Hex color code for status display';

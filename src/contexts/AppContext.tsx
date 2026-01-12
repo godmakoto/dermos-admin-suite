@@ -534,7 +534,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const addLabel = async (label: Label) => {
     if (supabase) {
       try {
-        const newLabel = await brandService.createLabel(label.name, label.color);
+        const newLabel = await brandService.createLabel(label.name);
         setLabels((prev) => [...prev, newLabel]);
       } catch (error) {
         console.error('Failed to create label:', error);

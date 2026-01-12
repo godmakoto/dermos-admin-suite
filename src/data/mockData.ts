@@ -26,10 +26,12 @@ export const mockBrands: Brand[] = [
 ];
 
 export const mockLabels: Label[] = [
-  { id: "1", name: "Nuevo", color: "#22c55e" },
-  { id: "2", name: "Bestseller", color: "#3b82f6" },
-  { id: "3", name: "Oferta", color: "#ef4444" },
-  { id: "4", name: "Agotado", color: "#6b7280" },
+  { id: "1", name: "Libre de parabenos" },
+  { id: "2", name: "Vegano" },
+  { id: "3", name: "Cruelty-free" },
+  { id: "4", name: "Sin fragancia" },
+  { id: "5", name: "Hipoalergénico" },
+  { id: "6", name: "Dermatológicamente testado" },
 ];
 
 export const mockOrderStatuses: OrderStatus[] = [

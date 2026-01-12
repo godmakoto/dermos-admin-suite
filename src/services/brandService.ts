@@ -86,18 +86,17 @@ export async function getLabels(): Promise<Label[]> {
   return (data || []).map(label => ({
     id: label.id,
     name: label.name,
-    color: label.color,
   }));
 }
 
-export async function createLabel(name: string, color: string): Promise<Label> {
+export async function createLabel(name: string): Promise<Label> {
   if (!supabase) {
     throw new Error('Supabase is not configured. Please set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY.');
   }
 
   const { data, error } = await supabase
     .from('labels')
-    .insert([{ name, color }])
+    .insert([{ name }])
     .select()
     .single();
 
@@ -109,7 +108,6 @@ export async function createLabel(name: string, color: string): Promise<Label> {
   return {
     id: data.id,
     name: data.name,
-    color: data.color,
   };
 }
 
