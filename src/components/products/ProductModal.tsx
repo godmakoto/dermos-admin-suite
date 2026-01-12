@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   Dialog,
   DialogContent,
@@ -17,10 +17,11 @@ import {
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Checkbox } from "@/components/ui/checkbox";
-import { X, GripVertical, Link as LinkIcon } from "lucide-react";
+import { X, GripVertical, Link as LinkIcon, Upload, Loader2 } from "lucide-react";
 import { Product } from "@/types";
 import { useApp } from "@/contexts/AppContext";
 import { useToast } from "@/hooks/use-toast";
+import { uploadImage } from "@/lib/supabase";
 
 interface ProductModalProps {
   open: boolean;
@@ -53,6 +54,8 @@ export const ProductModal = ({ open, onClose, product }: ProductModalProps) => {
   });
 
   const [imageUrl, setImageUrl] = useState("");
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (product) {
@@ -151,6 +154,65 @@ export const ProductModal = ({ open, onClose, product }: ProductModalProps) => {
         images: [...prev.images, imageUrl.trim()],
       }));
       setImageUrl("");
+    }
+  };
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif'];
+    if (!validTypes.includes(file.type)) {
+      toast({
+        title: "Tipo de archivo inválido",
+        description: "Solo se permiten imágenes (JPG, PNG, WEBP, GIF)",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Validate file size (max 5MB)
+    const maxSize = 5 * 1024 * 1024; // 5MB in bytes
+    if (file.size > maxSize) {
+      toast({
+        title: "Archivo muy grande",
+        description: "El tamaño máximo permitido es 5MB",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsUploading(true);
+
+    try {
+      // Upload to Supabase Storage
+      const imageUrl = await uploadImage(file);
+
+      // Add the URL to the images array
+      setFormData((prev) => ({
+        ...prev,
+        images: [...prev.images, imageUrl],
+      }));
+
+      toast({
+        title: "Imagen subida",
+        description: "La imagen se ha subido correctamente",
+      });
+
+      // Reset file input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    } catch (error) {
+      console.error('Upload error:', error);
+      toast({
+        title: "Error al subir imagen",
+        description: "No se pudo subir la imagen. Verifica tu configuración de Supabase.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsUploading(false);
     }
   };
 
@@ -467,6 +529,53 @@ export const ProductModal = ({ open, onClose, product }: ProductModalProps) => {
                         <LinkIcon className="mr-2 h-4 w-4" />
                         Agregar
                       </Button>
+                    </div>
+                  </div>
+
+                  {/* Divider */}
+                  <div className="relative">
+                    <div className="absolute inset-0 flex items-center">
+                      <span className="w-full border-t" />
+                    </div>
+                    <div className="relative flex justify-center text-xs uppercase">
+                      <span className="bg-background px-2 text-muted-foreground">O</span>
+                    </div>
+                  </div>
+
+                  {/* Upload image file */}
+                  <div className="space-y-2">
+                    <Label>Subir imagen desde tu dispositivo</Label>
+                    <div className="flex flex-col gap-2">
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept="image/jpeg,image/jpg,image/png,image/webp,image/gif"
+                        onChange={handleFileUpload}
+                        className="hidden"
+                        disabled={isUploading}
+                      />
+                      <Button
+                        type="button"
+                        onClick={() => fileInputRef.current?.click()}
+                        variant="outline"
+                        disabled={isUploading}
+                        className="w-full"
+                      >
+                        {isUploading ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Subiendo...
+                          </>
+                        ) : (
+                          <>
+                            <Upload className="mr-2 h-4 w-4" />
+                            Seleccionar imagen
+                          </>
+                        )}
+                      </Button>
+                      <p className="text-xs text-muted-foreground">
+                        Formatos permitidos: JPG, PNG, WEBP, GIF. Tamaño máximo: 5MB
+                      </p>
                     </div>
                   </div>
 
