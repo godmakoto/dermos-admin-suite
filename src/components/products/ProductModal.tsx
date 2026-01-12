@@ -111,7 +111,7 @@ export const ProductModal = ({ open, onClose, product }: ProductModalProps) => {
     return selectedCategoryIds.includes(sub.categoryId);
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     const productData: Product = {
@@ -136,15 +136,22 @@ export const ProductModal = ({ open, onClose, product }: ProductModalProps) => {
       updatedAt: new Date(),
     };
 
-    if (product) {
-      updateProduct(productData);
-      toast({ title: "Producto actualizado", description: "Los cambios se han guardado correctamente." });
-    } else {
-      addProduct(productData);
-      toast({ title: "Producto creado", description: "El producto se ha añadido correctamente." });
+    try {
+      if (product) {
+        await updateProduct(productData);
+        toast({ title: "Producto actualizado", description: "Los cambios se han guardado correctamente." });
+      } else {
+        await addProduct(productData);
+        toast({ title: "Producto creado", description: "El producto se ha añadido correctamente." });
+      }
+      onClose();
+    } catch (error) {
+      toast({ 
+        title: "Error", 
+        description: "No se pudo guardar el producto.",
+        variant: "destructive"
+      });
     }
-
-    onClose();
   };
 
   const addImageUrl = () => {

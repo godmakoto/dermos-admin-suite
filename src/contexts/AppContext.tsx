@@ -10,16 +10,20 @@ import {
   mockOrderStatuses,
   mockProductCarouselStates,
 } from "@/data/mockData";
+import * as productService from "@/services/productService";
+import { supabase } from "@/lib/supabase";
 
 interface AppContextType {
   // Products
   products: Product[];
+  isLoadingProducts: boolean;
   addProduct: (product: Product) => void;
   updateProduct: (product: Product) => void;
   deleteProduct: (id: string) => void;
   duplicateProduct: (id: string) => void;
   deleteAllProducts: () => void;
   importProducts: (products: Product[]) => void;
+  refreshProducts: () => Promise<void>;
 
   // Orders
   orders: Order[];
@@ -74,7 +78,8 @@ interface AppContextType {
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [products, setProducts] = useState<Product[]>(mockProducts);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [isLoadingProducts, setIsLoadingProducts] = useState(true);
   const [orders, setOrders] = useState<Order[]>(mockOrders);
   const [categories, setCategories] = useState<Category[]>(mockCategories);
   const [subcategories, setSubcategories] = useState<Subcategory[]>(mockSubcategories);
@@ -84,6 +89,31 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [productCarouselStates, setProductCarouselStates] = useState<ProductCarouselState[]>(mockProductCarouselStates);
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [hideOutOfStock, setHideOutOfStock] = useState(false);
+
+  // Load products from Supabase on mount
+  useEffect(() => {
+    const loadProducts = async () => {
+      if (supabase) {
+        try {
+          setIsLoadingProducts(true);
+          const fetchedProducts = await productService.getProducts();
+          setProducts(fetchedProducts);
+        } catch (error) {
+          console.error('Failed to load products from Supabase:', error);
+          // Fallback to mock data if Supabase fails
+          setProducts(mockProducts);
+        } finally {
+          setIsLoadingProducts(false);
+        }
+      } else {
+        // Use mock data if Supabase is not configured
+        setProducts(mockProducts);
+        setIsLoadingProducts(false);
+      }
+    };
+
+    loadProducts();
+  }, []);
 
   useEffect(() => {
     const savedTheme = localStorage.getItem("theme");
@@ -121,37 +151,119 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   // Products
-  const addProduct = (product: Product) => {
-    setProducts((prev) => [...prev, product]);
+  const refreshProducts = async () => {
+    if (supabase) {
+      try {
+        setIsLoadingProducts(true);
+        const fetchedProducts = await productService.getProducts();
+        setProducts(fetchedProducts);
+      } catch (error) {
+        console.error('Failed to refresh products:', error);
+      } finally {
+        setIsLoadingProducts(false);
+      }
+    }
   };
 
-  const updateProduct = (product: Product) => {
-    setProducts((prev) => prev.map((p) => (p.id === product.id ? product : p)));
+  const addProduct = async (product: Product) => {
+    if (supabase) {
+      try {
+        const newProduct = await productService.createProduct(product);
+        setProducts((prev) => [newProduct, ...prev]);
+      } catch (error) {
+        console.error('Failed to create product:', error);
+        throw error;
+      }
+    } else {
+      setProducts((prev) => [...prev, product]);
+    }
   };
 
-  const deleteProduct = (id: string) => {
-    setProducts((prev) => prev.filter((p) => p.id !== id));
+  const updateProduct = async (product: Product) => {
+    if (supabase) {
+      try {
+        const updatedProduct = await productService.updateProduct(product.id, product);
+        setProducts((prev) => prev.map((p) => (p.id === product.id ? updatedProduct : p)));
+      } catch (error) {
+        console.error('Failed to update product:', error);
+        throw error;
+      }
+    } else {
+      setProducts((prev) => prev.map((p) => (p.id === product.id ? product : p)));
+    }
   };
 
-  const deleteAllProducts = () => {
-    setProducts([]);
+  const deleteProduct = async (id: string) => {
+    if (supabase) {
+      try {
+        await productService.deleteProduct(id);
+        setProducts((prev) => prev.filter((p) => p.id !== id));
+      } catch (error) {
+        console.error('Failed to delete product:', error);
+        throw error;
+      }
+    } else {
+      setProducts((prev) => prev.filter((p) => p.id !== id));
+    }
   };
 
-  const importProducts = (newProducts: Product[]) => {
-    setProducts((prev) => [...prev, ...newProducts]);
+  const deleteAllProducts = async () => {
+    if (supabase) {
+      // For Supabase, we delete products one by one
+      try {
+        await Promise.all(products.map(p => productService.deleteProduct(p.id)));
+        setProducts([]);
+      } catch (error) {
+        console.error('Failed to delete all products:', error);
+        throw error;
+      }
+    } else {
+      setProducts([]);
+    }
   };
 
-  const duplicateProduct = (id: string) => {
+  const importProducts = async (newProducts: Product[]) => {
+    if (supabase) {
+      try {
+        const createdProducts = await Promise.all(
+          newProducts.map(p => productService.createProduct(p))
+        );
+        setProducts((prev) => [...prev, ...createdProducts]);
+      } catch (error) {
+        console.error('Failed to import products:', error);
+        throw error;
+      }
+    } else {
+      setProducts((prev) => [...prev, ...newProducts]);
+    }
+  };
+
+  const duplicateProduct = async (id: string) => {
     const product = products.find((p) => p.id === id);
     if (product) {
-      const newProduct: Product = {
+      const newProduct: Partial<Product> = {
         ...product,
-        id: `${Date.now()}`,
+        id: undefined, // Let Supabase generate new ID
         name: `${product.name} (Copia)`,
         createdAt: new Date(),
         updatedAt: new Date(),
       };
-      setProducts((prev) => [...prev, newProduct]);
+      
+      if (supabase) {
+        try {
+          const created = await productService.createProduct(newProduct as Product);
+          setProducts((prev) => [created, ...prev]);
+        } catch (error) {
+          console.error('Failed to duplicate product:', error);
+          throw error;
+        }
+      } else {
+        const localProduct: Product = {
+          ...newProduct as Product,
+          id: `${Date.now()}`,
+        };
+        setProducts((prev) => [...prev, localProduct]);
+      }
     }
   };
 
@@ -307,12 +419,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     <AppContext.Provider
       value={{
         products,
+        isLoadingProducts,
         addProduct,
         updateProduct,
         deleteProduct,
         duplicateProduct,
         deleteAllProducts,
         importProducts,
+        refreshProducts,
         orders,
         addOrder,
         updateOrder,
