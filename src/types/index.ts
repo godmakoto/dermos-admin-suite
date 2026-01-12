@@ -20,11 +20,10 @@ export interface SupabaseProduct {
   image_6: string | null;
   image_7: string | null;
   brand: string | null;
-  label: string | null;
+  label: string | null; // Product property (e.g., Nuevo, Popular)
   carousel_state: string | null;
   categories: string[]; // JSON array stored as JSONB
   subcategories: string[]; // JSON array stored as JSONB
-  status: string | null; // 'Activo', 'Inactivo', 'Agotado'
   track_stock: boolean | null;
   stock: number | null;
   created_at: string; // ISO timestamp

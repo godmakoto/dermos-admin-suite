@@ -32,7 +32,7 @@ export function supabaseToProduct(supabaseProduct: SupabaseProduct): Product {
     images,
     trackStock: supabaseProduct.track_stock || false,
     stock: supabaseProduct.stock || 0,
-    status: (supabaseProduct.status as 'Activo' | 'Inactivo' | 'Agotado') || 'Activo',
+    status: 'Activo', // Default status, managed at app level only
     createdAt: new Date(supabaseProduct.created_at),
     updatedAt: supabaseProduct.updated_at ? new Date(supabaseProduct.updated_at) : new Date(supabaseProduct.created_at),
   };
@@ -64,7 +64,6 @@ export function productToSupabase(product: Partial<Product>): Partial<SupabasePr
     carousel_state: product.carouselState || null,
     categories: product.categories || [],
     subcategories: product.subcategories || [],
-    status: product.status || 'Activo',
     track_stock: product.trackStock || false,
     stock: product.stock || 0,
   };

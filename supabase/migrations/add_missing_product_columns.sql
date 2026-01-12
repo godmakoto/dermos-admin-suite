@@ -7,7 +7,6 @@ ADD COLUMN IF NOT EXISTS short_description text,
 ADD COLUMN IF NOT EXISTS brand text,
 ADD COLUMN IF NOT EXISTS label text,
 ADD COLUMN IF NOT EXISTS carousel_state text,
-ADD COLUMN IF NOT EXISTS status text DEFAULT 'Activo',
 ADD COLUMN IF NOT EXISTS track_stock boolean DEFAULT false,
 ADD COLUMN IF NOT EXISTS stock integer DEFAULT 0,
 ADD COLUMN IF NOT EXISTS updated_at timestamp with time zone DEFAULT now();
@@ -38,11 +37,10 @@ CREATE TRIGGER update_products_updated_at
 -- Add comments to document the columns
 COMMENT ON COLUMN public.products.short_description IS 'Brief description of the product';
 COMMENT ON COLUMN public.products.brand IS 'Brand name of the product';
-COMMENT ON COLUMN public.products.label IS 'Product label or property';
+COMMENT ON COLUMN public.products.label IS 'Product label or property (e.g., Nuevo, Popular, etc.)';
 COMMENT ON COLUMN public.products.carousel_state IS 'State of the product in carousel (e.g., featured, banner)';
-COMMENT ON COLUMN public.products.status IS 'Product status: Activo, Inactivo, or Agotado';
 COMMENT ON COLUMN public.products.track_stock IS 'Whether to track stock for this product';
-COMMENT ON COLUMN public.products.stock IS 'Current stock quantity';
+COMMENT ON COLUMN public.products.stock IS 'Current stock quantity (only relevant if track_stock is true)';
 COMMENT ON COLUMN public.products.categories IS 'Array of category names (stored as JSON)';
 COMMENT ON COLUMN public.products.subcategories IS 'Array of subcategory names (stored as JSON)';
 COMMENT ON COLUMN public.products.updated_at IS 'Timestamp of last update';
