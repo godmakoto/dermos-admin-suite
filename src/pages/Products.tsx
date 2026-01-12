@@ -29,10 +29,11 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 
 const Products = () => {
-  const { products, categories, brands, deleteProduct, duplicateProduct, updateProduct, hideOutOfStock } = useApp();
+  const { products, categories, subcategories, brands, deleteProduct, duplicateProduct, updateProduct, hideOutOfStock } = useApp();
   const { toast } = useToast();
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
@@ -43,6 +44,8 @@ const Products = () => {
   const [bulkEditModalOpen, setBulkEditModalOpen] = useState(false);
   const [bulkEditData, setBulkEditData] = useState({
     brand: "",
+    categories: [] as string[],
+    subcategories: [] as string[],
   });
 
   // Filter states
@@ -260,6 +263,20 @@ const Products = () => {
           updates.brand = bulkEditData.brand;
         }
 
+        // Add selected categories (merge with existing, no duplicates)
+        if (bulkEditData.categories.length > 0) {
+          const existingCategories = product.categories || [];
+          const mergedCategories = [...new Set([...existingCategories, ...bulkEditData.categories])];
+          updates.categories = mergedCategories;
+        }
+
+        // Add selected subcategories (merge with existing, no duplicates)
+        if (bulkEditData.subcategories.length > 0) {
+          const existingSubcategories = product.subcategories || [];
+          const mergedSubcategories = [...new Set([...existingSubcategories, ...bulkEditData.subcategories])];
+          updates.subcategories = mergedSubcategories;
+        }
+
         if (Object.keys(updates).length > 0) {
           try {
             await updateProduct({ ...product, ...updates });
@@ -273,7 +290,7 @@ const Products = () => {
 
     setBulkEditModalOpen(false);
     setSelectedProducts([]);
-    setBulkEditData({ brand: "" });
+    setBulkEditData({ brand: "", categories: [], subcategories: [] });
 
     if (errors.length > 0) {
       toast({
@@ -554,10 +571,10 @@ const Products = () => {
           <DialogHeader>
             <DialogTitle>Editar {selectedProducts.length} productos</DialogTitle>
             <DialogDescription>
-              Los campos vacíos no se modificarán
+              Las categorías y subcategorías se agregarán a las existentes. La marca reemplazará la actual.
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4 py-4">
+          <div className="space-y-4 py-4 max-h-[60vh] overflow-y-auto">
             <div className="space-y-2">
               <Label>Marca</Label>
               <Select value={bulkEditData.brand} onValueChange={(value) => setBulkEditData({ ...bulkEditData, brand: value })}>
@@ -572,6 +589,83 @@ const Products = () => {
                   ))}
                 </SelectContent>
               </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label>Categorías (se agregan a las existentes)</Label>
+              <div className="border rounded-md p-3 max-h-48 overflow-y-auto space-y-2">
+                {categories.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">No hay categorías disponibles</p>
+                ) : (
+                  categories.map((cat) => (
+                    <div key={cat.id} className="flex items-center space-x-2">
+                      <Checkbox
+                        id={`bulk-cat-${cat.id}`}
+                        checked={bulkEditData.categories.includes(cat.name)}
+                        onCheckedChange={(checked) => {
+                          if (checked) {
+                            setBulkEditData({
+                              ...bulkEditData,
+                              categories: [...bulkEditData.categories, cat.name],
+                            });
+                          } else {
+                            setBulkEditData({
+                              ...bulkEditData,
+                              categories: bulkEditData.categories.filter((c) => c !== cat.name),
+                            });
+                          }
+                        }}
+                      />
+                      <label
+                        htmlFor={`bulk-cat-${cat.id}`}
+                        className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                      >
+                        {cat.name}
+                      </label>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label>Subcategorías (se agregan a las existentes)</Label>
+              <div className="border rounded-md p-3 max-h-48 overflow-y-auto space-y-2">
+                {subcategories.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">No hay subcategorías disponibles</p>
+                ) : (
+                  subcategories.map((sub) => {
+                    const category = categories.find((c) => c.id === sub.categoryId);
+                    return (
+                      <div key={sub.id} className="flex items-center space-x-2">
+                        <Checkbox
+                          id={`bulk-sub-${sub.id}`}
+                          checked={bulkEditData.subcategories.includes(sub.name)}
+                          onCheckedChange={(checked) => {
+                            if (checked) {
+                              setBulkEditData({
+                                ...bulkEditData,
+                                subcategories: [...bulkEditData.subcategories, sub.name],
+                              });
+                            } else {
+                              setBulkEditData({
+                                ...bulkEditData,
+                                subcategories: bulkEditData.subcategories.filter((s) => s !== sub.name),
+                              });
+                            }
+                          }}
+                        />
+                        <label
+                          htmlFor={`bulk-sub-${sub.id}`}
+                          className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                        >
+                          {sub.name} {category && <span className="text-muted-foreground">({category.name})</span>}
+                        </label>
+                      </div>
+                    );
+                  })
+                )}
+              </div>
             </div>
           </div>
           <DialogFooter>
