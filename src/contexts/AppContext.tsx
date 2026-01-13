@@ -2,7 +2,6 @@ import React, { createContext, useContext, useState, useEffect } from "react";
 import { Product, Order, Category, Subcategory, Brand, Label, OrderStatus, ProductCarouselState } from "@/types";
 import {
   mockProducts,
-  mockOrders,
   mockCategories,
   mockSubcategories,
   mockBrands,
@@ -83,7 +82,7 @@ const AppContext = createContext<AppContextType | undefined>(undefined);
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [products, setProducts] = useState<Product[]>([]);
   const [isLoadingProducts, setIsLoadingProducts] = useState(true);
-  const [orders, setOrders] = useState<Order[]>(mockOrders);
+  const [orders, setOrders] = useState<Order[]>([]);
   const [categories, setCategories] = useState<Category[]>(mockCategories);
   const [subcategories, setSubcategories] = useState<Subcategory[]>(mockSubcategories);
   const [brands, setBrands] = useState<Brand[]>(mockBrands);
@@ -189,12 +188,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           setOrders(fetchedOrders);
         } catch (error) {
           console.error('Failed to load orders from Supabase:', error);
-          // Fallback to mock data if Supabase fails
-          setOrders(mockOrders);
+          setOrders([]);
         }
       } else if (!supabase) {
-        // Use mock data if Supabase is not configured
-        setOrders(mockOrders);
+        console.warn('Supabase is not configured. Orders will be empty.');
+        setOrders([]);
       }
     };
 
