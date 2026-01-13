@@ -207,16 +207,22 @@ export const OrderModal = ({ open, onClose, order, onOrderSaved }: OrderModalPro
         }
         toast({ title: "Pedido actualizado", description: "El pedido se ha actualizado correctamente." });
       } else {
-        // Generate order number: ORD-YYYYMMDD-HHMMSSMMM
-        const now = new Date();
-        const year = now.getFullYear();
-        const month = String(now.getMonth() + 1).padStart(2, '0');
-        const day = String(now.getDate()).padStart(2, '0');
-        const hours = String(now.getHours()).padStart(2, '0');
-        const minutes = String(now.getMinutes()).padStart(2, '0');
-        const seconds = String(now.getSeconds()).padStart(2, '0');
-        const milliseconds = String(now.getMilliseconds()).padStart(3, '0');
-        const orderNumber = `ORD-${year}${month}${day}-${hours}${minutes}${seconds}${milliseconds}`;
+        // Generate order number: ORD-1000, ORD-1001, ORD-1002, etc.
+        let nextOrderNumber = 1000;
+        if (orders.length > 0) {
+          // Extract numbers from existing order_numbers and find the max
+          const orderNumbers = orders
+            .map(o => {
+              const match = o.order_number.match(/ORD-(\d+)/);
+              return match ? parseInt(match[1]) : 0;
+            })
+            .filter(n => n > 0);
+
+          if (orderNumbers.length > 0) {
+            nextOrderNumber = Math.max(...orderNumbers) + 1;
+          }
+        }
+        const orderNumber = `ORD-${nextOrderNumber}`;
 
         const newOrder: Partial<Order> = {
           order_number: orderNumber,
