@@ -1,135 +1,78 @@
-# Setup Database Variables and Product Performance Improvements
+# Pull Request: Configure Orders section to work with Supabase database
 
-## 📋 Resumen
+## Summary
 
-Este PR configura completamente la integración con Supabase para todas las variables de base de datos del proyecto y optimiza significativamente el rendimiento de carga de productos.
+This PR configures the Orders section in the admin panel to work correctly with the Supabase orders table. It includes major improvements to discount handling, order number formatting, and data loading.
 
----
+## Changes Made
 
-## ✨ Cambios principales
+### 1. **Connect Orders to Supabase** (c5a0c4f)
+- Updated Order and OrderItem interfaces to match Supabase schema
+- Created orderService.ts with full CRUD operations
+- Updated AppContext to load orders from Supabase
+- Modified Orders page to use order_number instead of generic id
+- Rewrote OrderModal to work with new schema
 
-### 1. **Setup de Variables de Base de Datos**
-- ✅ Agregadas columnas faltantes a la tabla `products`:
-  - `short_description`, `brand`, `label`, `carousel_state`
-  - `categories` (JSONB array), `subcategories` (JSONB array)
-  - `track_stock` (boolean), `stock` (integer)
-  - `updated_at` (timestamp con trigger automático)
-- ✅ Tipos TypeScript actualizados para coincidir con el schema de Supabase
-- ✅ Funciones de conversión actualizadas (supabaseToProduct, productToSupabase)
+### 2. **Fix Discount Handling** (e9274ab, ad4c60f, 5e8a4cf)
+- Identified issue: discount field was being used for both automatic product discounts and manual additional discounts
+- **Solution**: Added separate `product_discounts` column to orders table
+- Created migration: `add_product_discounts_column.sql`
+- Updated TypeScript types to include product_discounts field
+- Updated orderService and OrderModal to calculate and save both discount types separately
+- Now discount structure is clear:
+  - `discount`: Manual additional discount (what admin enters)
+  - `product_discounts`: Automatic discounts from products with sale prices
 
-### 2. **Categorías y Subcategorías**
-- ✅ Creadas tablas `categories` y `subcategories` en Supabase
-- ✅ **15 categorías reales** insertadas:
-  - Limpiadores, Hidratantes Faciales, Hidratantes Corporales, Protectores Solares
-  - Serums, Exfoliantes faciales/corporales, Desmaquillantes
-  - Tónicos, Agua Termal, Capilar, Maquillaje, Kits, Labios, Mascarillas
-- ✅ Subcategorías correspondientes para cada categoría
-- ✅ Servicio completo CRUD para categorías y subcategorías
-- ✅ Frontend actualizado para cargar desde Supabase
+### 3. **Remove Mock Orders** (3cef056, 8be63d2)
+- Removed initialization with mockOrders data
+- Orders now load only from Supabase database
+- No more fallback to fake orders when database fails
+- Added SQL script to verify orders column usage
 
-### 3. **Marcas, Propiedades y Estados**
-- ✅ Creadas tablas `brands`, `labels`, `product_carousel_states`, `order_statuses`
-- ✅ **8 marcas** predefinidas: La Roche-Posay, Bioderma, CeraVe, Avène, etc.
-- ✅ **12 propiedades** de productos (características para filtrado):
-  - Libre de parabenos, Vegano, Cruelty-free, Sin fragancia
-  - Hipoalergénico, Dermatológicamente testado, Oil-free, etc.
-- ✅ Estados de carrusel y estados de pedidos configurados
-- ✅ Servicios completos para todas las entidades
+### 4. **Change Order Number Format** (8ed11ce, b6ed4ba)
+- Changed from timestamp format: `ORD-20260113-012251521`
+- To sequential format: `ORD-1000`, `ORD-1001`, `ORD-1002`, etc.
+- Easier to read, communicate, and remember
+- Auto-increments based on highest existing order number
+- Added SQL script to reset orders and start fresh
+- Created prompt for web client to implement same format
 
-### 4. **Fix: Contadores de Stock**
-- ✅ Corregido contador "Agotados" que mostraba 470 productos incorrectamente
-- ✅ Los contadores ahora solo aplican a productos con `trackStock: true`
-- ✅ Filtros de stock corregidos para verificar `trackStock` primero
-- ✅ Badge de stock en ProductCard solo se muestra si `trackStock: true`
+## Files Modified
 
-### 5. **Optimización: Infinite Scroll**
-- ✅ Implementado infinite scroll usando Intersection Observer API
-- ✅ **Carga inicial reducida de 470 → 20 productos** (96% de reducción)
-- ✅ Carga automática de 20 productos adicionales al hacer scroll
-- ✅ Indicador visual de progreso ("X de Y productos")
-- ✅ Reset automático a 20 productos al cambiar filtros
-- ✅ **Mejora significativa en rendimiento de carga inicial**
+### Core Files
+- src/types/index.ts: Updated Order, OrderItem, SupabaseOrder interfaces
+- src/services/orderService.ts: Created new service with CRUD operations
+- src/contexts/AppContext.tsx: Updated order loading from Supabase
+- src/pages/Orders.tsx: Updated to use order_number, async status changes
+- src/components/orders/OrderModal.tsx: Complete rewrite for new schema
 
----
+### SQL Scripts & Documentation
+- supabase/migrations/add_product_discounts_column.sql: New migration for discount separation
+- supabase/check_discounts_structure.sql: Verify discount structure in orders
+- supabase/check_orders_columns.sql: Check which columns are being used
+- supabase/reset_orders.sql: Reset all orders to start with new format
+- supabase/prompt_for_web_client_order_number.md: Guide for updating web client
 
-## 🗃️ Migraciones SQL
+## Database Schema Changes
 
-Se crearon 3 migraciones que deben ejecutarse en Supabase:
+New column added to orders table:
+- product_discounts (numeric, default 0): Stores automatic discounts from sale prices
 
-1. **`add_missing_product_columns.sql`**
-   - Agrega columnas faltantes a la tabla products
-   - Crea trigger para actualizar `updated_at` automáticamente
+## Breaking Changes
 
-2. **`create_categories_and_subcategories.sql`**
-   - Crea tablas categories y subcategories
-   - Inserta 15 categorías con sus subcategorías
+⚠️ **Important**: The web client (evelyn-cosmetics-header) needs to be updated to:
+1. Save automatic discounts to product_discounts instead of discount
+2. Use the new sequential order number format (ORD-1000, ORD-1001, etc.)
 
-3. **`create_brands_labels_and_states.sql`**
-   - Crea tablas brands, labels, product_carousel_states, order_statuses
-   - Inserta datos predefinidos
+## Testing
 
----
+- ✅ Admin panel creates orders with new format
+- ✅ Discount separation works correctly
+- ✅ Orders load only from Supabase
+- ✅ Order number auto-increments properly
 
-## 📦 Archivos modificados
+## Next Steps
 
-### Nuevos archivos
-- `src/services/categoryService.ts` - Servicio CRUD para categorías
-- `src/services/brandService.ts` - Servicio CRUD para marcas, labels, etc.
-- `supabase/migrations/*.sql` - 3 migraciones SQL
-
-### Archivos actualizados
-- `src/types/index.ts` - Tipos actualizados
-- `src/services/productService.ts` - Conversiones actualizadas
-- `src/contexts/AppContext.tsx` - Carga desde Supabase
-- `src/pages/Products.tsx` - Infinite scroll + fix contadores
-- `src/components/products/ProductCard.tsx` - Fix stock badge
-
----
-
-## 🚀 Impacto en rendimiento
-
-**Antes:**
-- Renderizado de 470 productos simultáneamente
-- Tiempo de carga inicial: ~3-5 segundos
-- Uso alto de memoria
-- Scroll poco fluido
-
-**Después:**
-- Renderizado inicial de solo 20 productos
-- Tiempo de carga inicial: <1 segundo
-- Uso optimizado de memoria
-- Scroll fluido con carga progresiva
-
----
-
-## ✅ Testing
-
-- [x] Carga de productos desde Supabase funciona correctamente
-- [x] Categorías y subcategorías se cargan desde la base de datos
-- [x] Marcas y propiedades se cargan correctamente
-- [x] Contadores de stock muestran valores correctos
-- [x] Infinite scroll funciona suavemente
-- [x] Reset de scroll al cambiar filtros funciona
-- [x] Fallback a mock data si Supabase no está configurado
-
----
-
-## 📝 Pasos para probar
-
-1. Ejecutar las 3 migraciones SQL en Supabase
-2. Verificar que las variables de entorno estén configuradas
-3. Recargar la aplicación
-4. Verificar que:
-   - Solo cargan 20 productos inicialmente
-   - Al hacer scroll se cargan más automáticamente
-   - Los contadores de stock muestran 0 (sin seguimiento habilitado)
-   - Las categorías aparecen en el formulario de productos
-   - Las marcas y propiedades están disponibles
-
----
-
-## 🔗 Relacionado
-
-- Fixes: Contadores de stock incorrectos
-- Improves: Rendimiento de carga de productos
-- Adds: Integración completa con Supabase
+1. Execute supabase/migrations/add_product_discounts_column.sql in Supabase
+2. Execute supabase/reset_orders.sql to clean existing orders (optional)
+3. Update evelyn-cosmetics-header to use new discount structure and order format
