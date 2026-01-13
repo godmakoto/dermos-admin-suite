@@ -69,10 +69,18 @@ const Orders = () => {
     setModalOpen(true);
   };
 
-  const handleStatusChange = (orderId: string, newStatus: string) => {
+  const handleStatusChange = async (orderId: string, newStatus: string) => {
     const order = orders.find((o) => o.id === orderId);
     if (order) {
-      updateOrder({ ...order, status: newStatus });
+      // Find the status_id for the new status
+      const statusObj = orderStatuses.find((s) => s.name === newStatus);
+      if (statusObj) {
+        try {
+          await updateOrder({ ...order, status: newStatus, status_id: statusObj.id });
+        } catch (error) {
+          console.error('Failed to update order status:', error);
+        }
+      }
     }
   };
 
@@ -137,7 +145,12 @@ const Orders = () => {
 
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
-      result = result.filter((o) => o.id.toLowerCase().includes(query));
+      result = result.filter(
+        (o) =>
+          o.order_number.toLowerCase().includes(query) ||
+          o.customer_name.toLowerCase().includes(query) ||
+          o.customer_phone.toLowerCase().includes(query)
+      );
     }
 
     if (statusFilter !== "all") {
@@ -170,12 +183,12 @@ const Orders = () => {
 
   const columns = [
     {
-      key: "id",
+      key: "order_number",
       label: "Pedido",
       className: "w-[35%] text-center",
       render: (order: Order) => (
         <div className="flex flex-col items-center">
-          <span className="font-medium text-sm">{order.id}</span>
+          <span className="font-medium text-sm">{order.order_number}</span>
           <p className="text-xs text-muted-foreground">
             {format(order.createdAt, "dd MMM", { locale: es })}
           </p>

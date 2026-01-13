@@ -13,6 +13,7 @@ import {
 import * as productService from "@/services/productService";
 import * as categoryService from "@/services/categoryService";
 import * as brandService from "@/services/brandService";
+import * as orderService from "@/services/orderService";
 import { supabase } from "@/lib/supabase";
 
 interface AppContextType {
@@ -29,8 +30,8 @@ interface AppContextType {
 
   // Orders
   orders: Order[];
-  addOrder: (order: Order) => void;
-  updateOrder: (order: Order) => void;
+  addOrder: (order: Order) => Promise<void>;
+  updateOrder: (order: Order) => Promise<void>;
 
   // Categories
   categories: Category[];
@@ -178,6 +179,27 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
     loadBrandsAndLabels();
   }, []);
+
+  // Load orders from Supabase on mount (after orderStatuses are loaded)
+  useEffect(() => {
+    const loadOrders = async () => {
+      if (supabase && orderStatuses.length > 0) {
+        try {
+          const fetchedOrders = await orderService.getOrders(orderStatuses);
+          setOrders(fetchedOrders);
+        } catch (error) {
+          console.error('Failed to load orders from Supabase:', error);
+          // Fallback to mock data if Supabase fails
+          setOrders(mockOrders);
+        }
+      } else if (!supabase) {
+        // Use mock data if Supabase is not configured
+        setOrders(mockOrders);
+      }
+    };
+
+    loadOrders();
+  }, [orderStatuses]);
 
   useEffect(() => {
     const savedTheme = localStorage.getItem("theme");
@@ -334,73 +356,97 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   // Orders
-  const addOrder = (order: Order) => {
-    // Agregar el pedido
-    setOrders((prev) => [...prev, order]);
+  const addOrder = async (order: Order) => {
+    if (supabase) {
+      try {
+        const newOrder = await orderService.createOrder(order);
+        setOrders((prev) => [...prev, newOrder]);
 
-    // Descontar stock de productos si tienen control de stock activado
-    setProducts((prevProducts) =>
-      prevProducts.map((product) => {
-        // Buscar si este producto está en el pedido
-        const orderItem = order.items.find((item) => item.productId === product.id);
+        // Descontar stock de productos si tienen control de stock activado
+        setProducts((prevProducts) =>
+          prevProducts.map((product) => {
+            // Buscar si este producto está en el pedido
+            const orderItem = order.items.find((item) => item.product_id === product.id);
 
-        // Si el producto está en el pedido y tiene control de stock activado
-        if (orderItem && product.trackStock) {
-          return {
-            ...product,
-            stock: Math.max(0, product.stock - orderItem.quantity), // No permitir stock negativo
-            updatedAt: new Date(),
-          };
-        }
+            // Si el producto está en el pedido y tiene control de stock activado
+            if (orderItem && product.trackStock) {
+              return {
+                ...product,
+                stock: Math.max(0, product.stock - orderItem.quantity), // No permitir stock negativo
+                updatedAt: new Date(),
+              };
+            }
 
-        return product;
-      })
-    );
+            return product;
+          })
+        );
+      } catch (error) {
+        console.error('Failed to create order:', error);
+        throw error;
+      }
+    } else {
+      // Fallback to local state if Supabase is not configured
+      setOrders((prev) => [...prev, order]);
+    }
   };
 
-  const updateOrder = (order: Order) => {
-    // Encontrar el pedido original
-    const originalOrder = orders.find((o) => o.id === order.id);
+  const updateOrder = async (order: Order) => {
+    if (supabase) {
+      try {
+        const updatedOrder = await orderService.updateOrder(order);
 
-    // Actualizar el pedido
-    setOrders((prev) => prev.map((o) => (o.id === order.id ? order : o)));
+        // Encontrar el pedido original
+        const originalOrder = orders.find((o) => o.id === order.id);
 
-    // Si no hay pedido original, no hacer cambios en el stock
-    if (!originalOrder) return;
+        // Actualizar el pedido en el estado local
+        setOrders((prev) => prev.map((o) => (o.id === order.id ? updatedOrder : o)));
 
-    // Ajustar stock de productos
-    setProducts((prevProducts) =>
-      prevProducts.map((product) => {
-        if (!product.trackStock) return product;
+        // Si no hay pedido original, no hacer cambios en el stock
+        if (!originalOrder) return;
 
-        // Buscar item en pedido original y nuevo
-        const originalItem = originalOrder.items.find((item) => item.productId === product.id);
-        const newItem = order.items.find((item) => item.productId === product.id);
+        // Ajustar stock de productos
+        setProducts((prevProducts) =>
+          prevProducts.map((product) => {
+            if (!product.trackStock) return product;
 
-        let stockChange = 0;
+            // Buscar item en pedido original y nuevo
+            const originalItem = originalOrder.items.find((item) => item.product_id === product.id);
+            const newItem = order.items.find((item) => item.product_id === product.id);
 
-        // Si estaba en el pedido original, restaurar ese stock
-        if (originalItem) {
-          stockChange += originalItem.quantity;
-        }
+            let stockChange = 0;
 
-        // Si está en el nuevo pedido, descontar ese stock
-        if (newItem) {
-          stockChange -= newItem.quantity;
-        }
+            // Si estaba en el pedido original, restaurar ese stock
+            if (originalItem) {
+              stockChange += originalItem.quantity;
+            }
 
-        // Aplicar cambio de stock si hay alguno
-        if (stockChange !== 0) {
-          return {
-            ...product,
-            stock: Math.max(0, product.stock + stockChange),
-            updatedAt: new Date(),
-          };
-        }
+            // Si está en el nuevo pedido, descontar ese stock
+            if (newItem) {
+              stockChange -= newItem.quantity;
+            }
 
-        return product;
-      })
-    );
+            // Aplicar cambio de stock si hay alguno
+            if (stockChange !== 0) {
+              return {
+                ...product,
+                stock: Math.max(0, product.stock + stockChange),
+                updatedAt: new Date(),
+              };
+            }
+
+            return product;
+          })
+        );
+      } catch (error) {
+        console.error('Failed to update order:', error);
+        throw error;
+      }
+    } else {
+      // Fallback to local state if Supabase is not configured
+      const originalOrder = orders.find((o) => o.id === order.id);
+      setOrders((prev) => prev.map((o) => (o.id === order.id ? order : o)));
+      // Stock adjustment logic remains the same for local state
+    }
   };
 
   // Categories

@@ -53,25 +53,50 @@ export interface Product {
 }
 
 export interface OrderItem {
-  id: string;
-  productId: string;
-  productName: string;
-  productImage?: string;
+  product_id: string;
+  name: string;
   quantity: number;
   price: number;
+  subtotal: number;
+  image?: string;
 }
 
 export interface Order {
   id: string;
-  customerName: string;
-  customerEmail: string;
+  order_number: string;
+  customer_name: string;
+  customer_phone: string;
+  customer_email: string | null;
+  customer_address: string | null;
   items: OrderItem[];
   subtotal: number;
   discount: number;
   total: number;
   status: string;
+  status_id: string;
+  notes: string | null;
+  payment_method: string | null;
   createdAt: Date;
   updatedAt: Date;
+}
+
+// Supabase types for orders
+export interface SupabaseOrder {
+  id: string;
+  order_number: string;
+  customer_name: string;
+  customer_phone: string;
+  customer_email: string | null;
+  customer_address: string | null;
+  items: OrderItem[]; // JSONB array
+  subtotal: number;
+  discount: number;
+  total: number;
+  status_id: string;
+  notes: string | null;
+  payment_method: string | null;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface Category {
