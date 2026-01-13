@@ -126,7 +126,7 @@ export const OrderModal = ({ open, onClose, order, onOrderSaved }: OrderModalPro
   const calculateSubtotal = () => {
     // Subtotal usando precios originales (sin descuentos)
     return formData.items.reduce((sum, item) => {
-      const product = products.find((p) => p.id === item.productId);
+      const product = products.find((p) => p.id === item.product_id);
       const originalPrice = product?.price || item.price;
       return sum + originalPrice * item.quantity;
     }, 0);
@@ -135,7 +135,7 @@ export const OrderModal = ({ open, onClose, order, onOrderSaved }: OrderModalPro
   const calculateProductDiscounts = () => {
     // Suma de descuentos por productos con precio de oferta
     return formData.items.reduce((sum, item) => {
-      const product = products.find((p) => p.id === item.productId);
+      const product = products.find((p) => p.id === item.product_id);
       if (product && product.salePrice) {
         const discount = (product.price - product.salePrice) * item.quantity;
         return sum + discount;
@@ -160,7 +160,7 @@ export const OrderModal = ({ open, onClose, order, onOrderSaved }: OrderModalPro
 
     // If editing, add back the original quantity from the order (it was already deducted)
     if (isEditing && order) {
-      const originalItem = order.items.find((item) => item.productId === productId);
+      const originalItem = order.items.find((item) => item.product_id === productId);
       if (originalItem) {
         available += originalItem.quantity;
       }
@@ -169,9 +169,9 @@ export const OrderModal = ({ open, onClose, order, onOrderSaved }: OrderModalPro
     return available;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (formData.items.length === 0) {
       toast({ title: "Error", description: "Agrega al menos un producto al pedido.", variant: "destructive" });
       return;
@@ -179,58 +179,93 @@ export const OrderModal = ({ open, onClose, order, onOrderSaved }: OrderModalPro
 
     const discountValue = parseFloat(formData.discount) || 0;
 
-    if (isEditing && order) {
-      const updatedOrder: Order = {
-        ...order,
-        status: formData.status,
-        discount: discountValue,
-        items: formData.items,
-        subtotal: calculateSubtotal(),
-        total: calculateTotal(),
-        updatedAt: new Date(),
-      };
-      updateOrder(updatedOrder);
-      lastSavedOrderIdRef.current = updatedOrder.id;
-      setJustSaved(true);
-      if (onOrderSaved) {
-        onOrderSaved(updatedOrder);
-      }
-    } else {
-      // Generate new order ID
-      const lastOrderId = orders.length > 0
-        ? Math.max(...orders.map(o => parseInt(o.id.replace('#', '')) || 0))
-        : 999;
-      const newOrderId = `#${lastOrderId + 1}`;
+    // Find status_id for the selected status
+    const statusObj = orderStatuses.find((s) => s.name === formData.status);
+    if (!statusObj) {
+      toast({ title: "Error", description: "Estado de pedido inválido.", variant: "destructive" });
+      return;
+    }
 
-      const newOrder: Order = {
-        id: newOrderId,
-        customerName: "",
-        customerEmail: "",
-        status: formData.status,
-        discount: discountValue,
-        items: formData.items,
-        subtotal: calculateSubtotal(),
-        total: calculateTotal(),
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      };
-      addOrder(newOrder);
-      lastSavedOrderIdRef.current = newOrder.id;
-      setJustSaved(true);
-      if (onOrderSaved) {
-        onOrderSaved(newOrder);
+    try {
+      if (isEditing && order) {
+        const updatedOrder: Order = {
+          ...order,
+          status: formData.status,
+          status_id: statusObj.id,
+          discount: discountValue,
+          product_discounts: calculateProductDiscounts(),
+          items: formData.items,
+          subtotal: calculateSubtotal(),
+          total: calculateTotal(),
+          updatedAt: new Date(),
+        };
+        await updateOrder(updatedOrder);
+        lastSavedOrderIdRef.current = updatedOrder.id;
+        setJustSaved(true);
+        if (onOrderSaved) {
+          onOrderSaved(updatedOrder);
+        }
+        toast({ title: "Pedido actualizado", description: "El pedido se ha actualizado correctamente." });
+      } else {
+        // Generate order number: ORD-1000, ORD-1001, ORD-1002, etc.
+        let nextOrderNumber = 1000;
+        if (orders.length > 0) {
+          // Extract numbers from existing order_numbers and find the max
+          const orderNumbers = orders
+            .map(o => {
+              const match = o.order_number.match(/ORD-(\d+)/);
+              return match ? parseInt(match[1]) : 0;
+            })
+            .filter(n => n > 0);
+
+          if (orderNumbers.length > 0) {
+            nextOrderNumber = Math.max(...orderNumbers) + 1;
+          }
+        }
+        const orderNumber = `ORD-${nextOrderNumber}`;
+
+        const newOrder: Partial<Order> = {
+          order_number: orderNumber,
+          customer_name: "Cliente Administrador",
+          customer_phone: "N/A",
+          customer_email: null,
+          customer_address: null,
+          status: formData.status,
+          status_id: statusObj.id,
+          discount: discountValue,
+          product_discounts: calculateProductDiscounts(),
+          items: formData.items,
+          subtotal: calculateSubtotal(),
+          total: calculateTotal(),
+          notes: null,
+          payment_method: null,
+        };
+        await addOrder(newOrder as Order);
+        lastSavedOrderIdRef.current = newOrder.order_number || '';
+        setJustSaved(true);
+        if (onOrderSaved) {
+          onOrderSaved(newOrder as Order);
+        }
+        toast({ title: "Pedido creado", description: "El pedido se ha creado correctamente." });
       }
+    } catch (error) {
+      console.error('Error saving order:', error);
+      toast({
+        title: "Error",
+        description: "No se pudo guardar el pedido. Intente nuevamente.",
+        variant: "destructive"
+      });
     }
   };
 
-  const updateItemQuantity = (itemId: string, delta: number) => {
+  const updateItemQuantity = (productId: string, delta: number) => {
     setJustSaved(false);
     setFormData((prev) => ({
       ...prev,
       items: prev.items.map((item) => {
-        if (item.id === itemId) {
+        if (item.product_id === productId) {
           const newQuantity = item.quantity + delta;
-          const availableStock = getAvailableStock(item.productId);
+          const availableStock = getAvailableStock(item.product_id);
 
           // Don't allow going below 1
           if (newQuantity < 1) return item;
@@ -252,11 +287,11 @@ export const OrderModal = ({ open, onClose, order, onOrderSaved }: OrderModalPro
     }));
   };
 
-  const removeItem = (itemId: string) => {
+  const removeItem = (productId: string) => {
     setJustSaved(false);
     setFormData((prev) => ({
       ...prev,
-      items: prev.items.filter((item) => item.id !== itemId),
+      items: prev.items.filter((item) => item.product_id !== productId),
     }));
   };
 
@@ -278,7 +313,7 @@ export const OrderModal = ({ open, onClose, order, onOrderSaved }: OrderModalPro
       return;
     }
 
-    const existingItem = formData.items.find((item) => item.productId === productId);
+    const existingItem = formData.items.find((item) => item.product_id === productId);
     if (existingItem) {
       // Check if we can add one more
       if (existingItem.quantity >= availableStock) {
@@ -290,18 +325,18 @@ export const OrderModal = ({ open, onClose, order, onOrderSaved }: OrderModalPro
         setProductSearchOpen(false);
         return;
       }
-      updateItemQuantity(existingItem.id, 1);
+      updateItemQuantity(existingItem.product_id, 1);
     } else {
       // Use sale price if available, otherwise use regular price
       const itemPrice = product.salePrice ?? product.price;
 
       const newItem: OrderItem = {
-        id: `item-${Date.now()}`,
-        productId: product.id,
-        productName: product.name,
-        productImage: product.images && product.images.length > 0 ? product.images[0] : undefined,
+        product_id: product.id,
+        name: product.name,
+        image: product.images && product.images.length > 0 ? product.images[0] : undefined,
         quantity: 1,
         price: itemPrice,
+        subtotal: itemPrice,
       };
       setFormData((prev) => ({
         ...prev,
@@ -330,7 +365,7 @@ export const OrderModal = ({ open, onClose, order, onOrderSaved }: OrderModalPro
         {/* Fixed Header */}
         <div className="flex h-14 shrink-0 items-center justify-between border-b border-border bg-background px-4 lg:px-6 lg:rounded-t-xl">
           <DialogTitle className="text-lg font-semibold">
-            {isEditing ? `Editar Pedido ${order.id}` : "Crear Nuevo Pedido"}
+            {isEditing ? `Editar Pedido ${order.order_number}` : "Crear Nuevo Pedido"}
           </DialogTitle>
           <div className="flex items-center gap-2">
             {isEditing && (
@@ -628,22 +663,22 @@ export const OrderModal = ({ open, onClose, order, onOrderSaved }: OrderModalPro
 
             <div className="space-y-2">
               {formData.items.map((item) => {
-                const product = products.find((p) => p.id === item.productId);
-                const availableStock = getAvailableStock(item.productId);
+                const product = products.find((p) => p.id === item.product_id);
+                const availableStock = getAvailableStock(item.product_id);
                 const hasStockTracking = product?.trackStock || false;
                 const isAtMaxStock = hasStockTracking && item.quantity >= availableStock;
 
                 return (
                   <div
-                    key={item.id}
+                    key={item.product_id}
                     className="flex items-center gap-2 rounded-lg border border-border p-2"
                   >
                     {/* Product Image */}
-                    {item.productImage && (
+                    {item.image && (
                       <div className="h-12 w-12 rounded-md overflow-hidden bg-muted flex-shrink-0">
                         <img
-                          src={item.productImage}
-                          alt={item.productName}
+                          src={item.image}
+                          alt={item.name}
                           className="h-full w-full object-cover"
                         />
                       </div>
@@ -651,7 +686,7 @@ export const OrderModal = ({ open, onClose, order, onOrderSaved }: OrderModalPro
 
                     {/* Product Info */}
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium truncate">{item.productName}</p>
+                      <p className="text-sm font-medium truncate">{item.name}</p>
                       <div className="flex items-center gap-2">
                         {product && product.salePrice ? (
                           <>
@@ -682,7 +717,7 @@ export const OrderModal = ({ open, onClose, order, onOrderSaved }: OrderModalPro
                         variant="outline"
                         size="icon"
                         className="h-8 w-8"
-                        onClick={() => updateItemQuantity(item.id, -1)}
+                        onClick={() => updateItemQuantity(item.product_id, -1)}
                         disabled={item.quantity <= 1}
                       >
                         <Minus className="h-3 w-3" />
@@ -693,7 +728,7 @@ export const OrderModal = ({ open, onClose, order, onOrderSaved }: OrderModalPro
                         variant="outline"
                         size="icon"
                         className="h-8 w-8"
-                        onClick={() => updateItemQuantity(item.id, 1)}
+                        onClick={() => updateItemQuantity(item.product_id, 1)}
                         disabled={isAtMaxStock}
                         title={isAtMaxStock ? "Stock máximo alcanzado" : ""}
                       >
@@ -704,7 +739,7 @@ export const OrderModal = ({ open, onClose, order, onOrderSaved }: OrderModalPro
                         variant="ghost"
                         size="icon"
                         className="h-8 w-8 text-destructive"
-                        onClick={() => removeItem(item.id)}
+                        onClick={() => removeItem(item.product_id)}
                       >
                         <X className="h-4 w-4" />
                       </Button>
