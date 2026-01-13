@@ -70,7 +70,8 @@ export interface Order {
   customer_address: string | null;
   items: OrderItem[];
   subtotal: number;
-  discount: number;
+  discount: number; // Manual additional discount
+  product_discounts: number; // Automatic discounts from sale prices
   total: number;
   status: string;
   status_id: string;
@@ -90,7 +91,8 @@ export interface SupabaseOrder {
   customer_address: string | null;
   items: OrderItem[]; // JSONB array
   subtotal: number;
-  discount: number;
+  discount: number; // Manual additional discount
+  product_discounts: number; // Automatic discounts from sale prices
   total: number;
   status_id: string;
   notes: string | null;

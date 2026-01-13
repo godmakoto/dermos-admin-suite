@@ -16,6 +16,7 @@ export function supabaseToOrder(supabaseOrder: SupabaseOrder, orderStatuses: Ord
     items: supabaseOrder.items,
     subtotal: Number(supabaseOrder.subtotal) || 0,
     discount: Number(supabaseOrder.discount) || 0,
+    product_discounts: Number(supabaseOrder.product_discounts) || 0,
     total: Number(supabaseOrder.total) || 0,
     status: status?.name || 'Pendiente',
     status_id: supabaseOrder.status_id,
@@ -38,6 +39,7 @@ export function orderToSupabase(order: Partial<Order>): Partial<SupabaseOrder> {
   if (order.items) supabaseOrder.items = order.items;
   if (order.subtotal !== undefined) supabaseOrder.subtotal = order.subtotal;
   if (order.discount !== undefined) supabaseOrder.discount = order.discount;
+  if (order.product_discounts !== undefined) supabaseOrder.product_discounts = order.product_discounts;
   if (order.total !== undefined) supabaseOrder.total = order.total;
   if (order.status_id) supabaseOrder.status_id = order.status_id;
   if (order.notes !== undefined) supabaseOrder.notes = order.notes;
