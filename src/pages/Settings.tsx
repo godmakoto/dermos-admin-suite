@@ -38,14 +38,18 @@ const Settings = () => {
     labels,
     productCarouselStates,
     addCategory,
+    updateCategory,
     deleteCategory,
     deleteAllCategories,
     addSubcategory,
+    updateSubcategory,
     deleteSubcategory,
     deleteAllSubcategories,
     addBrand,
+    updateBrand,
     deleteBrand,
     addLabel,
+    updateLabel,
     deleteLabel,
     deleteAllLabels,
     resetStore,
@@ -72,6 +76,13 @@ const Settings = () => {
     type: 'category' | 'subcategory' | 'brand' | 'label' | 'carouselState' | null;
     id: string;
     name: string;
+  } | null>(null);
+
+  // Editing states
+  const [editingItem, setEditingItem] = useState<{
+    type: 'category' | 'subcategory' | 'brand' | 'label' | null;
+    id: string;
+    value: string;
   } | null>(null);
 
   const handleAddCategory = () => {
@@ -165,6 +176,47 @@ const Settings = () => {
     }
 
     setDeleteConfirm(null);
+  };
+
+  const handleEdit = async () => {
+    if (!editingItem || !editingItem.value.trim()) return;
+
+    try {
+      switch (editingItem.type) {
+        case 'category':
+          await updateCategory(editingItem.id, editingItem.value.trim());
+          toast({ title: "Categoría actualizada" });
+          break;
+        case 'subcategory':
+          await updateSubcategory(editingItem.id, editingItem.value.trim());
+          toast({ title: "Subcategoría actualizada" });
+          break;
+        case 'brand':
+          await updateBrand(editingItem.id, editingItem.value.trim());
+          toast({ title: "Marca actualizada" });
+          break;
+        case 'label':
+          await updateLabel(editingItem.id, editingItem.value.trim());
+          toast({ title: "Propiedad actualizada" });
+          break;
+      }
+      setEditingItem(null);
+    } catch (error) {
+      console.error('Error updating item:', error);
+      toast({
+        title: "Error",
+        description: "No se pudo actualizar el elemento",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleEditKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleEdit();
+    } else if (e.key === 'Escape') {
+      setEditingItem(null);
+    }
   };
 
   const handleImportCSV = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -286,7 +338,23 @@ const Settings = () => {
                     key={cat.id}
                     className="flex items-center gap-2 rounded-lg border border-border bg-secondary/50 px-3 py-1.5"
                   >
-                    <span className="text-sm">{cat.name}</span>
+                    {editingItem?.type === 'category' && editingItem?.id === cat.id ? (
+                      <Input
+                        value={editingItem.value}
+                        onChange={(e) => setEditingItem({ ...editingItem, value: e.target.value })}
+                        onKeyDown={handleEditKeyDown}
+                        onBlur={handleEdit}
+                        autoFocus
+                        className="h-6 w-32 px-2 py-0 text-sm"
+                      />
+                    ) : (
+                      <span
+                        className="text-sm cursor-pointer hover:text-primary"
+                        onClick={() => setEditingItem({ type: 'category', id: cat.id, value: cat.name })}
+                      >
+                        {cat.name}
+                      </span>
+                    )}
                     <button
                       onClick={() => setDeleteConfirm({ type: 'category', id: cat.id, name: cat.name })}
                       className="text-muted-foreground hover:text-destructive"
@@ -353,7 +421,23 @@ const Settings = () => {
                             key={sub.id}
                             className="flex items-center gap-2 rounded-lg border border-border bg-secondary/50 px-3 py-1.5"
                           >
-                            <span className="text-sm">{sub.name}</span>
+                            {editingItem?.type === 'subcategory' && editingItem?.id === sub.id ? (
+                              <Input
+                                value={editingItem.value}
+                                onChange={(e) => setEditingItem({ ...editingItem, value: e.target.value })}
+                                onKeyDown={handleEditKeyDown}
+                                onBlur={handleEdit}
+                                autoFocus
+                                className="h-6 w-32 px-2 py-0 text-sm"
+                              />
+                            ) : (
+                              <span
+                                className="text-sm cursor-pointer hover:text-primary"
+                                onClick={() => setEditingItem({ type: 'subcategory', id: sub.id, value: sub.name })}
+                              >
+                                {sub.name}
+                              </span>
+                            )}
                             <button
                               onClick={() => setDeleteConfirm({ type: 'subcategory', id: sub.id, name: sub.name })}
                               className="text-muted-foreground hover:text-destructive"
@@ -396,7 +480,23 @@ const Settings = () => {
                     key={brand.id}
                     className="flex items-center gap-2 rounded-lg border border-border bg-secondary/50 px-3 py-1.5"
                   >
-                    <span className="text-sm">{brand.name}</span>
+                    {editingItem?.type === 'brand' && editingItem?.id === brand.id ? (
+                      <Input
+                        value={editingItem.value}
+                        onChange={(e) => setEditingItem({ ...editingItem, value: e.target.value })}
+                        onKeyDown={handleEditKeyDown}
+                        onBlur={handleEdit}
+                        autoFocus
+                        className="h-6 w-32 px-2 py-0 text-sm"
+                      />
+                    ) : (
+                      <span
+                        className="text-sm cursor-pointer hover:text-primary"
+                        onClick={() => setEditingItem({ type: 'brand', id: brand.id, value: brand.name })}
+                      >
+                        {brand.name}
+                      </span>
+                    )}
                     <button
                       onClick={() => setDeleteConfirm({ type: 'brand', id: brand.id, name: brand.name })}
                       className="text-muted-foreground hover:text-destructive"
@@ -433,7 +533,23 @@ const Settings = () => {
                     key={label.id}
                     className="flex items-center gap-2 rounded-lg border border-border bg-secondary/50 px-3 py-1.5"
                   >
-                    <span className="text-sm">{label.name}</span>
+                    {editingItem?.type === 'label' && editingItem?.id === label.id ? (
+                      <Input
+                        value={editingItem.value}
+                        onChange={(e) => setEditingItem({ ...editingItem, value: e.target.value })}
+                        onKeyDown={handleEditKeyDown}
+                        onBlur={handleEdit}
+                        autoFocus
+                        className="h-6 w-32 px-2 py-0 text-sm"
+                      />
+                    ) : (
+                      <span
+                        className="text-sm cursor-pointer hover:text-primary"
+                        onClick={() => setEditingItem({ type: 'label', id: label.id, value: label.name })}
+                      >
+                        {label.name}
+                      </span>
+                    )}
                     <button
                       onClick={() => setDeleteConfirm({ type: 'label', id: label.id, name: label.name })}
                       className="text-muted-foreground hover:text-destructive"

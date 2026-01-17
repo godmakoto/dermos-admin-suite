@@ -35,23 +35,27 @@ interface AppContextType {
   // Categories
   categories: Category[];
   addCategory: (category: Category) => void;
+  updateCategory: (id: string, name: string) => Promise<void>;
   deleteCategory: (id: string) => void;
   deleteAllCategories: () => void;
 
   // Subcategories
   subcategories: Subcategory[];
   addSubcategory: (subcategory: Subcategory) => void;
+  updateSubcategory: (id: string, name: string) => Promise<void>;
   deleteSubcategory: (id: string) => void;
   deleteAllSubcategories: () => void;
 
   // Brands
   brands: Brand[];
   addBrand: (brand: Brand) => void;
+  updateBrand: (id: string, name: string) => Promise<void>;
   deleteBrand: (id: string) => void;
 
   // Labels
   labels: Label[];
   addLabel: (label: Label) => void;
+  updateLabel: (id: string, name: string) => Promise<void>;
   deleteLabel: (id: string) => void;
   deleteAllLabels: () => void;
 
@@ -462,6 +466,20 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
+  const updateCategory = async (id: string, name: string) => {
+    if (supabase) {
+      try {
+        const updated = await categoryService.updateCategory(id, name);
+        setCategories((prev) => prev.map((c) => c.id === id ? updated : c));
+      } catch (error) {
+        console.error('Failed to update category:', error);
+        throw error;
+      }
+    } else {
+      setCategories((prev) => prev.map((c) => c.id === id ? { ...c, name } : c));
+    }
+  };
+
   const deleteCategory = async (id: string) => {
     if (supabase) {
       try {
@@ -514,6 +532,20 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
+  const updateSubcategory = async (id: string, name: string) => {
+    if (supabase) {
+      try {
+        const updated = await categoryService.updateSubcategory(id, name);
+        setSubcategories((prev) => prev.map((s) => s.id === id ? updated : s));
+      } catch (error) {
+        console.error('Failed to update subcategory:', error);
+        throw error;
+      }
+    } else {
+      setSubcategories((prev) => prev.map((s) => s.id === id ? { ...s, name } : s));
+    }
+  };
+
   const deleteSubcategory = async (id: string) => {
     if (supabase) {
       try {
@@ -560,6 +592,20 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
+  const updateBrand = async (id: string, name: string) => {
+    if (supabase) {
+      try {
+        const updated = await brandService.updateBrand(id, name);
+        setBrands((prev) => prev.map((b) => b.id === id ? updated : b));
+      } catch (error) {
+        console.error('Failed to update brand:', error);
+        throw error;
+      }
+    } else {
+      setBrands((prev) => prev.map((b) => b.id === id ? { ...b, name } : b));
+    }
+  };
+
   const deleteBrand = async (id: string) => {
     if (supabase) {
       try {
@@ -586,6 +632,20 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       }
     } else {
       setLabels((prev) => [...prev, label]);
+    }
+  };
+
+  const updateLabel = async (id: string, name: string) => {
+    if (supabase) {
+      try {
+        const updated = await brandService.updateLabel(id, name);
+        setLabels((prev) => prev.map((l) => l.id === id ? updated : l));
+      } catch (error) {
+        console.error('Failed to update label:', error);
+        throw error;
+      }
+    } else {
+      setLabels((prev) => prev.map((l) => l.id === id ? { ...l, name } : l));
     }
   };
 
@@ -707,17 +767,21 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         updateOrder,
         categories,
         addCategory,
+        updateCategory,
         deleteCategory,
         deleteAllCategories,
         subcategories,
         addSubcategory,
+        updateSubcategory,
         deleteSubcategory,
         deleteAllSubcategories,
         brands,
         addBrand,
+        updateBrand,
         deleteBrand,
         labels,
         addLabel,
+        updateLabel,
         deleteLabel,
         deleteAllLabels,
         orderStatuses,
