@@ -81,12 +81,12 @@ ORDER BY carousel_state;
 -- Detalle de productos asignados (solo primeros 50)
 SELECT
   p.id,
-  p.name,
+  p.title,
   p.carousel_state,
-  p.price
+  p.regular_price
 FROM public.products p
 WHERE p.carousel_state IN ('Destacados', 'De vuelta en stock', 'Ofertas', 'Más vendidos')
-ORDER BY p.carousel_state, p.name
+ORDER BY p.carousel_state, p.title
 LIMIT 50;
 
 -- Total de productos con estados asignados
