@@ -7,7 +7,7 @@ import { ProductModal } from "@/components/products/ProductModal";
 import { ProductCard } from "@/components/products/ProductCard";
 import { useApp } from "@/contexts/AppContext";
 import { Product } from "@/types";
-import { Plus, Search, SlidersHorizontal, X } from "lucide-react";
+import { Plus, Search, SlidersHorizontal, X, Loader2 } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -33,7 +33,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 
 const Products = () => {
-  const { products, categories, subcategories, brands, deleteProduct, duplicateProduct, updateProduct, hideOutOfStock } = useApp();
+  const { products, categories, subcategories, brands, deleteProduct, duplicateProduct, updateProduct, hideOutOfStock, isLoadingProducts } = useApp();
   const { toast } = useToast();
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
@@ -495,7 +495,12 @@ const Products = () => {
 
       {/* Product Cards */}
       <div className="space-y-2">
-        {filteredProducts.length > 0 ? (
+        {isLoadingProducts ? (
+          <div className="rounded-lg border border-dashed border-border p-12 text-center">
+            <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto mb-3" />
+            <p className="text-sm text-muted-foreground">Cargando productos...</p>
+          </div>
+        ) : filteredProducts.length > 0 ? (
           <>
             {visibleProducts.map((product) => (
               <ProductCard
