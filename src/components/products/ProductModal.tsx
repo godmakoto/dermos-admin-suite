@@ -22,6 +22,7 @@ import { Product } from "@/types";
 import { useApp } from "@/contexts/AppContext";
 import { useToast } from "@/hooks/use-toast";
 import { uploadImage } from "@/lib/supabase";
+import { ImageCropEditor } from "@/components/ImageCropEditor";
 
 interface ProductModalProps {
   open: boolean;
@@ -56,6 +57,8 @@ export const ProductModal = ({ open, onClose, product }: ProductModalProps) => {
   const [imageUrl, setImageUrl] = useState("");
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [cropEditorOpen, setCropEditorOpen] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
   useEffect(() => {
     if (product) {
@@ -190,11 +193,18 @@ export const ProductModal = ({ open, onClose, product }: ProductModalProps) => {
       return;
     }
 
+    // Open crop editor with the selected file
+    setSelectedFile(file);
+    setCropEditorOpen(true);
+  };
+
+  const handleCropComplete = async (croppedFile: File) => {
+    setCropEditorOpen(false);
     setIsUploading(true);
 
     try {
-      // Upload to Supabase Storage
-      const imageUrl = await uploadImage(file);
+      // Upload cropped image to Supabase Storage
+      const imageUrl = await uploadImage(croppedFile);
 
       // Add the URL to the images array
       setFormData((prev) => ({
@@ -204,13 +214,14 @@ export const ProductModal = ({ open, onClose, product }: ProductModalProps) => {
 
       toast({
         title: "Imagen subida",
-        description: "La imagen se ha subido correctamente",
+        description: "La imagen se ha recortado y subido correctamente",
       });
 
-      // Reset file input
+      // Reset file input and selected file
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
       }
+      setSelectedFile(null);
     } catch (error) {
       console.error('Upload error:', error);
       toast({
@@ -220,6 +231,15 @@ export const ProductModal = ({ open, onClose, product }: ProductModalProps) => {
       });
     } finally {
       setIsUploading(false);
+    }
+  };
+
+  const handleCropCancel = () => {
+    setCropEditorOpen(false);
+    setSelectedFile(null);
+    // Reset file input
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
     }
   };
 
@@ -663,6 +683,14 @@ export const ProductModal = ({ open, onClose, product }: ProductModalProps) => {
           </div>
         </form>
       </DialogContent>
+
+      {/* Image Crop Editor */}
+      <ImageCropEditor
+        open={cropEditorOpen}
+        imageFile={selectedFile}
+        onCropComplete={handleCropComplete}
+        onCancel={handleCropCancel}
+      />
     </Dialog>
   );
 };
