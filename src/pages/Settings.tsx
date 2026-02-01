@@ -25,6 +25,14 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { useApp } from "@/contexts/AppContext";
 import { useToast } from "@/hooks/use-toast";
 import { Plus, X, Tag, Layers, Bookmark, Flag, Moon, Trash2, Upload, Database } from "lucide-react";
@@ -38,14 +46,18 @@ const Settings = () => {
     labels,
     productCarouselStates,
     addCategory,
+    updateCategory,
     deleteCategory,
     deleteAllCategories,
     addSubcategory,
+    updateSubcategory,
     deleteSubcategory,
     deleteAllSubcategories,
     addBrand,
+    updateBrand,
     deleteBrand,
     addLabel,
+    updateLabel,
     deleteLabel,
     deleteAllLabels,
     resetStore,
@@ -73,6 +85,14 @@ const Settings = () => {
     id: string;
     name: string;
   } | null>(null);
+
+  // Editing states
+  const [editingItem, setEditingItem] = useState<{
+    type: 'category' | 'subcategory' | 'brand' | 'label' | null;
+    id: string;
+    value: string;
+  } | null>(null);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
 
   const handleAddCategory = () => {
     if (newCategory.trim()) {
@@ -165,6 +185,50 @@ const Settings = () => {
     }
 
     setDeleteConfirm(null);
+  };
+
+  const handleOpenEditDialog = (type: 'category' | 'subcategory' | 'brand' | 'label', id: string, value: string) => {
+    setEditingItem({ type, id, value });
+    setEditDialogOpen(true);
+  };
+
+  const handleCancelEdit = () => {
+    setEditDialogOpen(false);
+    setEditingItem(null);
+  };
+
+  const handleSaveEdit = async () => {
+    if (!editingItem || !editingItem.value.trim()) return;
+
+    try {
+      switch (editingItem.type) {
+        case 'category':
+          await updateCategory(editingItem.id, editingItem.value.trim());
+          toast({ title: "Categoría actualizada" });
+          break;
+        case 'subcategory':
+          await updateSubcategory(editingItem.id, editingItem.value.trim());
+          toast({ title: "Subcategoría actualizada" });
+          break;
+        case 'brand':
+          await updateBrand(editingItem.id, editingItem.value.trim());
+          toast({ title: "Marca actualizada" });
+          break;
+        case 'label':
+          await updateLabel(editingItem.id, editingItem.value.trim());
+          toast({ title: "Propiedad actualizada" });
+          break;
+      }
+      setEditDialogOpen(false);
+      setEditingItem(null);
+    } catch (error) {
+      console.error('Error updating item:', error);
+      toast({
+        title: "Error",
+        description: "No se pudo actualizar el elemento",
+        variant: "destructive"
+      });
+    }
   };
 
   const handleImportCSV = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -286,7 +350,12 @@ const Settings = () => {
                     key={cat.id}
                     className="flex items-center gap-2 rounded-lg border border-border bg-secondary/50 px-3 py-1.5"
                   >
-                    <span className="text-sm">{cat.name}</span>
+                    <span
+                      className="text-sm cursor-pointer hover:text-primary transition-colors"
+                      onClick={() => handleOpenEditDialog('category', cat.id, cat.name)}
+                    >
+                      {cat.name}
+                    </span>
                     <button
                       onClick={() => setDeleteConfirm({ type: 'category', id: cat.id, name: cat.name })}
                       className="text-muted-foreground hover:text-destructive"
@@ -353,7 +422,12 @@ const Settings = () => {
                             key={sub.id}
                             className="flex items-center gap-2 rounded-lg border border-border bg-secondary/50 px-3 py-1.5"
                           >
-                            <span className="text-sm">{sub.name}</span>
+                            <span
+                              className="text-sm cursor-pointer hover:text-primary transition-colors"
+                              onClick={() => handleOpenEditDialog('subcategory', sub.id, sub.name)}
+                            >
+                              {sub.name}
+                            </span>
                             <button
                               onClick={() => setDeleteConfirm({ type: 'subcategory', id: sub.id, name: sub.name })}
                               className="text-muted-foreground hover:text-destructive"
@@ -396,7 +470,12 @@ const Settings = () => {
                     key={brand.id}
                     className="flex items-center gap-2 rounded-lg border border-border bg-secondary/50 px-3 py-1.5"
                   >
-                    <span className="text-sm">{brand.name}</span>
+                    <span
+                      className="text-sm cursor-pointer hover:text-primary transition-colors"
+                      onClick={() => handleOpenEditDialog('brand', brand.id, brand.name)}
+                    >
+                      {brand.name}
+                    </span>
                     <button
                       onClick={() => setDeleteConfirm({ type: 'brand', id: brand.id, name: brand.name })}
                       className="text-muted-foreground hover:text-destructive"
@@ -433,7 +512,12 @@ const Settings = () => {
                     key={label.id}
                     className="flex items-center gap-2 rounded-lg border border-border bg-secondary/50 px-3 py-1.5"
                   >
-                    <span className="text-sm">{label.name}</span>
+                    <span
+                      className="text-sm cursor-pointer hover:text-primary transition-colors"
+                      onClick={() => handleOpenEditDialog('label', label.id, label.name)}
+                    >
+                      {label.name}
+                    </span>
                     <button
                       onClick={() => setDeleteConfirm({ type: 'label', id: label.id, name: label.name })}
                       className="text-muted-foreground hover:text-destructive"
@@ -714,6 +798,48 @@ const Settings = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Edit Dialog */}
+      <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>
+              Editar {editingItem?.type === 'category' && 'categoría'}
+              {editingItem?.type === 'subcategory' && 'subcategoría'}
+              {editingItem?.type === 'brand' && 'marca'}
+              {editingItem?.type === 'label' && 'propiedad'}
+            </DialogTitle>
+            <DialogDescription>
+              Modifica el nombre y presiona Guardar para aplicar los cambios.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4">
+            <Label htmlFor="edit-name" className="mb-2 block">
+              Nombre
+            </Label>
+            <Input
+              id="edit-name"
+              value={editingItem?.value || ''}
+              onChange={(e) => editingItem && setEditingItem({ ...editingItem, value: e.target.value })}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  handleSaveEdit();
+                }
+              }}
+              placeholder="Ingresa el nombre..."
+              autoFocus
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={handleCancelEdit}>
+              Cancelar
+            </Button>
+            <Button onClick={handleSaveEdit}>
+              Guardar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </AppLayout>
   );
 };

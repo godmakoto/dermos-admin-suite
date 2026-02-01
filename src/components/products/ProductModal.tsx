@@ -17,11 +17,22 @@ import {
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Checkbox } from "@/components/ui/checkbox";
-import { X, GripVertical, Link as LinkIcon, Upload, Loader2 } from "lucide-react";
+import { X, GripVertical, Link as LinkIcon, Upload, Loader2, Copy, Trash2 } from "lucide-react";
 import { Product } from "@/types";
 import { useApp } from "@/contexts/AppContext";
 import { useToast } from "@/hooks/use-toast";
 import { uploadImage } from "@/lib/supabase";
+import { ImageCropEditor } from "@/components/ImageCropEditor";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface ProductModalProps {
   open: boolean;
@@ -30,7 +41,7 @@ interface ProductModalProps {
 }
 
 export const ProductModal = ({ open, onClose, product }: ProductModalProps) => {
-  const { categories, subcategories, brands, labels, productCarouselStates, addProduct, updateProduct } = useApp();
+  const { categories, subcategories, brands, labels, productCarouselStates, addProduct, updateProduct, duplicateProduct, deleteProduct } = useApp();
   const { toast } = useToast();
   
   const [activeTab, setActiveTab] = useState("general");
@@ -56,6 +67,9 @@ export const ProductModal = ({ open, onClose, product }: ProductModalProps) => {
   const [imageUrl, setImageUrl] = useState("");
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [cropEditorOpen, setCropEditorOpen] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
   useEffect(() => {
     if (product) {
@@ -190,11 +204,18 @@ export const ProductModal = ({ open, onClose, product }: ProductModalProps) => {
       return;
     }
 
+    // Open crop editor with the selected file
+    setSelectedFile(file);
+    setCropEditorOpen(true);
+  };
+
+  const handleCropComplete = async (croppedFile: File) => {
+    setCropEditorOpen(false);
     setIsUploading(true);
 
     try {
-      // Upload to Supabase Storage
-      const imageUrl = await uploadImage(file);
+      // Upload cropped image to Supabase Storage
+      const imageUrl = await uploadImage(croppedFile);
 
       // Add the URL to the images array
       setFormData((prev) => ({
@@ -204,13 +225,14 @@ export const ProductModal = ({ open, onClose, product }: ProductModalProps) => {
 
       toast({
         title: "Imagen subida",
-        description: "La imagen se ha subido correctamente",
+        description: "La imagen se ha recortado y subido correctamente",
       });
 
-      // Reset file input
+      // Reset file input and selected file
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
       }
+      setSelectedFile(null);
     } catch (error) {
       console.error('Upload error:', error);
       toast({
@@ -220,6 +242,15 @@ export const ProductModal = ({ open, onClose, product }: ProductModalProps) => {
       });
     } finally {
       setIsUploading(false);
+    }
+  };
+
+  const handleCropCancel = () => {
+    setCropEditorOpen(false);
+    setSelectedFile(null);
+    // Reset file input
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
     }
   };
 
@@ -239,6 +270,49 @@ export const ProductModal = ({ open, onClose, product }: ProductModalProps) => {
     });
   };
 
+  const handleDuplicate = async () => {
+    if (!product) return;
+
+    try {
+      await duplicateProduct(product);
+      toast({
+        title: "Producto duplicado",
+        description: "Se ha creado una copia del producto"
+      });
+      onClose();
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "No se pudo duplicar el producto.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleDeleteClick = () => {
+    setDeleteDialogOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!product) return;
+
+    try {
+      await deleteProduct(product.id);
+      toast({
+        title: "Producto eliminado",
+        description: "El producto ha sido eliminado correctamente"
+      });
+      setDeleteDialogOpen(false);
+      onClose();
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "No se pudo eliminar el producto.",
+        variant: "destructive"
+      });
+    }
+  };
+
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent
@@ -250,14 +324,40 @@ export const ProductModal = ({ open, onClose, product }: ProductModalProps) => {
           <DialogTitle className="text-lg font-semibold">
             {product ? "Editar Producto" : "Nuevo Producto"}
           </DialogTitle>
-          <button
-            type="button"
-            onClick={onClose}
-            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-md border-0 bg-secondary/80 text-foreground transition-colors hover:bg-secondary focus:outline-none md:h-9 md:w-9 md:bg-muted/50 md:hover:bg-muted"
-            aria-label="Cerrar"
-          >
-            <X className="h-6 w-6 md:h-5 md:w-5" />
-          </button>
+          <div className="flex items-center gap-2">
+            {product && (
+              <>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  onClick={handleDuplicate}
+                  className="h-9 w-9 text-muted-foreground hover:text-foreground"
+                  title="Duplicar producto"
+                >
+                  <Copy className="h-4 w-4" />
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  onClick={handleDeleteClick}
+                  className="h-9 w-9 text-muted-foreground hover:text-destructive"
+                  title="Eliminar producto"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </>
+            )}
+            <button
+              type="button"
+              onClick={onClose}
+              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-md border-0 bg-secondary/80 text-foreground transition-colors hover:bg-secondary focus:outline-none md:h-9 md:w-9 md:bg-muted/50 md:hover:bg-muted"
+              aria-label="Cerrar"
+            >
+              <X className="h-6 w-6 md:h-5 md:w-5" />
+            </button>
+          </div>
         </div>
 
         <form onSubmit={handleSubmit} className="flex min-h-0 flex-1 flex-col">
@@ -663,6 +763,35 @@ export const ProductModal = ({ open, onClose, product }: ProductModalProps) => {
           </div>
         </form>
       </DialogContent>
+
+      {/* Image Crop Editor */}
+      <ImageCropEditor
+        open={cropEditorOpen}
+        imageFile={selectedFile}
+        onCropComplete={handleCropComplete}
+        onCancel={handleCropCancel}
+      />
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta acción eliminará el producto "{product?.name}" de forma permanente.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Eliminar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Dialog>
   );
 };

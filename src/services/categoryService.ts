@@ -147,6 +147,59 @@ export async function deleteCategory(id: string): Promise<void> {
 }
 
 /**
+ * Update a category name in Supabase
+ */
+export async function updateCategory(id: string, name: string): Promise<Category> {
+  if (!supabase) {
+    throw new Error('Supabase is not configured. Please set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY.');
+  }
+
+  const { data, error } = await supabase
+    .from('categories')
+    .update({ name })
+    .eq('id', id)
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Error updating category:', error);
+    throw new Error(`Failed to update category: ${error.message}`);
+  }
+
+  return {
+    id: data.id,
+    name: data.name,
+  };
+}
+
+/**
+ * Update a subcategory name in Supabase
+ */
+export async function updateSubcategory(id: string, name: string): Promise<Subcategory> {
+  if (!supabase) {
+    throw new Error('Supabase is not configured. Please set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY.');
+  }
+
+  const { data, error } = await supabase
+    .from('subcategories')
+    .update({ name })
+    .eq('id', id)
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Error updating subcategory:', error);
+    throw new Error(`Failed to update subcategory: ${error.message}`);
+  }
+
+  return {
+    id: data.id,
+    name: data.name,
+    categoryId: data.category_id,
+  };
+}
+
+/**
  * Delete a subcategory from Supabase
  */
 export async function deleteSubcategory(id: string): Promise<void> {

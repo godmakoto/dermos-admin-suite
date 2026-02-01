@@ -48,6 +48,29 @@ export async function createBrand(name: string): Promise<Brand> {
   };
 }
 
+export async function updateBrand(id: string, name: string): Promise<Brand> {
+  if (!supabase) {
+    throw new Error('Supabase is not configured. Please set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY.');
+  }
+
+  const { data, error } = await supabase
+    .from('brands')
+    .update({ name })
+    .eq('id', id)
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Error updating brand:', error);
+    throw new Error(`Failed to update brand: ${error.message}`);
+  }
+
+  return {
+    id: data.id,
+    name: data.name,
+  };
+}
+
 export async function deleteBrand(id: string): Promise<void> {
   if (!supabase) {
     throw new Error('Supabase is not configured. Please set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY.');
@@ -103,6 +126,29 @@ export async function createLabel(name: string): Promise<Label> {
   if (error) {
     console.error('Error creating label:', error);
     throw new Error(`Failed to create label: ${error.message}`);
+  }
+
+  return {
+    id: data.id,
+    name: data.name,
+  };
+}
+
+export async function updateLabel(id: string, name: string): Promise<Label> {
+  if (!supabase) {
+    throw new Error('Supabase is not configured. Please set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY.');
+  }
+
+  const { data, error } = await supabase
+    .from('labels')
+    .update({ name })
+    .eq('id', id)
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Error updating label:', error);
+    throw new Error(`Failed to update label: ${error.message}`);
   }
 
   return {
