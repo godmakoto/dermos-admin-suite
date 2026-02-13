@@ -347,7 +347,7 @@ const OrderForm = () => {
             {!isMobile && (
               <Popover open={productSearchOpen} onOpenChange={setProductSearchOpen}>
                 <PopoverTrigger asChild>
-                  <Button variant="outline" className="w-full md:w-64 justify-between">
+                  <Button type="button" variant="outline" className="w-full md:w-64 justify-between">
                     <span className="text-muted-foreground">Agregar producto</span>
                     <ChevronDown className="h-4 w-4 text-muted-foreground" />
                   </Button>
@@ -423,6 +423,7 @@ const OrderForm = () => {
             {isMobile && (
               <>
                 <Button
+                  type="button"
                   variant="outline"
                   className="w-full justify-between"
                   onClick={() => {
