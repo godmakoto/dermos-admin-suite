@@ -21,7 +21,10 @@ const queryClient = new QueryClient();
 function ScrollToTop() {
   const { pathname } = useLocation();
   useEffect(() => {
-    window.scrollTo(0, 0);
+    const isFormPage = /\/(new|.+\/edit)$/.test(pathname);
+    if (isFormPage) {
+      window.scrollTo(0, 0);
+    }
   }, [pathname]);
   return null;
 }
