@@ -24,7 +24,18 @@ function ScrollToTop() {
     const isFormPage = /\/(new|.+\/edit)$/.test(pathname);
     if (isFormPage) {
       window.scrollTo(0, 0);
+    } else {
+      const saved = sessionStorage.getItem(`scrollPos:${pathname}`);
+      if (saved) {
+        const y = parseInt(saved, 10);
+        requestAnimationFrame(() => {
+          window.scrollTo(0, y);
+        });
+      }
     }
+    return () => {
+      sessionStorage.setItem(`scrollPos:${pathname}`, String(window.scrollY));
+    };
   }, [pathname]);
   return null;
 }

@@ -55,8 +55,11 @@ const Products = () => {
   const [statusFilter, setStatusFilter] = useState("all");
   const [sortOrder, setSortOrder] = useState("default");
 
-  // Infinite scroll states
-  const [displayedCount, setDisplayedCount] = useState(20); // Show 20 products initially
+  // Infinite scroll states — restore count so scroll position works when returning
+  const [displayedCount, setDisplayedCount] = useState(() => {
+    const saved = sessionStorage.getItem('products:displayedCount');
+    return saved ? Math.max(parseInt(saved, 10), 20) : 20;
+  });
   const observerTarget = useRef<HTMLDivElement>(null);
 
   const isSelectionMode = selectedProducts.length > 0;
@@ -153,10 +156,20 @@ const Products = () => {
     return result;
   }, [products, searchQuery, categoryFilter, brandFilter, stockFilter, statusFilter, sortOrder, hideOutOfStock]);
 
-  // Reset displayed count when filters change
+  // Reset displayed count when filters change (skip initial mount to preserve restored value)
+  const filtersInitialized = useRef(false);
   useEffect(() => {
+    if (!filtersInitialized.current) {
+      filtersInitialized.current = true;
+      return;
+    }
     setDisplayedCount(20);
   }, [searchQuery, categoryFilter, brandFilter, stockFilter, statusFilter, sortOrder]);
+
+  // Persist displayedCount so scroll restoration works when returning to this page
+  useEffect(() => {
+    sessionStorage.setItem('products:displayedCount', String(displayedCount));
+  }, [displayedCount]);
 
   // Infinite scroll observer
   useEffect(() => {
