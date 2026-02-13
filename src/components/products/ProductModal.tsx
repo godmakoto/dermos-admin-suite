@@ -18,7 +18,12 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Checkbox } from "@/components/ui/checkbox";
 import { X, GripVertical, Link as LinkIcon, Upload, Loader2, Copy, Trash2, ChevronsUpDown } from "lucide-react";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Product } from "@/types";
 import { useApp } from "@/contexts/AppContext";
 import { useToast } from "@/hooks/use-toast";
@@ -441,12 +446,11 @@ export const ProductModal = ({ open, onClose, product }: ProductModalProps) => {
                   <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <div className="space-y-2">
                       <Label>Categorías</Label>
-                      <Popover modal={false}>
-                        <PopoverTrigger asChild>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
                           <Button
                             type="button"
                             variant="outline"
-                            role="combobox"
                             className="w-full justify-between font-normal"
                           >
                             <span className="truncate">
@@ -456,46 +460,38 @@ export const ProductModal = ({ open, onClose, product }: ProductModalProps) => {
                             </span>
                             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                           </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-[--radix-popover-trigger-width] p-2" align="start">
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent className="w-[--radix-dropdown-menu-trigger-width] max-h-[200px] overflow-y-auto" align="start">
                           {categories.length === 0 ? (
                             <p className="text-sm text-muted-foreground p-2">No hay categorías disponibles</p>
                           ) : (
-                            <div className="space-y-1 max-h-[200px] overflow-y-auto">
-                              {categories.map((cat) => (
-                                <div
-                                  key={cat.id}
-                                  className="flex items-center space-x-2 rounded-md px-2 py-1.5 hover:bg-accent cursor-pointer"
-                                  onClick={() => {
-                                    if (formData.categories.includes(cat.name)) {
-                                      const categoryToRemove = categories.find((c) => c.name === cat.name);
-                                      const subcatsToRemove = subcategories
-                                        .filter((sub) => sub.categoryId === categoryToRemove?.id)
-                                        .map((sub) => sub.name);
-                                      setFormData({
-                                        ...formData,
-                                        categories: formData.categories.filter((c) => c !== cat.name),
-                                        subcategories: formData.subcategories.filter((s) => !subcatsToRemove.includes(s))
-                                      });
-                                    } else {
-                                      setFormData({ ...formData, categories: [...formData.categories, cat.name] });
-                                    }
-                                  }}
-                                >
-                                  <Checkbox
-                                    id={`cat-${cat.id}`}
-                                    checked={formData.categories.includes(cat.name)}
-                                    onCheckedChange={() => {}}
-                                  />
-                                  <Label htmlFor={`cat-${cat.id}`} className="text-sm font-normal cursor-pointer flex-1">
-                                    {cat.name}
-                                  </Label>
-                                </div>
-                              ))}
-                            </div>
+                            categories.map((cat) => (
+                              <DropdownMenuCheckboxItem
+                                key={cat.id}
+                                checked={formData.categories.includes(cat.name)}
+                                onCheckedChange={(checked) => {
+                                  if (checked) {
+                                    setFormData({ ...formData, categories: [...formData.categories, cat.name] });
+                                  } else {
+                                    const categoryToRemove = categories.find((c) => c.name === cat.name);
+                                    const subcatsToRemove = subcategories
+                                      .filter((sub) => sub.categoryId === categoryToRemove?.id)
+                                      .map((sub) => sub.name);
+                                    setFormData({
+                                      ...formData,
+                                      categories: formData.categories.filter((c) => c !== cat.name),
+                                      subcategories: formData.subcategories.filter((s) => !subcatsToRemove.includes(s))
+                                    });
+                                  }
+                                }}
+                                onSelect={(e) => e.preventDefault()}
+                              >
+                                {cat.name}
+                              </DropdownMenuCheckboxItem>
+                            ))
                           )}
-                        </PopoverContent>
-                      </Popover>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </div>
                     <div className="space-y-2">
                       <Label>Subcategorías</Label>
