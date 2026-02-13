@@ -3,7 +3,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { AppProvider } from "@/contexts/AppContext";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { SidebarProvider } from "@/contexts/SidebarContext";
@@ -20,23 +20,34 @@ const queryClient = new QueryClient();
 
 function ScrollToTop() {
   const { pathname } = useLocation();
+  const scrollPositions = useRef<Record<string, number>>({});
+
+  // Continuously track scroll position in memory while on each page
+  useEffect(() => {
+    const handleScroll = () => {
+      scrollPositions.current[pathname] = window.scrollY;
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, [pathname]);
+
+  // On route change: scroll to top for form pages, restore for list pages
   useEffect(() => {
     const isFormPage = /\/(new|.+\/edit)$/.test(pathname);
     if (isFormPage) {
       window.scrollTo(0, 0);
     } else {
-      const saved = sessionStorage.getItem(`scrollPos:${pathname}`);
-      if (saved) {
-        const y = parseInt(saved, 10);
+      const savedY = scrollPositions.current[pathname];
+      if (savedY != null && savedY > 0) {
         requestAnimationFrame(() => {
-          window.scrollTo(0, y);
+          window.scrollTo(0, savedY);
         });
       }
     }
-    return () => {
-      sessionStorage.setItem(`scrollPos:${pathname}`, String(window.scrollY));
-    };
   }, [pathname]);
+
   return null;
 }
 
