@@ -441,7 +441,7 @@ export const ProductModal = ({ open, onClose, product }: ProductModalProps) => {
                   <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <div className="space-y-2">
                       <Label>Categorías</Label>
-                      <Popover>
+                      <Popover modal={false}>
                         <PopoverTrigger asChild>
                           <Button
                             type="button"
