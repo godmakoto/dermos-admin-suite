@@ -17,7 +17,8 @@ import {
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Checkbox } from "@/components/ui/checkbox";
-import { X, GripVertical, Link as LinkIcon, Upload, Loader2, Copy, Trash2 } from "lucide-react";
+import { X, GripVertical, Link as LinkIcon, Upload, Loader2, Copy, Trash2, ChevronsUpDown } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Product } from "@/types";
 import { useApp } from "@/contexts/AppContext";
 import { useToast } from "@/hooks/use-toast";
@@ -440,21 +441,33 @@ export const ProductModal = ({ open, onClose, product }: ProductModalProps) => {
                   <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <div className="space-y-2">
                       <Label>Categorías</Label>
-                      <div className="rounded-lg border border-border bg-background p-3 max-h-[200px] overflow-y-auto">
-                        {categories.length === 0 ? (
-                          <p className="text-sm text-muted-foreground">No hay categorías disponibles</p>
-                        ) : (
-                          <div className="space-y-2">
-                            {categories.map((cat) => (
-                              <div key={cat.id} className="flex items-center space-x-2">
-                                <Checkbox
-                                  id={`cat-${cat.id}`}
-                                  checked={formData.categories.includes(cat.name)}
-                                  onCheckedChange={(checked) => {
-                                    if (checked) {
-                                      setFormData({ ...formData, categories: [...formData.categories, cat.name] });
-                                    } else {
-                                      // Remove category and its related subcategories
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            role="combobox"
+                            className="w-full justify-between font-normal"
+                          >
+                            <span className="truncate">
+                              {formData.categories.length === 0
+                                ? "Seleccionar categorías"
+                                : formData.categories.join(", ")}
+                            </span>
+                            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-[--radix-popover-trigger-width] p-2" align="start">
+                          {categories.length === 0 ? (
+                            <p className="text-sm text-muted-foreground p-2">No hay categorías disponibles</p>
+                          ) : (
+                            <div className="space-y-1 max-h-[200px] overflow-y-auto">
+                              {categories.map((cat) => (
+                                <div
+                                  key={cat.id}
+                                  className="flex items-center space-x-2 rounded-md px-2 py-1.5 hover:bg-accent cursor-pointer"
+                                  onClick={() => {
+                                    if (formData.categories.includes(cat.name)) {
                                       const categoryToRemove = categories.find((c) => c.name === cat.name);
                                       const subcatsToRemove = subcategories
                                         .filter((sub) => sub.categoryId === categoryToRemove?.id)
@@ -464,17 +477,25 @@ export const ProductModal = ({ open, onClose, product }: ProductModalProps) => {
                                         categories: formData.categories.filter((c) => c !== cat.name),
                                         subcategories: formData.subcategories.filter((s) => !subcatsToRemove.includes(s))
                                       });
+                                    } else {
+                                      setFormData({ ...formData, categories: [...formData.categories, cat.name] });
                                     }
                                   }}
-                                />
-                                <Label htmlFor={`cat-${cat.id}`} className="text-sm font-normal cursor-pointer">
-                                  {cat.name}
-                                </Label>
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                      </div>
+                                >
+                                  <Checkbox
+                                    id={`cat-${cat.id}`}
+                                    checked={formData.categories.includes(cat.name)}
+                                    onCheckedChange={() => {}}
+                                  />
+                                  <Label htmlFor={`cat-${cat.id}`} className="text-sm font-normal cursor-pointer flex-1">
+                                    {cat.name}
+                                  </Label>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </PopoverContent>
+                      </Popover>
                     </div>
                     <div className="space-y-2">
                       <Label>Subcategorías</Label>
