@@ -15,6 +15,7 @@ const navItems = [
 
 export const AppLayout = ({ children }: AppLayoutProps) => {
   const location = useLocation();
+  const isFormPage = /^\/(products|orders)\/(new|.+\/edit)$/.test(location.pathname);
 
   return (
     <div className="min-h-screen bg-background">
@@ -56,15 +57,15 @@ export const AppLayout = ({ children }: AppLayoutProps) => {
       {/* Main Content */}
       <main className="lg:ml-56">
         {/* Content with padding for bottom nav on mobile */}
-        <div className="min-h-screen pb-20 lg:pb-0">
+        <div className={cn("min-h-screen lg:pb-0", isFormPage ? "pb-0" : "pb-20")}>
           <div className="px-4 py-4 lg:px-6 lg:py-6">
             {children}
           </div>
         </div>
       </main>
 
-      {/* Mobile Bottom Navigation */}
-      <BottomNav />
+      {/* Mobile Bottom Navigation — hidden on form pages */}
+      {!isFormPage && <BottomNav />}
     </div>
   );
 };
