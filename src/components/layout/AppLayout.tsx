@@ -28,7 +28,7 @@ export const AppLayout = ({ children }: AppLayoutProps) => {
         {/* Navigation */}
         <nav className="flex-1 py-4 px-3">
           {navItems.map((item) => {
-            const isActive = location.pathname === item.path;
+            const isActive = location.pathname === item.path || location.pathname.startsWith(item.path + "/");
             return (
               <Link
                 key={item.path}

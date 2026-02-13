@@ -8,7 +8,9 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { SidebarProvider } from "@/contexts/SidebarContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import Products from "./pages/Products";
+import ProductForm from "./pages/ProductForm";
 import Orders from "./pages/Orders";
+import OrderForm from "./pages/OrderForm";
 import Settings from "./pages/Settings";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
@@ -43,10 +45,42 @@ const App = () => (
                   }
                 />
                 <Route
+                  path="/products/new"
+                  element={
+                    <ProtectedRoute>
+                      <ProductForm />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/products/:id/edit"
+                  element={
+                    <ProtectedRoute>
+                      <ProductForm />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
                   path="/orders"
                   element={
                     <ProtectedRoute>
                       <Orders />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/orders/new"
+                  element={
+                    <ProtectedRoute>
+                      <OrderForm />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/orders/:id/edit"
+                  element={
+                    <ProtectedRoute>
+                      <OrderForm />
                     </ProtectedRoute>
                   }
                 />

@@ -1,9 +1,9 @@
-import { useState, useMemo, useRef, useCallback, useEffect } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ProductModal } from "@/components/products/ProductModal";
 import { ProductCard } from "@/components/products/ProductCard";
 import { useApp } from "@/contexts/AppContext";
 import { Product } from "@/types";
@@ -33,10 +33,9 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 
 const Products = () => {
+  const navigate = useNavigate();
   const { products, categories, subcategories, brands, deleteProduct, duplicateProduct, updateProduct, hideOutOfStock, isLoadingProducts } = useApp();
   const { toast } = useToast();
-  const [modalOpen, setModalOpen] = useState(false);
-  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [filterPopoverOpen, setFilterPopoverOpen] = useState(false);
 
   // Multi-selection states
@@ -189,13 +188,11 @@ const Products = () => {
   }, [filteredProducts, displayedCount]);
 
   const handleEdit = (product: Product) => {
-    setSelectedProduct(product);
-    setModalOpen(true);
+    navigate(`/products/${product.id}/edit`);
   };
 
   const handleCreate = () => {
-    setSelectedProduct(null);
-    setModalOpen(true);
+    navigate("/products/new");
   };
 
   const handleDelete = async (id: string, e: React.MouseEvent) => {
@@ -563,12 +560,6 @@ const Products = () => {
           </Button>
         </div>
       )}
-
-      <ProductModal
-        open={modalOpen}
-        onClose={() => setModalOpen(false)}
-        product={selectedProduct}
-      />
 
       {/* Bulk Edit Modal */}
       <Dialog open={bulkEditModalOpen} onOpenChange={setBulkEditModalOpen}>
