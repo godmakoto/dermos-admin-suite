@@ -151,6 +151,9 @@ export const OrderModal = ({ open, onClose, order, onOrderSaved }: OrderModalPro
     return subtotal - productDiscounts - additionalDiscount;
   };
 
+  // Un estado "retiene stock" si NO es Cancelado
+  const statusHoldsStock = (statusName: string): boolean => statusName !== "Cancelado";
+
   // Get available stock for a product considering current order context
   const getAvailableStock = (productId: string): number => {
     const product = products.find((p) => p.id === productId);
@@ -158,8 +161,9 @@ export const OrderModal = ({ open, onClose, order, onOrderSaved }: OrderModalPro
 
     let available = product.stock;
 
-    // If editing, add back the original quantity from the order (it was already deducted)
-    if (isEditing && order) {
+    // Si estamos editando y el estado actual del pedido retiene stock,
+    // sumar la cantidad original (ya fue descontada del stock del producto)
+    if (isEditing && order && statusHoldsStock(order.status)) {
       const originalItem = order.items.find((item) => item.product_id === productId);
       if (originalItem) {
         available += originalItem.quantity;

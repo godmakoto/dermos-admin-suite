@@ -357,6 +357,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
+  // Un estado "retiene stock" si NO es Cancelado (Pendiente y Finalizado descuentan stock)
+  const statusHoldsStock = (statusName: string): boolean => statusName !== "Cancelado";
+
   // Orders
   const addOrder = async (order: Order) => {
     if (supabase) {
@@ -364,24 +367,24 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         const newOrder = await orderService.createOrder(order);
         setOrders((prev) => [...prev, newOrder]);
 
-        // Descontar stock de productos si tienen control de stock activado
-        setProducts((prevProducts) =>
-          prevProducts.map((product) => {
-            // Buscar si este producto está en el pedido
-            const orderItem = order.items.find((item) => item.product_id === product.id);
+        // Descontar stock solo si el estado del pedido retiene stock
+        if (statusHoldsStock(order.status)) {
+          setProducts((prevProducts) =>
+            prevProducts.map((product) => {
+              const orderItem = order.items.find((item) => item.product_id === product.id);
 
-            // Si el producto está en el pedido y tiene control de stock activado
-            if (orderItem && product.trackStock) {
-              return {
-                ...product,
-                stock: Math.max(0, product.stock - orderItem.quantity), // No permitir stock negativo
-                updatedAt: new Date(),
-              };
-            }
+              if (orderItem && product.trackStock) {
+                return {
+                  ...product,
+                  stock: Math.max(0, product.stock - orderItem.quantity),
+                  updatedAt: new Date(),
+                };
+              }
 
-            return product;
-          })
-        );
+              return product;
+            })
+          );
+        }
       } catch (error) {
         console.error('Failed to create order:', error);
         throw error;
@@ -406,28 +409,30 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         // Si no hay pedido original, no hacer cambios en el stock
         if (!originalOrder) return;
 
-        // Ajustar stock de productos
+        // Determinar si el estado anterior/nuevo retiene stock
+        const oldHoldsStock = statusHoldsStock(originalOrder.status);
+        const newHoldsStock = statusHoldsStock(order.status);
+
+        // Ajustar stock de productos según cambio de estado y/o items
         setProducts((prevProducts) =>
           prevProducts.map((product) => {
             if (!product.trackStock) return product;
 
-            // Buscar item en pedido original y nuevo
             const originalItem = originalOrder.items.find((item) => item.product_id === product.id);
             const newItem = order.items.find((item) => item.product_id === product.id);
 
             let stockChange = 0;
 
-            // Si estaba en el pedido original, restaurar ese stock
-            if (originalItem) {
+            // Restaurar stock solo si el estado anterior retenía stock
+            if (oldHoldsStock && originalItem) {
               stockChange += originalItem.quantity;
             }
 
-            // Si está en el nuevo pedido, descontar ese stock
-            if (newItem) {
+            // Descontar stock solo si el nuevo estado retiene stock
+            if (newHoldsStock && newItem) {
               stockChange -= newItem.quantity;
             }
 
-            // Aplicar cambio de stock si hay alguno
             if (stockChange !== 0) {
               return {
                 ...product,
