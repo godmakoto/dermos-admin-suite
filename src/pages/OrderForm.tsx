@@ -29,7 +29,7 @@ import {
   Dialog,
   DialogContent,
 } from "@/components/ui/dialog";
-import { X, Plus, Minus, ChevronDown, Search, MessageCircle, ArrowLeft } from "lucide-react";
+import { X, Plus, Minus, ChevronDown, Search, MessageCircle } from "lucide-react";
 import { Order, OrderItem } from "@/types";
 import { useApp } from "@/contexts/AppContext";
 import { useToast } from "@/hooks/use-toast";
@@ -316,10 +316,14 @@ const OrderForm = () => {
               <MessageCircle className="h-4 w-4" />
             </button>
           )}
-          <Button variant="outline" size="sm" onClick={goBack} className="gap-1.5">
-            <ArrowLeft className="h-4 w-4" />
-            <span className="hidden sm:inline">Volver</span>
-          </Button>
+          <button
+            type="button"
+            onClick={goBack}
+            className="flex h-9 w-9 items-center justify-center rounded-md bg-muted/50 hover:bg-muted transition-colors"
+            aria-label="Cerrar"
+          >
+            <X className="h-5 w-5" />
+          </button>
         </div>
       </PageHeader>
 
@@ -451,7 +455,7 @@ const OrderForm = () => {
                   setProductSearchOpen(open);
                 }}>
                   <DialogContent
-                    className="p-0 gap-0 overflow-hidden left-0 top-0 translate-x-0 translate-y-0 w-screen h-[var(--dialog-vh,100dvh)] max-w-none rounded-none border-0 overscroll-contain"
+                    className="!inset-0 !translate-x-0 !translate-y-0 !max-w-none !w-full !h-full !rounded-none !border-0 p-0 gap-0 overflow-hidden overscroll-contain"
                     overlayClassName="bg-black/80"
                     hideCloseButton
                   >
@@ -668,10 +672,7 @@ const OrderForm = () => {
 
         {/* Footer Actions */}
         <div className="sticky bottom-0 -mx-4 lg:-mx-6 border-t border-border bg-background px-4 py-4 lg:px-6">
-          <div className="flex flex-col gap-2 sm:flex-row sm:justify-end sm:gap-3">
-            <Button type="button" variant="outline" onClick={goBack} className="w-full sm:w-auto">
-              Cancelar
-            </Button>
+          <div className="flex justify-end">
             <Button type="submit" className="w-full sm:w-auto">
               {isEditing ? "Guardar Cambios" : "Crear Pedido"}
             </Button>

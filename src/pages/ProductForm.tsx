@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Checkbox } from "@/components/ui/checkbox";
-import { GripVertical, Link as LinkIcon, Upload, Loader2, Copy, Trash2, ChevronsUpDown, ArrowLeft, X } from "lucide-react";
+import { GripVertical, Link as LinkIcon, Upload, Loader2, Copy, Trash2, ChevronsUpDown, X } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -309,10 +309,14 @@ const ProductForm = () => {
               </Button>
             </>
           )}
-          <Button variant="outline" size="sm" onClick={goBack} className="gap-1.5">
-            <ArrowLeft className="h-4 w-4" />
-            <span className="hidden sm:inline">Volver</span>
-          </Button>
+          <button
+            type="button"
+            onClick={goBack}
+            className="flex h-9 w-9 items-center justify-center rounded-md bg-muted/50 hover:bg-muted transition-colors"
+            aria-label="Cerrar"
+          >
+            <X className="h-5 w-5" />
+          </button>
         </div>
       </PageHeader>
 
@@ -670,10 +674,7 @@ const ProductForm = () => {
 
         {/* Footer Actions */}
         <div className="sticky bottom-0 -mx-4 lg:-mx-6 mt-6 border-t border-border bg-background px-4 py-4 lg:px-6">
-          <div className="flex flex-col gap-2 sm:flex-row sm:justify-end sm:gap-3">
-            <Button type="button" variant="outline" onClick={goBack} className="w-full sm:w-auto">
-              Cancelar
-            </Button>
+          <div className="flex justify-end">
             <Button type="submit" className="w-full sm:w-auto">
               {isEditing ? "Guardar Cambios" : "Crear Producto"}
             </Button>
