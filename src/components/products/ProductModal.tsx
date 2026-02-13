@@ -461,7 +461,7 @@ export const ProductModal = ({ open, onClose, product }: ProductModalProps) => {
                             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                           </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent className="w-[--radix-dropdown-menu-trigger-width] max-h-[200px] overflow-y-auto" align="start">
+                        <DropdownMenuContent className="z-[150] w-[--radix-dropdown-menu-trigger-width] max-h-[200px] overflow-y-auto" align="start">
                           {categories.length === 0 ? (
                             <p className="text-sm text-muted-foreground p-2">No hay categorías disponibles</p>
                           ) : (
