@@ -160,7 +160,8 @@ const OrderForm = () => {
         }
         const orderNumber = `ORD-${nextOrderNumber}`;
 
-        const newOrder: Partial<Order> = {
+        const newOrder: Order = {
+          id: `${Date.now()}`,
           order_number: orderNumber,
           customer_name: "Cliente Administrador",
           customer_phone: "N/A",
@@ -175,8 +176,10 @@ const OrderForm = () => {
           total: calculateTotal(),
           notes: null,
           payment_method: null,
+          createdAt: new Date(),
+          updatedAt: new Date(),
         };
-        await addOrder(newOrder as Order);
+        await addOrder(newOrder);
         toast({ title: "Pedido creado", description: "El pedido se ha creado correctamente." });
       }
       navigate("/orders");
