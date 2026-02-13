@@ -128,6 +128,26 @@ export const ProductModal = ({ open, onClose, product }: ProductModalProps) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    if (!formData.name.trim()) {
+      toast({
+        title: "Campo obligatorio",
+        description: "El nombre del producto es obligatorio.",
+        variant: "destructive",
+      });
+      setActiveTab("general");
+      return;
+    }
+
+    if (!formData.price || parseFloat(formData.price) <= 0) {
+      toast({
+        title: "Campo obligatorio",
+        description: "El precio del producto es obligatorio y debe ser mayor a 0.",
+        variant: "destructive",
+      });
+      setActiveTab("general");
+      return;
+    }
+
     const productData: Product = {
       id: product?.id || `${Date.now()}`,
       name: formData.name,
@@ -383,16 +403,17 @@ export const ProductModal = ({ open, onClose, product }: ProductModalProps) => {
                 <TabsContent value="general" className="m-0 space-y-4">
                   <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <div className="space-y-2">
-                      <Label htmlFor="name">Nombre</Label>
+                      <Label htmlFor="name">Nombre <span className="text-destructive">*</span></Label>
                       <Input
                         id="name"
                         value={formData.name}
                         onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                         placeholder="Nombre del producto"
+                        required
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="price">Precio</Label>
+                      <Label htmlFor="price">Precio <span className="text-destructive">*</span></Label>
                       <Input
                         id="price"
                         type="number"
@@ -400,6 +421,7 @@ export const ProductModal = ({ open, onClose, product }: ProductModalProps) => {
                         value={formData.price}
                         onChange={(e) => setFormData({ ...formData, price: e.target.value })}
                         placeholder="0.00"
+                        required
                       />
                     </div>
                     <div className="space-y-2">
