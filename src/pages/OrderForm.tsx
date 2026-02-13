@@ -63,26 +63,7 @@ const OrderForm = () => {
     }
   }, [order]);
 
-  // Ajusta el alto del dialog en movil cuando aparece el teclado (VisualViewport)
-  useEffect(() => {
-    if (!productSearchOpen || !isMobile) return;
 
-    const vv = window.visualViewport;
-    const setVh = () => {
-      const height = vv?.height ?? window.innerHeight;
-      document.documentElement.style.setProperty("--dialog-vh", `${Math.round(height)}px`);
-    };
-
-    setVh();
-    vv?.addEventListener("resize", setVh);
-    vv?.addEventListener("scroll", setVh);
-
-    return () => {
-      vv?.removeEventListener("resize", setVh);
-      vv?.removeEventListener("scroll", setVh);
-      document.documentElement.style.removeProperty("--dialog-vh");
-    };
-  }, [productSearchOpen, isMobile]);
 
   const calculateSubtotal = () => {
     return formData.items.reduce((sum, item) => {
@@ -455,7 +436,7 @@ const OrderForm = () => {
                   setProductSearchOpen(open);
                 }}>
                   <DialogContent
-                    className="!inset-0 !translate-x-0 !translate-y-0 !max-w-none !w-full !h-full !rounded-none !border-0 p-0 gap-0 overflow-hidden overscroll-contain"
+                    className="!fixed !inset-0 !flex !flex-col !translate-x-0 !translate-y-0 !max-w-none !w-full !h-full !rounded-none !border-0 !p-0 !gap-0 !shadow-none overflow-hidden overscroll-contain data-[state=open]:!zoom-in-100 data-[state=open]:!slide-in-from-bottom-0"
                     overlayClassName="bg-black/80"
                     hideCloseButton
                   >
