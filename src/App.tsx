@@ -21,6 +21,7 @@ const queryClient = new QueryClient();
 function ScrollToTop() {
   const { pathname } = useLocation();
   const scrollPositions = useRef<Record<string, number>>({});
+  const prevSectionRef = useRef<string>('');
 
   // Continuously track scroll position in memory while on each page
   useEffect(() => {
@@ -33,11 +34,18 @@ function ScrollToTop() {
     };
   }, [pathname]);
 
-  // On route change: scroll to top for form pages, restore for list pages
+  // On route change: restore scroll only when returning from a form within the same section
   useEffect(() => {
+    const currentSection = pathname.split('/')[1] || '';
+    const prevSection = prevSectionRef.current;
     const isFormPage = /\/(new|.+\/edit)$/.test(pathname);
-    if (isFormPage) {
+    const sectionChanged = prevSection !== '' && prevSection !== currentSection;
+
+    if (isFormPage || sectionChanged) {
       window.scrollTo(0, 0);
+      if (sectionChanged) {
+        delete scrollPositions.current[pathname];
+      }
     } else {
       const savedY = scrollPositions.current[pathname];
       if (savedY != null && savedY > 0) {
@@ -46,6 +54,8 @@ function ScrollToTop() {
         });
       }
     }
+
+    prevSectionRef.current = currentSection;
   }, [pathname]);
 
   return null;
