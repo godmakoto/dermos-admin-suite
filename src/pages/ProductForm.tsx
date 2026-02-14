@@ -73,6 +73,7 @@ const ProductForm = () => {
   const [cropEditorOpen, setCropEditorOpen] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [duplicateDialogOpen, setDuplicateDialogOpen] = useState(false);
 
   useEffect(() => {
     if (product) {
@@ -253,11 +254,14 @@ const ProductForm = () => {
     });
   };
 
-  const handleDuplicate = async () => {
+  const handleDuplicate = () => setDuplicateDialogOpen(true);
+
+  const confirmDuplicate = async () => {
     if (!product) return;
     try {
-      await duplicateProduct(product);
+      await duplicateProduct(product.id);
       toast({ title: "Producto duplicado", description: "Se ha creado una copia del producto" });
+      setDuplicateDialogOpen(false);
       navigate("/products");
     } catch (error) {
       toast({ title: "Error", description: "No se pudo duplicar el producto.", variant: "destructive" });
@@ -706,6 +710,24 @@ const ProductForm = () => {
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
               Eliminar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Duplicate Confirmation Dialog */}
+      <AlertDialog open={duplicateDialogOpen} onOpenChange={setDuplicateDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Duplicar producto</AlertDialogTitle>
+            <AlertDialogDescription>
+              Se creará una copia del producto "{product?.name}".
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDuplicate}>
+              Duplicar
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
