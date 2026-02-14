@@ -10,7 +10,7 @@ interface PageHeaderProps {
 export const PageHeader = ({ title, description, children, className }: PageHeaderProps) => {
   return (
     <div className={cn(
-      "mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between",
+      "mb-5 flex flex-row items-center justify-between gap-3",
       className
     )}>
       <div>
