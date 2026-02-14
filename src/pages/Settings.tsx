@@ -599,9 +599,6 @@ const Settings = () => {
             />
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={handleCancelEdit}>
-              Cancelar
-            </Button>
             <Button onClick={handleSaveEdit}>
               Guardar
             </Button>
