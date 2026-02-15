@@ -274,10 +274,40 @@ const OrderForm = () => {
 
   const handleSendWhatsApp = () => {
     if (!order) return;
-    toast({
-      title: "Enviar por WhatsApp",
-      description: "Funcionalidad en desarrollo",
+
+    const lines: string[] = [];
+    lines.push("Tu pedido seria el siguiente:");
+    lines.push("");
+    lines.push(`🧴 Pedido: ${order.order_number}`);
+    lines.push("");
+
+    formData.items.forEach((item, index) => {
+      const product = products.find((p) => p.id === item.product_id);
+      const effectivePrice = product?.salePrice ?? item.price;
+      const itemSubtotal = effectivePrice * item.quantity;
+
+      lines.push(`${index + 1}. ${item.name}`);
+      lines.push(`   Cantidad: ${item.quantity}`);
+      lines.push(`   Precio: ${effectivePrice.toFixed(1)} Bs c/u`);
+      lines.push(`   Subtotal: ${itemSubtotal.toFixed(1)} Bs`);
+      lines.push("");
     });
+
+    lines.push(`Subtotal: ${calculateSubtotal().toFixed(1)} Bs`);
+
+    const productDiscounts = calculateProductDiscounts();
+    const additionalDiscount = parseFloat(formData.discount) || 0;
+    const totalDiscount = productDiscounts + additionalDiscount;
+    if (totalDiscount > 0) {
+      lines.push(`Descuento: -${totalDiscount.toFixed(1)} Bs`);
+    }
+
+    lines.push(`Total: ${calculateTotal().toFixed(1)} Bs`);
+
+    const message = lines.join("\n");
+    const phone = order.customer_phone.replace(/\D/g, "");
+    const url = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+    window.open(url, "_blank");
   };
 
   const goBack = () => navigate("/orders");
