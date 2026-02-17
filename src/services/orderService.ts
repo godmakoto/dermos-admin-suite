@@ -108,7 +108,7 @@ export async function updateOrderStatus(orderId: string, statusId: string): Prom
 }
 
 // Update an order
-export async function updateOrder(order: Order): Promise<Order> {
+export async function updateOrder(order: Order, orderStatuses: OrderStatus[]): Promise<Order> {
   if (!supabase) {
     throw new Error('Supabase is not configured.');
   }
@@ -128,15 +128,11 @@ export async function updateOrder(order: Order): Promise<Order> {
     throw error;
   }
 
-  // Need to fetch order statuses to convert back
-  const { data: statusData } = await supabase.from('order_statuses').select('*');
-  const orderStatuses = statusData || [];
-
-  return supabaseToOrder(data as SupabaseOrder, orderStatuses as OrderStatus[]);
+  return supabaseToOrder(data as SupabaseOrder, orderStatuses);
 }
 
 // Create a new order
-export async function createOrder(order: Omit<Order, 'id' | 'createdAt' | 'updatedAt'>): Promise<Order> {
+export async function createOrder(order: Omit<Order, 'id' | 'createdAt' | 'updatedAt'>, orderStatuses: OrderStatus[]): Promise<Order> {
   if (!supabase) {
     throw new Error('Supabase is not configured.');
   }
@@ -156,9 +152,5 @@ export async function createOrder(order: Omit<Order, 'id' | 'createdAt' | 'updat
     throw error;
   }
 
-  // Need to fetch order statuses to convert back
-  const { data: statusData } = await supabase.from('order_statuses').select('*');
-  const orderStatuses = statusData || [];
-
-  return supabaseToOrder(data as SupabaseOrder, orderStatuses as OrderStatus[]);
+  return supabaseToOrder(data as SupabaseOrder, orderStatuses);
 }
