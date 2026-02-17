@@ -287,6 +287,7 @@ const ProductForm = () => {
       <PageHeader
         title={isEditing ? "Editar Producto" : "Nuevo Producto"}
         description={isEditing ? product?.name : "Crear un nuevo producto"}
+        className="sticky top-0 z-10 bg-background -mx-4 lg:-mx-6 px-4 lg:px-6 -mt-4 lg:-mt-6 pt-4 lg:pt-6 pb-3 border-b border-border mb-3"
       >
         <div className="flex items-center gap-2">
           {isEditing && (

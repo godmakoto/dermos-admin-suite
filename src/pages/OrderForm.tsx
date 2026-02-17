@@ -317,6 +317,7 @@ const OrderForm = () => {
       <PageHeader
         title={isEditing ? `Editar Pedido ${order?.order_number}` : "Crear Nuevo Pedido"}
         description={isEditing ? "Modifica los datos del pedido" : "Agrega productos y crea un nuevo pedido"}
+        className="sticky top-0 z-10 bg-background -mx-4 lg:-mx-6 px-4 lg:px-6 -mt-4 lg:-mt-6 pt-4 lg:pt-6 pb-3 border-b border-border mb-3"
       >
         <div className="flex items-center gap-2">
           {isEditing && (
