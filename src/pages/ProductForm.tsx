@@ -154,10 +154,10 @@ const ProductForm = () => {
     try {
       if (product) {
         await updateProduct(productData);
-        toast({ title: "Producto actualizado", description: "Los cambios se han guardado correctamente." });
+        toast({ title: "Producto actualizado" });
       } else {
         await addProduct(productData);
-        toast({ title: "Producto creado", description: "El producto se ha añadido correctamente." });
+        toast({ title: "Producto creado" });
       }
       navigate("/products");
     } catch (error) {
@@ -217,7 +217,7 @@ const ProductForm = () => {
         ...prev,
         images: [...prev.images, url],
       }));
-      toast({ title: "Imagen subida", description: "La imagen se ha recortado y subido correctamente" });
+      toast({ title: "Imagen subida" });
       if (fileInputRef.current) fileInputRef.current.value = '';
       setSelectedFile(null);
     } catch (error) {
@@ -260,7 +260,7 @@ const ProductForm = () => {
     if (!product) return;
     try {
       await duplicateProduct(product.id);
-      toast({ title: "Producto duplicado", description: "Se ha creado una copia del producto" });
+      toast({ title: "Producto duplicado" });
       setDuplicateDialogOpen(false);
       navigate("/products");
     } catch (error) {
@@ -272,7 +272,7 @@ const ProductForm = () => {
     if (!product) return;
     try {
       await deleteProduct(product.id);
-      toast({ title: "Producto eliminado", description: "El producto ha sido eliminado correctamente" });
+      toast({ title: "Producto eliminado" });
       setDeleteDialogOpen(false);
       navigate("/products");
     } catch (error) {

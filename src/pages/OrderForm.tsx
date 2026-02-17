@@ -143,7 +143,7 @@ const OrderForm = () => {
           updatedAt: new Date(),
         };
         await updateOrder(updatedOrder);
-        toast({ title: "Pedido actualizado", description: "El pedido se ha actualizado correctamente." });
+        toast({ title: "Pedido actualizado" });
       } else {
         let nextOrderNumber = 1000;
         if (orders.length > 0) {
@@ -180,7 +180,7 @@ const OrderForm = () => {
           updatedAt: new Date(),
         };
         await addOrder(newOrder);
-        toast({ title: "Pedido creado", description: "El pedido se ha creado correctamente." });
+        toast({ title: "Pedido creado" });
       }
       navigate("/orders");
     } catch (error) {

@@ -212,7 +212,7 @@ const Products = () => {
     e.stopPropagation();
     try {
       await deleteProduct(id);
-      toast({ title: "Producto eliminado", description: "El producto se ha eliminado correctamente." });
+      toast({ title: "Producto eliminado" });
     } catch (error) {
       toast({ 
         title: "Error", 
@@ -226,7 +226,7 @@ const Products = () => {
     e.stopPropagation();
     try {
       await duplicateProduct(id);
-      toast({ title: "Producto duplicado", description: "Se ha creado una copia del producto." });
+      toast({ title: "Producto duplicado" });
     } catch (error) {
       toast({ 
         title: "Error", 
