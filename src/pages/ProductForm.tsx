@@ -6,22 +6,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Checkbox } from "@/components/ui/checkbox";
-import { GripVertical, Link as LinkIcon, Upload, Loader2, Copy, Trash2, ChevronsUpDown, X } from "lucide-react";
-import {
-  DropdownMenu,
-  DropdownMenuCheckboxItem,
-  DropdownMenuContent,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { GripVertical, Link as LinkIcon, Upload, Loader2, Copy, Trash2, X } from "lucide-react";
+import { FormSelect } from "@/components/ui/form-select";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -373,126 +361,75 @@ const ProductForm = () => {
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div className="space-y-2">
                 <Label>Categorias</Label>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button type="button" variant="outline" className="w-full justify-between font-normal">
-                      <span className="truncate">
-                        {formData.categories.length === 0
-                          ? "Seleccionar categorias"
-                          : formData.categories.join(", ")}
-                      </span>
-                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent className="w-[--radix-dropdown-menu-trigger-width] max-h-[200px] overflow-y-auto" align="start">
-                    {categories.length === 0 ? (
-                      <p className="text-sm text-muted-foreground p-2">No hay categorias disponibles</p>
-                    ) : (
-                      categories.map((cat) => (
-                        <DropdownMenuCheckboxItem
-                          key={cat.id}
-                          checked={formData.categories.includes(cat.name)}
-                          onCheckedChange={(checked) => {
-                            if (checked) {
-                              setFormData({ ...formData, categories: [...formData.categories, cat.name] });
-                            } else {
-                              const categoryToRemove = categories.find((c) => c.name === cat.name);
-                              const subcatsToRemove = subcategories
-                                .filter((sub) => sub.categoryId === categoryToRemove?.id)
-                                .map((sub) => sub.name);
-                              setFormData({
-                                ...formData,
-                                categories: formData.categories.filter((c) => c !== cat.name),
-                                subcategories: formData.subcategories.filter((s) => !subcatsToRemove.includes(s))
-                              });
-                            }
-                          }}
-                          onSelect={(e) => e.preventDefault()}
-                        >
-                          {cat.name}
-                        </DropdownMenuCheckboxItem>
-                      ))
-                    )}
-                  </DropdownMenuContent>
-                </DropdownMenu>
+                <FormSelect
+                  multiple
+                  options={categories.map((cat) => ({ value: cat.name, label: cat.name }))}
+                  values={formData.categories}
+                  onValuesChange={(newCategories) => {
+                    const removed = formData.categories.filter((c) => !newCategories.includes(c));
+                    const subcatsToRemove = removed.flatMap((catName) => {
+                      const cat = categories.find((c) => c.name === catName);
+                      return cat
+                        ? subcategories.filter((sub) => sub.categoryId === cat.id).map((sub) => sub.name)
+                        : [];
+                    });
+                    setFormData({
+                      ...formData,
+                      categories: newCategories,
+                      subcategories: formData.subcategories.filter((s) => !subcatsToRemove.includes(s)),
+                    });
+                  }}
+                  placeholder="Seleccionar categorias"
+                  emptyMessage="No hay categorias disponibles"
+                />
               </div>
               <div className="space-y-2">
                 <Label>Subcategorias</Label>
-                <div className="rounded-lg border border-border bg-background p-3 max-h-[200px] overflow-y-auto">
-                  {formData.categories.length === 0 ? (
-                    <p className="text-sm text-muted-foreground">Selecciona una categoria primero</p>
-                  ) : filteredSubcategories.length === 0 ? (
-                    <p className="text-sm text-muted-foreground">No hay subcategorias disponibles</p>
-                  ) : (
-                    <div className="space-y-2">
-                      {filteredSubcategories.map((sub) => (
-                        <div key={sub.id} className="flex items-center space-x-2">
-                          <Checkbox
-                            id={`sub-${sub.id}`}
-                            checked={formData.subcategories.includes(sub.name)}
-                            onCheckedChange={(checked) => {
-                              if (checked) {
-                                setFormData({ ...formData, subcategories: [...formData.subcategories, sub.name] });
-                              } else {
-                                setFormData({
-                                  ...formData,
-                                  subcategories: formData.subcategories.filter((s) => s !== sub.name)
-                                });
-                              }
-                            }}
-                          />
-                          <Label htmlFor={`sub-${sub.id}`} className="text-sm font-normal cursor-pointer">
-                            {sub.name}
-                          </Label>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
+                <FormSelect
+                  multiple
+                  options={filteredSubcategories.map((sub) => ({ value: sub.name, label: sub.name }))}
+                  values={formData.subcategories}
+                  onValuesChange={(vals) => setFormData({ ...formData, subcategories: vals })}
+                  placeholder="Selecciona una categoria primero"
+                  emptyMessage={
+                    formData.categories.length === 0
+                      ? "Selecciona una categoria primero"
+                      : "No hay subcategorias disponibles"
+                  }
+                  disabled={formData.categories.length === 0}
+                />
               </div>
             </div>
 
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div className="space-y-2">
                 <Label>Marca</Label>
-                <Select value={formData.brand} onValueChange={(value) => setFormData({ ...formData, brand: value })}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Seleccionar marca" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {brands.map((brand) => (
-                      <SelectItem key={brand.id} value={brand.name}>{brand.name}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <FormSelect
+                  options={brands.map((brand) => ({ value: brand.name, label: brand.name }))}
+                  value={formData.brand}
+                  onValueChange={(value) => setFormData({ ...formData, brand: value })}
+                  placeholder="Seleccionar marca"
+                />
               </div>
               <div className="space-y-2">
                 <Label>Propiedad</Label>
-                <Select value={formData.label} onValueChange={(value) => setFormData({ ...formData, label: value })}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Seleccionar propiedad" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {labels.map((label) => (
-                      <SelectItem key={label.id} value={label.name}>{label.name}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <FormSelect
+                  options={labels.map((label) => ({ value: label.name, label: label.name }))}
+                  value={formData.label}
+                  onValueChange={(value) => setFormData({ ...formData, label: value })}
+                  placeholder="Seleccionar propiedad"
+                />
               </div>
             </div>
 
             <div className="space-y-2">
               <Label>Estado de Carrusel</Label>
-              <Select value={formData.carouselState} onValueChange={(value) => setFormData({ ...formData, carouselState: value })}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Seleccionar estado de carrusel" />
-                </SelectTrigger>
-                <SelectContent>
-                  {productCarouselStates.map((state) => (
-                    <SelectItem key={state.id} value={state.name}>{state.name}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <FormSelect
+                options={productCarouselStates.map((state) => ({ value: state.name, label: state.name }))}
+                value={formData.carouselState}
+                onValueChange={(value) => setFormData({ ...formData, carouselState: value })}
+                placeholder="Seleccionar estado de carrusel"
+              />
             </div>
 
             <div className="flex items-center space-x-2 py-2">
