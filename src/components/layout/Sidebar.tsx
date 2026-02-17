@@ -1,13 +1,11 @@
-import { Link, useLocation } from "react-router-dom";
-import { Package, ShoppingCart, Settings, Menu, X } from "lucide-react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Package, ShoppingCart, Settings, Menu, X, LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useSidebar } from "@/contexts/SidebarContext";
 import { useIsMobile } from "@/hooks/use-mobile";
-
-// Mock user data - en el futuro esto vendrá de autenticación
-const mockUser = {
-  email: "admin@tienda.com",
-};
+import { useAuth } from "@/contexts/AuthContext";
+import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
 
 const navItems = [
   { icon: Package, label: "Productos", path: "/products" },
@@ -17,13 +15,33 @@ const navItems = [
 
 export const Sidebar = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const { isCollapsed, toggleSidebar } = useSidebar();
   const isMobile = useIsMobile();
+  const { user, signOut } = useAuth();
+  const { toast } = useToast();
 
   const handleNavClick = () => {
     // Cerrar sidebar en móvil/tablet al hacer clic en un link
     if (window.innerWidth < 1024 && !isCollapsed) {
       toggleSidebar();
+    }
+  };
+
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+      toast({
+        title: "Sesión cerrada",
+        description: "Has cerrado sesión correctamente",
+      });
+      navigate("/login");
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "No se pudo cerrar la sesión",
+        variant: "destructive",
+      });
     }
   };
 
@@ -42,7 +60,7 @@ export const Sidebar = () => {
         <div className="flex h-16 items-center justify-between border-b border-sidebar-border px-4">
           {/* Móvil/Tablet: email a la izquierda, X a la derecha */}
           <div className="lg:hidden flex w-full items-center justify-between">
-            <span className="text-sm text-muted-foreground truncate">{mockUser.email}</span>
+            <span className="text-sm text-muted-foreground truncate">{user?.email || "Usuario"}</span>
             <button
               onClick={toggleSidebar}
               className="flex h-8 w-8 items-center justify-center rounded-lg hover:bg-sidebar-accent transition-colors cursor-pointer"
@@ -88,9 +106,20 @@ export const Sidebar = () => {
         </nav>
 
         {/* Footer */}
-        <div className="border-t border-sidebar-border p-4">
-          <p className="text-xs text-muted-foreground whitespace-nowrap">Panel de Administración</p>
-          <p className="text-xs text-muted-foreground">v1.0.0</p>
+        <div className="border-t border-sidebar-border p-4 space-y-3">
+          <div className="space-y-1">
+            <p className="text-xs font-medium text-foreground truncate">{user?.email || "Usuario"}</p>
+            <p className="text-xs text-muted-foreground">Panel de Administración</p>
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleSignOut}
+            className="w-full justify-start gap-2"
+          >
+            <LogOut className="h-4 w-4" />
+            Cerrar sesión
+          </Button>
         </div>
       </div>
     </aside>
