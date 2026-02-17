@@ -521,6 +521,9 @@ const ProductForm = () => {
               </div>
             )}
 
+          </TabsContent>
+
+          <TabsContent value="details" className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="shortDescription">Descripcion corta</Label>
               <Input
@@ -530,9 +533,6 @@ const ProductForm = () => {
                 placeholder="Breve descripcion del producto"
               />
             </div>
-          </TabsContent>
-
-          <TabsContent value="details" className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="longDescription">Descripcion larga</Label>
               <Textarea
