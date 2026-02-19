@@ -113,12 +113,10 @@ const OrderForm = () => {
     return available;
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
+  const saveOrder = async (): Promise<string | null> => {
     if (formData.items.length === 0) {
       toast({ title: "Error", description: "Agrega al menos un producto al pedido.", variant: "destructive" });
-      return;
+      return null;
     }
 
     const discountValue = parseFloat(formData.discount) || 0;
@@ -126,62 +124,69 @@ const OrderForm = () => {
     const statusObj = orderStatuses.find((s) => s.name === formData.status);
     if (!statusObj) {
       toast({ title: "Error", description: "Estado de pedido invalido.", variant: "destructive" });
-      return;
+      return null;
     }
 
-    try {
-      if (isEditing && order) {
-        const updatedOrder: Order = {
-          ...order,
-          status: formData.status,
-          status_id: statusObj.id,
-          discount: discountValue,
-          product_discounts: calculateProductDiscounts(),
-          items: formData.items,
-          subtotal: calculateSubtotal(),
-          total: calculateTotal(),
-          updatedAt: new Date(),
-        };
-        await updateOrder(updatedOrder);
-        toast({ title: "Pedido actualizado" });
-      } else {
-        let nextOrderNumber = 1000;
-        if (orders.length > 0) {
-          const orderNumbers = orders
-            .map(o => {
-              const match = o.order_number.match(/ORD-(\d+)/);
-              return match ? parseInt(match[1]) : 0;
-            })
-            .filter(n => n > 0);
+    if (isEditing && order) {
+      const updatedOrder: Order = {
+        ...order,
+        status: formData.status,
+        status_id: statusObj.id,
+        discount: discountValue,
+        product_discounts: calculateProductDiscounts(),
+        items: formData.items,
+        subtotal: calculateSubtotal(),
+        total: calculateTotal(),
+        updatedAt: new Date(),
+      };
+      await updateOrder(updatedOrder);
+      return order.order_number;
+    } else {
+      let nextOrderNumber = 1000;
+      if (orders.length > 0) {
+        const orderNumbers = orders
+          .map(o => {
+            const match = o.order_number.match(/ORD-(\d+)/);
+            return match ? parseInt(match[1]) : 0;
+          })
+          .filter(n => n > 0);
 
-          if (orderNumbers.length > 0) {
-            nextOrderNumber = Math.max(...orderNumbers) + 1;
-          }
+        if (orderNumbers.length > 0) {
+          nextOrderNumber = Math.max(...orderNumbers) + 1;
         }
-        const orderNumber = `ORD-${nextOrderNumber}`;
-
-        const newOrder: Order = {
-          id: `${Date.now()}`,
-          order_number: orderNumber,
-          customer_name: "Cliente Administrador",
-          customer_phone: "N/A",
-          customer_email: null,
-          customer_address: null,
-          status: formData.status,
-          status_id: statusObj.id,
-          discount: discountValue,
-          product_discounts: calculateProductDiscounts(),
-          items: formData.items,
-          subtotal: calculateSubtotal(),
-          total: calculateTotal(),
-          notes: null,
-          payment_method: null,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        };
-        await addOrder(newOrder);
-        toast({ title: "Pedido creado" });
       }
+      const orderNumber = `ORD-${nextOrderNumber}`;
+
+      const newOrder: Order = {
+        id: `${Date.now()}`,
+        order_number: orderNumber,
+        customer_name: "Cliente Administrador",
+        customer_phone: "N/A",
+        customer_email: null,
+        customer_address: null,
+        status: formData.status,
+        status_id: statusObj.id,
+        discount: discountValue,
+        product_discounts: calculateProductDiscounts(),
+        items: formData.items,
+        subtotal: calculateSubtotal(),
+        total: calculateTotal(),
+        notes: null,
+        payment_method: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+      await addOrder(newOrder);
+      return orderNumber;
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const orderNumber = await saveOrder();
+      if (!orderNumber) return;
+      toast({ title: isEditing ? "Pedido actualizado" : "Pedido creado" });
       navigate("/orders");
     } catch (error) {
       console.error('Error saving order:', error);
@@ -272,13 +277,11 @@ const OrderForm = () => {
     setProductSearchOpen(false);
   };
 
-  const handleSendWhatsApp = () => {
-    if (!order) return;
-
+  const buildWhatsAppMessage = (orderNumber: string): string => {
     const lines: string[] = [];
     lines.push("Tu pedido seria el siguiente:");
     lines.push("");
-    lines.push(`🧴 Pedido: ${order.order_number}`);
+    lines.push(`🧴 Pedido: ${orderNumber}`);
     lines.push("");
 
     formData.items.forEach((item, index) => {
@@ -304,10 +307,43 @@ const OrderForm = () => {
 
     lines.push(`Total: ${calculateTotal().toFixed(1)} Bs`);
 
-    const message = lines.join("\n");
-    const phone = order.customer_phone.replace(/\D/g, "");
-    const url = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
-    window.open(url, "_blank");
+    return lines.join("\n");
+  };
+
+  const handleSendWhatsApp = async () => {
+    try {
+      let orderNumber: string;
+
+      if (isEditing && order) {
+        orderNumber = order.order_number;
+      } else {
+        const result = await saveOrder();
+        if (!result) return;
+        orderNumber = result;
+        toast({ title: "Pedido creado exitosamente" });
+      }
+
+      const message = buildWhatsAppMessage(orderNumber);
+      const encoded = encodeURIComponent(message);
+
+      const isAndroid = /android/i.test(navigator.userAgent);
+      if (isAndroid) {
+        window.location.href = `intent://send?text=${encoded}#Intent;scheme=whatsapp;end`;
+      } else {
+        window.open(`https://wa.me/?text=${encoded}`, "_blank");
+      }
+
+      if (!isEditing) {
+        navigate("/orders");
+      }
+    } catch (error) {
+      console.error('Error sending WhatsApp:', error);
+      toast({
+        title: "Error",
+        description: "No se pudo procesar el pedido. Intente nuevamente.",
+        variant: "destructive",
+      });
+    }
   };
 
   const goBack = () => navigate("/orders");
@@ -320,17 +356,15 @@ const OrderForm = () => {
         className="sticky top-0 z-10 bg-background -mx-4 lg:-mx-6 px-4 lg:px-6 -mt-4 lg:-mt-6 pt-4 lg:pt-6 pb-3 border-b border-border mb-3"
       >
         <div className="flex items-center gap-2">
-          {isEditing && (
-            <button
-              type="button"
-              onClick={handleSendWhatsApp}
-              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-green-600/90 text-white transition-colors hover:bg-green-600"
-              aria-label="Enviar por WhatsApp"
-              title="Enviar pedido por WhatsApp"
-            >
-              <MessageCircle className="h-4 w-4" />
-            </button>
-          )}
+          <button
+            type="button"
+            onClick={handleSendWhatsApp}
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-green-600/90 text-white transition-colors hover:bg-green-600"
+            aria-label="Enviar por WhatsApp"
+            title="Enviar pedido por WhatsApp"
+          >
+            <MessageCircle className="h-4 w-4" />
+          </button>
           <button
             type="button"
             onClick={goBack}
