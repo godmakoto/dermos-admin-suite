@@ -134,3 +134,8 @@ export interface ProductCarouselState {
   type: "carousel" | "banner";
   color: string;
 }
+
+export interface StoreSettings {
+  id: string;
+  hideOutOfStock: boolean;
+}

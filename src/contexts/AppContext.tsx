@@ -13,6 +13,7 @@ import * as productService from "@/services/productService";
 import * as categoryService from "@/services/categoryService";
 import * as brandService from "@/services/brandService";
 import * as orderService from "@/services/orderService";
+import * as storeSettingsService from "@/services/storeSettingsService";
 import { supabase } from "@/lib/supabase";
 
 interface AppContextType {
@@ -76,9 +77,9 @@ interface AppContextType {
   isDarkMode: boolean;
   toggleDarkMode: () => void;
 
-  // Display Settings
+  // Display Settings (stored in Supabase store_settings)
   hideOutOfStock: boolean;
-  toggleHideOutOfStock: () => void;
+  toggleHideOutOfStock: () => Promise<void>;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -210,9 +211,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       document.documentElement.classList.add("dark");
     }
 
-    const savedHideOutOfStock = localStorage.getItem("hideOutOfStock");
-    if (savedHideOutOfStock === "true") {
-      setHideOutOfStock(true);
+    // Load hideOutOfStock from Supabase
+    if (supabase) {
+      storeSettingsService.getStoreSettings()
+        .then((settings) => setHideOutOfStock(settings.hideOutOfStock))
+        .catch((err) => console.error("Failed to load store settings:", err));
     }
   }, []);
 
@@ -230,12 +233,17 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     });
   };
 
-  const toggleHideOutOfStock = () => {
-    setHideOutOfStock((prev) => {
-      const newValue = !prev;
-      localStorage.setItem("hideOutOfStock", newValue.toString());
-      return newValue;
-    });
+  const toggleHideOutOfStock = async () => {
+    const newValue = !hideOutOfStock;
+    setHideOutOfStock(newValue);
+    if (supabase) {
+      try {
+        await storeSettingsService.updateStoreSettings({ hideOutOfStock: newValue });
+      } catch (error) {
+        console.error("Failed to update store settings:", error);
+        setHideOutOfStock(!newValue); // Revertir en caso de error
+      }
+    }
   };
 
   // Products

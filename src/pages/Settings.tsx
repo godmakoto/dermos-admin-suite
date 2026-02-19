@@ -521,7 +521,7 @@ const Settings = () => {
                 <div className="space-y-0.5">
                   <Label htmlFor="hide-out-of-stock">Ocultar productos sin stock</Label>
                   <p className="text-sm text-muted-foreground">
-                    Los productos sin stock no se mostrarán en la lista de productos
+                    Los productos sin stock no se mostrarán en la web del cliente
                   </p>
                 </div>
                 <Switch
