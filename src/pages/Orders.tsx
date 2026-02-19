@@ -1,8 +1,8 @@
 import { useState, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { PageHeader } from "@/components/ui/page-header";
 import { DataTable } from "@/components/ui/data-table";
-import { OrderModal } from "@/components/orders/OrderModal";
 import { OrderStatusSelect } from "@/components/orders/OrderStatusSelect";
 import { useApp } from "@/contexts/AppContext";
 import { Order } from "@/types";
@@ -27,9 +27,8 @@ import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
 
 const Orders = () => {
+  const navigate = useNavigate();
   const { orders, orderStatuses, updateOrder } = useApp();
-  const [modalOpen, setModalOpen] = useState(false);
-  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [filterPopoverOpen, setFilterPopoverOpen] = useState(false);
 
   // Filter states
@@ -60,13 +59,11 @@ const Orders = () => {
   };
 
   const handleEdit = (order: Order) => {
-    setSelectedOrder(order);
-    setModalOpen(true);
+    navigate(`/orders/${order.id}/edit`);
   };
 
   const handleCreateOrder = () => {
-    setSelectedOrder(null);
-    setModalOpen(true);
+    navigate("/orders/new");
   };
 
   const handleStatusChange = async (orderId: string, newStatus: string) => {
@@ -358,12 +355,6 @@ const Orders = () => {
         emptyMessage="No hay pedidos"
       />
 
-      <OrderModal
-        open={modalOpen}
-        onClose={() => setModalOpen(false)}
-        order={selectedOrder}
-        onOrderSaved={(savedOrder) => setSelectedOrder(savedOrder)}
-      />
     </AppLayout>
   );
 };

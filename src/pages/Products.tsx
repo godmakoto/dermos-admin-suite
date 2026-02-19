@@ -1,9 +1,9 @@
-import { useState, useMemo, useRef, useCallback, useEffect } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ProductModal } from "@/components/products/ProductModal";
 import { ProductCard } from "@/components/products/ProductCard";
 import { useApp } from "@/contexts/AppContext";
 import { Product } from "@/types";
@@ -33,10 +33,9 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 
 const Products = () => {
+  const navigate = useNavigate();
   const { products, categories, subcategories, brands, deleteProduct, duplicateProduct, updateProduct, hideOutOfStock, isLoadingProducts } = useApp();
   const { toast } = useToast();
-  const [modalOpen, setModalOpen] = useState(false);
-  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [filterPopoverOpen, setFilterPopoverOpen] = useState(false);
 
   // Multi-selection states
@@ -56,8 +55,11 @@ const Products = () => {
   const [statusFilter, setStatusFilter] = useState("all");
   const [sortOrder, setSortOrder] = useState("default");
 
-  // Infinite scroll states
-  const [displayedCount, setDisplayedCount] = useState(20); // Show 20 products initially
+  // Infinite scroll states — restore count so scroll position works when returning
+  const [displayedCount, setDisplayedCount] = useState(() => {
+    const saved = sessionStorage.getItem('products:displayedCount');
+    return saved ? Math.max(parseInt(saved, 10), 20) : 20;
+  });
   const observerTarget = useRef<HTMLDivElement>(null);
 
   const isSelectionMode = selectedProducts.length > 0;
@@ -154,10 +156,20 @@ const Products = () => {
     return result;
   }, [products, searchQuery, categoryFilter, brandFilter, stockFilter, statusFilter, sortOrder, hideOutOfStock]);
 
-  // Reset displayed count when filters change
+  // Reset displayed count when filters change (skip initial mount to preserve restored value)
+  const filtersInitialized = useRef(false);
   useEffect(() => {
+    if (!filtersInitialized.current) {
+      filtersInitialized.current = true;
+      return;
+    }
     setDisplayedCount(20);
   }, [searchQuery, categoryFilter, brandFilter, stockFilter, statusFilter, sortOrder]);
+
+  // Persist displayedCount so scroll restoration works when returning to this page
+  useEffect(() => {
+    sessionStorage.setItem('products:displayedCount', String(displayedCount));
+  }, [displayedCount]);
 
   // Infinite scroll observer
   useEffect(() => {
@@ -189,20 +201,18 @@ const Products = () => {
   }, [filteredProducts, displayedCount]);
 
   const handleEdit = (product: Product) => {
-    setSelectedProduct(product);
-    setModalOpen(true);
+    navigate(`/products/${product.id}/edit`);
   };
 
   const handleCreate = () => {
-    setSelectedProduct(null);
-    setModalOpen(true);
+    navigate("/products/new");
   };
 
   const handleDelete = async (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
     try {
       await deleteProduct(id);
-      toast({ title: "Producto eliminado", description: "El producto se ha eliminado correctamente." });
+      toast({ title: "Producto eliminado" });
     } catch (error) {
       toast({ 
         title: "Error", 
@@ -216,7 +226,7 @@ const Products = () => {
     e.stopPropagation();
     try {
       await duplicateProduct(id);
-      toast({ title: "Producto duplicado", description: "Se ha creado una copia del producto." });
+      toast({ title: "Producto duplicado" });
     } catch (error) {
       toast({ 
         title: "Error", 
@@ -563,12 +573,6 @@ const Products = () => {
           </Button>
         </div>
       )}
-
-      <ProductModal
-        open={modalOpen}
-        onClose={() => setModalOpen(false)}
-        product={selectedProduct}
-      />
 
       {/* Bulk Edit Modal */}
       <Dialog open={bulkEditModalOpen} onOpenChange={setBulkEditModalOpen}>

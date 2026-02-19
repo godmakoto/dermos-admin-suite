@@ -255,10 +255,19 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const addProduct = async (product: Product) => {
     if (supabase) {
+      const tempId = product.id || crypto.randomUUID();
+      const optimisticProduct = { ...product, id: tempId };
+
+      // Optimistic: agregar inmediatamente
+      setProducts((prev) => [optimisticProduct, ...prev]);
+
       try {
-        const newProduct = await productService.createProduct(product);
-        setProducts((prev) => [newProduct, ...prev]);
+        const created = await productService.createProduct(product);
+        // Reconciliar: reemplazar tempId con el ID real de Supabase
+        setProducts((prev) => prev.map((p) => p.id === tempId ? created : p));
       } catch (error) {
+        // Rollback: remover el producto temporal
+        setProducts((prev) => prev.filter((p) => p.id !== tempId));
         console.error('Failed to create product:', error);
         throw error;
       }
@@ -269,10 +278,19 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const updateProduct = async (product: Product) => {
     if (supabase) {
+      // Snapshot para rollback
+      const prevProducts = products;
+
+      // Optimistic: actualizar inmediatamente
+      setProducts((prev) => prev.map((p) => (p.id === product.id ? product : p)));
+
       try {
         const updatedProduct = await productService.updateProduct(product.id, product);
+        // Reconciliar con respuesta del DB
         setProducts((prev) => prev.map((p) => (p.id === product.id ? updatedProduct : p)));
       } catch (error) {
+        // Rollback
+        setProducts(prevProducts);
         console.error('Failed to update product:', error);
         throw error;
       }
@@ -283,10 +301,17 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const deleteProduct = async (id: string) => {
     if (supabase) {
+      // Snapshot para rollback
+      const prevProducts = products;
+
+      // Optimistic: remover inmediatamente
+      setProducts((prev) => prev.filter((p) => p.id !== id));
+
       try {
         await productService.deleteProduct(id);
-        setProducts((prev) => prev.filter((p) => p.id !== id));
       } catch (error) {
+        // Rollback
+        setProducts(prevProducts);
         console.error('Failed to delete product:', error);
         throw error;
       }
@@ -331,19 +356,26 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const duplicateProduct = async (id: string) => {
     const product = products.find((p) => p.id === id);
     if (product) {
+      const tempId = crypto.randomUUID();
       const newProduct: Product = {
         ...product,
-        id: crypto.randomUUID(), // Generate new UUID for Supabase
+        id: tempId,
         name: `${product.name} (Copia)`,
         createdAt: new Date(),
         updatedAt: new Date(),
       };
-      
+
       if (supabase) {
+        // Optimistic: agregar inmediatamente
+        setProducts((prev) => [newProduct, ...prev]);
+
         try {
           const created = await productService.createProduct(newProduct);
-          setProducts((prev) => [created, ...prev]);
+          // Reconciliar: reemplazar tempId con el ID real
+          setProducts((prev) => prev.map((p) => p.id === tempId ? created : p));
         } catch (error) {
+          // Rollback: remover el producto temporal
+          setProducts((prev) => prev.filter((p) => p.id !== tempId));
           console.error('Failed to duplicate product:', error);
           throw error;
         }
@@ -357,97 +389,99 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
+  // Un estado "retiene stock" si NO es Cancelado (Pendiente y Finalizado descuentan stock)
+  const statusHoldsStock = (statusName: string): boolean => statusName !== "Cancelado";
+
   // Orders
   const addOrder = async (order: Order) => {
     if (supabase) {
-      try {
-        const newOrder = await orderService.createOrder(order);
-        setOrders((prev) => [...prev, newOrder]);
+      const tempId = order.id || crypto.randomUUID();
+      const optimisticOrder = { ...order, id: tempId };
 
-        // Descontar stock de productos si tienen control de stock activado
-        setProducts((prevProducts) =>
-          prevProducts.map((product) => {
-            // Buscar si este producto está en el pedido
+      // Snapshots para rollback atómico
+      const prevOrders = orders;
+      const prevProducts = products;
+
+      // Optimistic: agregar pedido y ajustar stock inmediatamente
+      setOrders((prev) => [...prev, optimisticOrder]);
+      if (statusHoldsStock(order.status)) {
+        setProducts((prevProds) =>
+          prevProds.map((product) => {
             const orderItem = order.items.find((item) => item.product_id === product.id);
-
-            // Si el producto está en el pedido y tiene control de stock activado
             if (orderItem && product.trackStock) {
-              return {
-                ...product,
-                stock: Math.max(0, product.stock - orderItem.quantity), // No permitir stock negativo
-                updatedAt: new Date(),
-              };
+              return { ...product, stock: Math.max(0, product.stock - orderItem.quantity), updatedAt: new Date() };
             }
-
             return product;
           })
         );
+      }
+
+      try {
+        const created = await orderService.createOrder(order, orderStatuses);
+        // Reconciliar: reemplazar tempId con el ID real
+        setOrders((prev) => prev.map((o) => o.id === tempId ? created : o));
       } catch (error) {
+        // Rollback atómico: orders + products
+        setOrders(prevOrders);
+        setProducts(prevProducts);
         console.error('Failed to create order:', error);
         throw error;
       }
     } else {
-      // Fallback to local state if Supabase is not configured
       setOrders((prev) => [...prev, order]);
     }
   };
 
   const updateOrder = async (order: Order) => {
     if (supabase) {
-      try {
-        const updatedOrder = await orderService.updateOrder(order);
+      // Encontrar el pedido original
+      const originalOrder = orders.find((o) => o.id === order.id);
 
-        // Encontrar el pedido original
-        const originalOrder = orders.find((o) => o.id === order.id);
+      // Snapshots para rollback atómico
+      const prevOrders = orders;
+      const prevProducts = products;
 
-        // Actualizar el pedido en el estado local
-        setOrders((prev) => prev.map((o) => (o.id === order.id ? updatedOrder : o)));
+      // Optimistic: actualizar pedido inmediatamente
+      setOrders((prev) => prev.map((o) => (o.id === order.id ? order : o)));
 
-        // Si no hay pedido original, no hacer cambios en el stock
-        if (!originalOrder) return;
+      // Optimistic: ajustar stock inmediatamente
+      if (originalOrder) {
+        const oldHoldsStock = statusHoldsStock(originalOrder.status);
+        const newHoldsStock = statusHoldsStock(order.status);
 
-        // Ajustar stock de productos
-        setProducts((prevProducts) =>
-          prevProducts.map((product) => {
+        setProducts((prevProds) =>
+          prevProds.map((product) => {
             if (!product.trackStock) return product;
 
-            // Buscar item en pedido original y nuevo
             const originalItem = originalOrder.items.find((item) => item.product_id === product.id);
             const newItem = order.items.find((item) => item.product_id === product.id);
 
             let stockChange = 0;
+            if (oldHoldsStock && originalItem) stockChange += originalItem.quantity;
+            if (newHoldsStock && newItem) stockChange -= newItem.quantity;
 
-            // Si estaba en el pedido original, restaurar ese stock
-            if (originalItem) {
-              stockChange += originalItem.quantity;
-            }
-
-            // Si está en el nuevo pedido, descontar ese stock
-            if (newItem) {
-              stockChange -= newItem.quantity;
-            }
-
-            // Aplicar cambio de stock si hay alguno
             if (stockChange !== 0) {
-              return {
-                ...product,
-                stock: Math.max(0, product.stock + stockChange),
-                updatedAt: new Date(),
-              };
+              return { ...product, stock: Math.max(0, product.stock + stockChange), updatedAt: new Date() };
             }
-
             return product;
           })
         );
+      }
+
+      try {
+        const updatedOrder = await orderService.updateOrder(order, orderStatuses);
+        // Reconciliar con respuesta del DB
+        setOrders((prev) => prev.map((o) => (o.id === order.id ? updatedOrder : o)));
       } catch (error) {
+        // Rollback atómico: orders + products
+        setOrders(prevOrders);
+        setProducts(prevProducts);
         console.error('Failed to update order:', error);
         throw error;
       }
     } else {
-      // Fallback to local state if Supabase is not configured
       const originalOrder = orders.find((o) => o.id === order.id);
       setOrders((prev) => prev.map((o) => (o.id === order.id ? order : o)));
-      // Stock adjustment logic remains the same for local state
     }
   };
 
