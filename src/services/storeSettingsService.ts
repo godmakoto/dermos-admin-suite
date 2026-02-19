@@ -40,6 +40,9 @@ export async function updateStoreSettings(
     throw new Error('Supabase is not configured.');
   }
 
+  // Obtener ID de la fila única
+  const current = await getStoreSettings();
+
   // Construir objeto de actualización con snake_case
   const updates: Record<string, unknown> = {
     updated_at: new Date().toISOString(),
@@ -48,10 +51,10 @@ export async function updateStoreSettings(
     updates.hide_out_of_stock = settings.hideOutOfStock;
   }
 
-  // Actualizar la fila única (sin filtro WHERE, solo hay una fila)
   const { data, error } = await supabase
     .from('store_settings')
     .update(updates)
+    .eq('id', current.id)
     .select()
     .single();
 
