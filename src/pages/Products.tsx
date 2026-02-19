@@ -34,7 +34,7 @@ import { useToast } from "@/hooks/use-toast";
 
 const Products = () => {
   const navigate = useNavigate();
-  const { products, categories, subcategories, brands, deleteProduct, duplicateProduct, updateProduct, hideOutOfStock, isLoadingProducts } = useApp();
+  const { products, categories, subcategories, brands, deleteProduct, duplicateProduct, updateProduct, isLoadingProducts } = useApp();
   const { toast } = useToast();
   const [filterPopoverOpen, setFilterPopoverOpen] = useState(false);
 
@@ -93,11 +93,6 @@ const Products = () => {
   const filteredProducts = useMemo(() => {
     let result = [...products];
 
-    // Hide out of stock filter (from settings - only applies to products with stock tracking)
-    if (hideOutOfStock) {
-      result = result.filter((p) => !p.trackStock || p.stock > 0);
-    }
-
     // Search filter
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
@@ -154,7 +149,7 @@ const Products = () => {
     }
 
     return result;
-  }, [products, searchQuery, categoryFilter, brandFilter, stockFilter, statusFilter, sortOrder, hideOutOfStock]);
+  }, [products, searchQuery, categoryFilter, brandFilter, stockFilter, statusFilter, sortOrder]);
 
   // Reset displayed count when filters change (skip initial mount to preserve restored value)
   const filtersInitialized = useRef(false);
