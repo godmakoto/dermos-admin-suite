@@ -53,7 +53,7 @@ const Products = () => {
   const [brandFilter, setBrandFilter] = useState("all");
   const [stockFilter, setStockFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
-  const [sortOrder, setSortOrder] = useState("default");
+  const [sortOrder, setSortOrder] = useState("aToZ");
 
   // Infinite scroll states — restore count so scroll position works when returning
   const [displayedCount, setDisplayedCount] = useState(() => {
