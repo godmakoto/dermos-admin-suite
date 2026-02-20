@@ -1,45 +1,93 @@
 import { supabase } from '@/lib/supabase';
-import { SupabaseProduct, Product } from '@/types';
+import { SupabaseProduct, SupabaseProductWithImages, Product } from '@/types';
 
 /**
- * Convert a Supabase product to the internal Product format
+ * Extract storage path from a Supabase Storage URL.
+ * Returns null for external URLs (e.g. Firebase).
  */
-export function supabaseToProduct(supabaseProduct: SupabaseProduct): Product {
-  const images = [
-    supabaseProduct.image_1,
-    supabaseProduct.image_2,
-    supabaseProduct.image_3,
-    supabaseProduct.image_4,
-    supabaseProduct.image_5,
-    supabaseProduct.image_6,
-    supabaseProduct.image_7,
-  ].filter((img): img is string => img !== null && img !== '');
+function extractStoragePath(imageUrl: string): string | null {
+  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
+  if (!supabaseUrl || !imageUrl.includes(supabaseUrl.replace('https://', ''))) {
+    return null;
+  }
+  try {
+    const url = new URL(imageUrl);
+    const parts = url.pathname.split('/');
+    return parts[parts.length - 1];
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Sync product_images rows for a given product (delete + insert).
+ */
+async function syncProductImages(productId: string, images: string[]): Promise<void> {
+  if (!supabase) throw new Error('Supabase is not configured.');
+
+  const { error: deleteError } = await supabase
+    .from('product_images')
+    .delete()
+    .eq('product_id', productId);
+
+  if (deleteError) {
+    console.error('Error deleting product images:', deleteError);
+    throw new Error(`Failed to sync product images: ${deleteError.message}`);
+  }
+
+  if (images.length > 0) {
+    const rows = images.map((url, index) => ({
+      product_id: productId,
+      image_url: url,
+      storage_path: extractStoragePath(url),
+      position: index,
+    }));
+
+    const { error: insertError } = await supabase
+      .from('product_images')
+      .insert(rows);
+
+    if (insertError) {
+      console.error('Error inserting product images:', insertError);
+      throw new Error(`Failed to sync product images: ${insertError.message}`);
+    }
+  }
+}
+
+/**
+ * Convert a Supabase product (with joined images) to the internal Product format
+ */
+export function supabaseToProduct(row: SupabaseProductWithImages): Product {
+  const images = (row.product_images || [])
+    .sort((a, b) => a.position - b.position)
+    .map((img) => img.image_url);
 
   return {
-    id: supabaseProduct.id,
-    name: supabaseProduct.title || '',
-    price: supabaseProduct.regular_price || 0,
-    salePrice: supabaseProduct.offer_price || undefined,
-    categories: supabaseProduct.categories || [],
-    subcategories: supabaseProduct.subcategories || [],
-    brand: supabaseProduct.brand || '',
-    label: supabaseProduct.label || '',
-    carouselState: supabaseProduct.carousel_state || '',
-    shortDescription: supabaseProduct.short_description || '',
-    longDescription: supabaseProduct.long_description || '',
-    usage: supabaseProduct.usage_instructions || '',
-    ingredients: supabaseProduct.ingredients || '',
+    id: row.id,
+    name: row.title || '',
+    price: row.regular_price || 0,
+    salePrice: row.offer_price || undefined,
+    categories: row.categories || [],
+    subcategories: row.subcategories || [],
+    brand: row.brand || '',
+    label: row.label || '',
+    carouselState: row.carousel_state || '',
+    shortDescription: row.short_description || '',
+    longDescription: row.long_description || '',
+    usage: row.usage_instructions || '',
+    ingredients: row.ingredients || '',
     images,
-    trackStock: supabaseProduct.track_stock || false,
-    stock: supabaseProduct.stock || 0,
-    status: 'Activo', // Default status, managed at app level only
-    createdAt: new Date(supabaseProduct.created_at),
-    updatedAt: supabaseProduct.updated_at ? new Date(supabaseProduct.updated_at) : new Date(supabaseProduct.created_at),
+    trackStock: row.track_stock || false,
+    stock: row.stock || 0,
+    status: 'Activo',
+    createdAt: new Date(row.created_at),
+    updatedAt: row.updated_at ? new Date(row.updated_at) : new Date(row.created_at),
   };
 }
 
 /**
- * Convert internal Product format to Supabase product
+ * Convert internal Product format to Supabase product.
+ * Still writes image_1..7 for storefront compatibility.
  */
 export function productToSupabase(product: Partial<Product>): Partial<SupabaseProduct> {
   const images = product.images || [];
@@ -79,7 +127,7 @@ export async function getProducts(): Promise<Product[]> {
 
   const { data, error } = await supabase
     .from('products')
-    .select('*')
+    .select('*, product_images(*)')
     .order('created_at', { ascending: false });
 
   if (error) {
@@ -100,13 +148,12 @@ export async function getProductById(id: string): Promise<Product | null> {
 
   const { data, error } = await supabase
     .from('products')
-    .select('*')
+    .select('*, product_images(*)')
     .eq('id', id)
     .single();
 
   if (error) {
     if (error.code === 'PGRST116') {
-      // Not found
       return null;
     }
     console.error('Error fetching product:', error);
@@ -137,7 +184,14 @@ export async function createProduct(product: Partial<Product>): Promise<Product>
     throw new Error(`Failed to create product: ${error.message}`);
   }
 
-  return supabaseToProduct(data);
+  const images = product.images || [];
+  if (images.length > 0) {
+    await syncProductImages(data.id, images);
+  }
+
+  const created = await getProductById(data.id);
+  if (!created) throw new Error('Failed to fetch created product');
+  return created;
 }
 
 /**
@@ -150,7 +204,7 @@ export async function updateProduct(id: string, product: Partial<Product>): Prom
 
   const supabaseProduct = productToSupabase(product);
 
-  const { data, error } = await supabase
+  const { error } = await supabase
     .from('products')
     .update(supabaseProduct)
     .eq('id', id)
@@ -162,7 +216,12 @@ export async function updateProduct(id: string, product: Partial<Product>): Prom
     throw new Error(`Failed to update product: ${error.message}`);
   }
 
-  return supabaseToProduct(data);
+  const images = product.images || [];
+  await syncProductImages(id, images);
+
+  const updated = await getProductById(id);
+  if (!updated) throw new Error('Failed to fetch updated product');
+  return updated;
 }
 
 /**
@@ -173,6 +232,13 @@ export async function deleteProduct(id: string): Promise<void> {
     throw new Error('Supabase is not configured. Please set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY.');
   }
 
+  // Fetch images before delete for storage cleanup
+  const { data: images } = await supabase
+    .from('product_images')
+    .select('image_url, storage_path')
+    .eq('product_id', id);
+
+  // Delete product (CASCADE removes product_images rows)
   const { error } = await supabase
     .from('products')
     .delete()
@@ -181,5 +247,23 @@ export async function deleteProduct(id: string): Promise<void> {
   if (error) {
     console.error('Error deleting product:', error);
     throw new Error(`Failed to delete product: ${error.message}`);
+  }
+
+  // Best-effort storage cleanup (only for Supabase Storage files)
+  if (images && images.length > 0) {
+    try {
+      const filePaths = images
+        .map((img) => {
+          if (img.storage_path) return img.storage_path;
+          return extractStoragePath(img.image_url);
+        })
+        .filter((p): p is string => p !== null);
+
+      if (filePaths.length > 0) {
+        await supabase.storage.from('product-images').remove(filePaths);
+      }
+    } catch (err) {
+      console.error('Failed to cleanup storage images:', err);
+    }
   }
 }
