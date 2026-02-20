@@ -200,7 +200,7 @@ const ProductForm = () => {
     setIsUploading(true);
 
     try {
-      const url = await uploadImage(croppedFile);
+      const { publicUrl: url } = await uploadImage(croppedFile);
       setFormData((prev) => ({
         ...prev,
         images: [...prev.images, url],

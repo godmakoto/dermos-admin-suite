@@ -19,7 +19,7 @@ export const supabase: SupabaseClient | null =
 export async function uploadImage(
   file: File,
   bucket: string = 'product-images'
-): Promise<string> {
+): Promise<{ publicUrl: string; storagePath: string }> {
   if (!supabase) {
     throw new Error('Supabase is not configured. Please set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY.');
   }
@@ -47,7 +47,7 @@ export async function uploadImage(
       .from(bucket)
       .getPublicUrl(data.path);
 
-    return urlData.publicUrl;
+    return { publicUrl: urlData.publicUrl, storagePath: data.path };
   } catch (error) {
     console.error('Error uploading image:', error);
     throw new Error('Failed to upload image');
