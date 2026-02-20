@@ -77,8 +77,8 @@ export function supabaseToProduct(row: SupabaseProductWithImages): Product {
     usage: row.usage_instructions || '',
     ingredients: row.ingredients || '',
     images,
-    trackStock: row.track_stock || false,
-    stock: row.stock || 0,
+    trackStock: row.track_stock ?? false,
+    stock: row.stock ?? 0,
     status: 'Activo',
     createdAt: new Date(row.created_at),
     updatedAt: row.updated_at ? new Date(row.updated_at) : new Date(row.created_at),
@@ -89,13 +89,15 @@ export function supabaseToProduct(row: SupabaseProductWithImages): Product {
  * Convert internal Product format to Supabase product.
  * Still writes image_1..7 for storefront compatibility.
  */
-export function productToSupabase(product: Partial<Product>): Partial<SupabaseProduct> {
+export function productToSupabase(
+  product: Partial<Product>,
+  options: { isCreate?: boolean } = {}
+): Partial<SupabaseProduct> {
   const images = product.images || [];
-  return {
-    product_id: product.id || crypto.randomUUID(),
+  const data: Partial<SupabaseProduct> = {
     title: product.name || null,
-    offer_price: product.salePrice || null,
-    regular_price: product.price || null,
+    offer_price: product.salePrice ?? null,
+    regular_price: product.price ?? null,
     long_description: product.longDescription || null,
     short_description: product.shortDescription || null,
     usage_instructions: product.usage || null,
@@ -112,9 +114,15 @@ export function productToSupabase(product: Partial<Product>): Partial<SupabasePr
     carousel_state: product.carouselState || null,
     categories: product.categories || [],
     subcategories: product.subcategories || [],
-    track_stock: product.trackStock || false,
-    stock: product.stock || 0,
+    track_stock: product.trackStock ?? false,
+    stock: product.stock ?? 0,
   };
+
+  if (options.isCreate) {
+    data.product_id = crypto.randomUUID();
+  }
+
+  return data;
 }
 
 /**
@@ -171,7 +179,7 @@ export async function createProduct(product: Partial<Product>): Promise<Product>
     throw new Error('Supabase is not configured. Please set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY.');
   }
 
-  const supabaseProduct = productToSupabase(product);
+  const supabaseProduct = productToSupabase(product, { isCreate: true });
 
   const { data, error } = await supabase
     .from('products')
