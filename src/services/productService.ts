@@ -65,8 +65,8 @@ export function supabaseToProduct(row: SupabaseProductWithImages): Product {
   return {
     id: row.id,
     name: row.title || '',
-    price: row.regular_price || 0,
-    salePrice: row.offer_price || undefined,
+    price: row.regular_price ?? 0,
+    salePrice: row.offer_price ?? undefined,
     categories: row.categories || [],
     subcategories: row.subcategories || [],
     brand: row.brand || '',
@@ -77,8 +77,8 @@ export function supabaseToProduct(row: SupabaseProductWithImages): Product {
     usage: row.usage_instructions || '',
     ingredients: row.ingredients || '',
     images,
-    trackStock: row.track_stock || false,
-    stock: row.stock || 0,
+    trackStock: row.track_stock ?? false,
+    stock: row.stock ?? 0,
     status: 'Activo',
     createdAt: new Date(row.created_at),
     updatedAt: row.updated_at ? new Date(row.updated_at) : new Date(row.created_at),
@@ -92,8 +92,8 @@ export function productToSupabase(product: Partial<Product>): Partial<SupabasePr
   return {
     product_id: product.id || crypto.randomUUID(),
     title: product.name || null,
-    offer_price: product.salePrice || null,
-    regular_price: product.price || null,
+    offer_price: product.salePrice ?? null,
+    regular_price: product.price ?? null,
     long_description: product.longDescription || null,
     short_description: product.shortDescription || null,
     usage_instructions: product.usage || null,
@@ -103,8 +103,8 @@ export function productToSupabase(product: Partial<Product>): Partial<SupabasePr
     carousel_state: product.carouselState || null,
     categories: product.categories || [],
     subcategories: product.subcategories || [],
-    track_stock: product.trackStock || false,
-    stock: product.stock || 0,
+    track_stock: product.trackStock ?? false,
+    stock: product.stock ?? 0,
   };
 }
 
