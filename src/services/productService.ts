@@ -87,13 +87,12 @@ export function supabaseToProduct(row: SupabaseProductWithImages): Product {
 
 /**
  * Convert internal Product format to Supabase product.
- * Still writes image_1..7 for storefront compatibility.
+ * Images are handled separately via syncProductImages().
  */
 export function productToSupabase(
   product: Partial<Product>,
   options: { isCreate?: boolean } = {}
 ): Partial<SupabaseProduct> {
-  const images = product.images || [];
   const data: Partial<SupabaseProduct> = {
     title: product.name || null,
     offer_price: product.salePrice ?? null,
@@ -102,13 +101,6 @@ export function productToSupabase(
     short_description: product.shortDescription || null,
     usage_instructions: product.usage || null,
     ingredients: product.ingredients || null,
-    image_1: images[0] || null,
-    image_2: images[1] || null,
-    image_3: images[2] || null,
-    image_4: images[3] || null,
-    image_5: images[4] || null,
-    image_6: images[5] || null,
-    image_7: images[6] || null,
     brand: product.brand || null,
     label: product.label || null,
     carousel_state: product.carouselState || null,
