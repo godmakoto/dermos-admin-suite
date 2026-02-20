@@ -65,8 +65,8 @@ export function supabaseToProduct(row: SupabaseProductWithImages): Product {
   return {
     id: row.id,
     name: row.title || '',
-    price: row.regular_price || 0,
-    salePrice: row.offer_price || undefined,
+    price: row.regular_price ?? 0,
+    salePrice: row.offer_price ?? undefined,
     categories: row.categories || [],
     subcategories: row.subcategories || [],
     brand: row.brand || '',
@@ -77,8 +77,8 @@ export function supabaseToProduct(row: SupabaseProductWithImages): Product {
     usage: row.usage_instructions || '',
     ingredients: row.ingredients || '',
     images,
-    trackStock: row.track_stock || false,
-    stock: row.stock || 0,
+    trackStock: row.track_stock ?? false,
+    stock: row.stock ?? 0,
     status: 'Activo',
     createdAt: new Date(row.created_at),
     updatedAt: row.updated_at ? new Date(row.updated_at) : new Date(row.created_at),
@@ -87,34 +87,34 @@ export function supabaseToProduct(row: SupabaseProductWithImages): Product {
 
 /**
  * Convert internal Product format to Supabase product.
- * Still writes image_1..7 for storefront compatibility.
+ * Images are handled separately via syncProductImages().
  */
-export function productToSupabase(product: Partial<Product>): Partial<SupabaseProduct> {
-  const images = product.images || [];
-  return {
-    product_id: product.id || crypto.randomUUID(),
+export function productToSupabase(
+  product: Partial<Product>,
+  options: { isCreate?: boolean } = {}
+): Partial<SupabaseProduct> {
+  const data: Partial<SupabaseProduct> = {
     title: product.name || null,
-    offer_price: product.salePrice || null,
-    regular_price: product.price || null,
+    offer_price: product.salePrice ?? null,
+    regular_price: product.price ?? null,
     long_description: product.longDescription || null,
     short_description: product.shortDescription || null,
     usage_instructions: product.usage || null,
     ingredients: product.ingredients || null,
-    image_1: images[0] || null,
-    image_2: images[1] || null,
-    image_3: images[2] || null,
-    image_4: images[3] || null,
-    image_5: images[4] || null,
-    image_6: images[5] || null,
-    image_7: images[6] || null,
     brand: product.brand || null,
     label: product.label || null,
     carousel_state: product.carouselState || null,
     categories: product.categories || [],
     subcategories: product.subcategories || [],
-    track_stock: product.trackStock || false,
-    stock: product.stock || 0,
+    track_stock: product.trackStock ?? false,
+    stock: product.stock ?? 0,
   };
+
+  if (options.isCreate) {
+    data.product_id = crypto.randomUUID();
+  }
+
+  return data;
 }
 
 /**
@@ -171,7 +171,7 @@ export async function createProduct(product: Partial<Product>): Promise<Product>
     throw new Error('Supabase is not configured. Please set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY.');
   }
 
-  const supabaseProduct = productToSupabase(product);
+  const supabaseProduct = productToSupabase(product, { isCreate: true });
 
   const { data, error } = await supabase
     .from('products')

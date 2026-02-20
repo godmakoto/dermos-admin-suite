@@ -133,7 +133,7 @@ const ProductForm = () => {
       ingredients: formData.ingredients,
       images: formData.images,
       trackStock: formData.trackStock,
-      stock: parseInt(formData.stock) || 0,
+      stock: Math.max(0, parseInt(formData.stock, 10) || 0),
       status: formData.status,
       createdAt: product?.createdAt || new Date(),
       updatedAt: new Date(),
@@ -149,9 +149,11 @@ const ProductForm = () => {
       }
       navigate("/products");
     } catch (error) {
+      const message = error instanceof Error ? error.message : "Error desconocido";
+      console.error("Error saving product:", error);
       toast({
-        title: "Error",
-        description: "No se pudo guardar el producto.",
+        title: "Error al guardar el producto",
+        description: message,
         variant: "destructive"
       });
     }
