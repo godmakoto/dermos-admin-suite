@@ -12,13 +12,6 @@ export interface SupabaseProduct {
   description: string | null; // Additional description field from DB
   usage_instructions: string | null;
   ingredients: string | null;
-  image_1?: string | null;
-  image_2?: string | null;
-  image_3?: string | null;
-  image_4?: string | null;
-  image_5?: string | null;
-  image_6?: string | null;
-  image_7?: string | null;
   brand: string | null;
   label: string | null; // Product property (e.g., Nuevo, Popular)
   carousel_state: string | null;
