@@ -282,9 +282,9 @@ const OrderForm = () => {
 
   const formatBs = (amount: number): string => {
     if (amount % 1 === 0) {
-      return amount.toLocaleString('de-DE');
+      return amount.toLocaleString('es-BO');
     }
-    return amount.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    return amount.toLocaleString('es-BO', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   };
 
   const buildWhatsAppMessage = (orderNumber: string): string => {
