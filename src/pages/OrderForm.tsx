@@ -28,6 +28,8 @@ import {
 import {
   Dialog,
   DialogContent,
+  DialogHeader,
+  DialogTitle,
 } from "@/components/ui/dialog";
 import { X, Plus, Minus, ChevronDown, Search, MessageCircle } from "lucide-react";
 import { Order, OrderItem } from "@/types";
@@ -52,6 +54,7 @@ const OrderForm = () => {
   });
   const [productSearchOpen, setProductSearchOpen] = useState(false);
   const [mobileSearchQuery, setMobileSearchQuery] = useState("");
+  const [previewItem, setPreviewItem] = useState<OrderItem | null>(null);
 
   useEffect(() => {
     if (order) {
@@ -277,35 +280,39 @@ const OrderForm = () => {
     setProductSearchOpen(false);
   };
 
+  const formatBs = (amount: number): string => {
+    if (amount % 1 === 0) {
+      return amount.toLocaleString('es-BO');
+    }
+    return amount.toLocaleString('es-BO', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  };
+
   const buildWhatsAppMessage = (orderNumber: string): string => {
     const lines: string[] = [];
-    lines.push("Tu pedido seria el siguiente:");
-    lines.push("");
-    lines.push(`🧴 Pedido: ${orderNumber}`);
-    lines.push("");
+    lines.push(`✅ *Confirmación de Pedido: ${orderNumber}*`);
+    lines.push(`📦 *Detalle:*`);
+    lines.push("━━━━━━━━━━━━━━━━━━━━━━━━");
 
-    formData.items.forEach((item, index) => {
+    formData.items.forEach((item) => {
       const product = products.find((p) => p.id === item.product_id);
       const effectivePrice = product?.salePrice ?? item.price;
       const itemSubtotal = effectivePrice * item.quantity;
+      const displayName = product?.shortTitle || item.name;
 
-      lines.push(`${index + 1}. ${item.name}`);
-      lines.push(`   Cantidad: ${item.quantity}`);
-      lines.push(`   Precio: ${effectivePrice.toFixed(1)} Bs c/u`);
-      lines.push(`   Subtotal: ${itemSubtotal.toFixed(1)} Bs`);
-      lines.push("");
+      lines.push(`${item.quantity}x ${displayName} — ${formatBs(itemSubtotal)} Bs`);
     });
 
-    lines.push(`Subtotal: ${calculateSubtotal().toFixed(1)} Bs`);
+    lines.push("━━━━━━━━━━━━━━━━━━━━━━━━");
+    lines.push(`Subtotal: ${formatBs(calculateSubtotal())} Bs`);
 
     const productDiscounts = calculateProductDiscounts();
     const additionalDiscount = parseFloat(formData.discount) || 0;
     const totalDiscount = productDiscounts + additionalDiscount;
     if (totalDiscount > 0) {
-      lines.push(`Descuento: -${totalDiscount.toFixed(1)} Bs`);
+      lines.push(`Descuento: -${formatBs(totalDiscount)} Bs`);
     }
 
-    lines.push(`Total: ${calculateTotal().toFixed(1)} Bs`);
+    lines.push(`💰 *TOTAL: ${formatBs(calculateTotal())} Bs*`);
 
     return lines.join("\n");
   };
@@ -627,27 +634,33 @@ const OrderForm = () => {
                   key={item.product_id}
                   className="flex items-center gap-2 rounded-lg border border-border p-2"
                 >
-                  {item.image && (
-                    <div className="h-12 w-12 rounded-md overflow-hidden bg-muted flex-shrink-0">
-                      <img src={item.image} alt={item.name} className="h-full w-full object-cover" />
+                  <button
+                    type="button"
+                    className="flex items-center gap-2 min-w-0 flex-1 text-left"
+                    onClick={() => setPreviewItem(item)}
+                  >
+                    {item.image && (
+                      <div className="h-12 w-12 rounded-md overflow-hidden bg-muted flex-shrink-0">
+                        <img src={item.image} alt={item.name} className="h-full w-full object-cover" />
+                      </div>
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium truncate">{item.name}</p>
+                      <div className="flex items-center gap-2">
+                        {product && product.salePrice ? (
+                          <>
+                            <p className="text-xs text-muted-foreground line-through">Bs {product.price.toFixed(1)}</p>
+                            <p className="text-sm font-semibold text-foreground">Bs {product.salePrice.toFixed(1)}</p>
+                          </>
+                        ) : (
+                          <p className="text-sm text-muted-foreground">Bs {item.price.toFixed(1)}</p>
+                        )}
+                        {hasStockTracking && (
+                          <p className="text-xs text-muted-foreground">• Disp: {availableStock}</p>
+                        )}
+                      </div>
                     </div>
-                  )}
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium truncate">{item.name}</p>
-                    <div className="flex items-center gap-2">
-                      {product && product.salePrice ? (
-                        <>
-                          <p className="text-xs text-muted-foreground line-through">Bs {product.price.toFixed(1)}</p>
-                          <p className="text-sm font-semibold text-foreground">Bs {product.salePrice.toFixed(1)}</p>
-                        </>
-                      ) : (
-                        <p className="text-sm text-muted-foreground">Bs {item.price.toFixed(1)}</p>
-                      )}
-                      {hasStockTracking && (
-                        <p className="text-xs text-muted-foreground">• Disp: {availableStock}</p>
-                      )}
-                    </div>
-                  </div>
+                  </button>
                   <div className="flex items-center gap-1 flex-shrink-0">
                     <Button type="button" variant="outline" size="icon" className="h-8 w-8" onClick={() => updateItemQuantity(item.product_id, -1)} disabled={item.quantity <= 1}>
                       <Minus className="h-3 w-3" />
@@ -729,6 +742,26 @@ const OrderForm = () => {
           </div>
         </div>
       </form>
+
+      {/* Product Preview Dialog */}
+      <Dialog open={!!previewItem} onOpenChange={(open) => !open && setPreviewItem(null)}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="text-base">{previewItem?.name}</DialogTitle>
+          </DialogHeader>
+          {previewItem?.image ? (
+            <img
+              src={previewItem.image}
+              alt={previewItem.name}
+              className="w-full rounded-lg object-contain"
+            />
+          ) : (
+            <div className="flex h-48 items-center justify-center rounded-lg bg-muted">
+              <p className="text-sm text-muted-foreground">Sin imagen</p>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </AppLayout>
   );
 };

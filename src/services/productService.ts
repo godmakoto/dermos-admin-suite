@@ -65,6 +65,7 @@ export function supabaseToProduct(row: SupabaseProductWithImages): Product {
   return {
     id: row.id,
     name: row.title || '',
+    shortTitle: row.short_title || row.title || '',
     price: row.regular_price ?? 0,
     salePrice: row.offer_price ?? undefined,
     categories: row.categories || [],

@@ -68,19 +68,30 @@ export const ImageCropEditor = ({
     const scaleX = image.naturalWidth / image.width;
     const scaleY = image.naturalHeight / image.height;
 
-    canvas.width = completedCrop.width;
-    canvas.height = completedCrop.height;
+    const sourceX = Math.round(completedCrop.x * scaleX);
+    const sourceY = Math.round(completedCrop.y * scaleY);
+    const sourceW = Math.min(
+      Math.round(completedCrop.width * scaleX),
+      image.naturalWidth - sourceX
+    );
+    const sourceH = Math.min(
+      Math.round(completedCrop.height * scaleY),
+      image.naturalHeight - sourceY
+    );
+
+    canvas.width = sourceW;
+    canvas.height = sourceH;
 
     ctx.drawImage(
       image,
-      completedCrop.x * scaleX,
-      completedCrop.y * scaleY,
-      completedCrop.width * scaleX,
-      completedCrop.height * scaleY,
+      sourceX,
+      sourceY,
+      sourceW,
+      sourceH,
       0,
       0,
-      completedCrop.width,
-      completedCrop.height
+      sourceW,
+      sourceH
     );
 
     return new Promise((resolve) => {
