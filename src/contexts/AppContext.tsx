@@ -30,6 +30,7 @@ interface AppContextType {
 
   // Orders
   orders: Order[];
+  isLoadingOrders: boolean;
   addOrder: (order: Order) => Promise<void>;
   updateOrder: (order: Order) => Promise<void>;
 
@@ -88,6 +89,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [products, setProducts] = useState<Product[]>([]);
   const [isLoadingProducts, setIsLoadingProducts] = useState(true);
   const [orders, setOrders] = useState<Order[]>([]);
+  const [isLoadingOrders, setIsLoadingOrders] = useState(true);
   const [categories, setCategories] = useState<Category[]>(mockCategories);
   const [subcategories, setSubcategories] = useState<Subcategory[]>(mockSubcategories);
   const [brands, setBrands] = useState<Brand[]>(mockBrands);
@@ -189,15 +191,19 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const loadOrders = async () => {
       if (supabase && orderStatuses.length > 0) {
         try {
+          setIsLoadingOrders(true);
           const fetchedOrders = await orderService.getOrders(orderStatuses);
           setOrders(fetchedOrders);
         } catch (error) {
           console.error('Failed to load orders from Supabase:', error);
           setOrders([]);
+        } finally {
+          setIsLoadingOrders(false);
         }
       } else if (!supabase) {
         console.warn('Supabase is not configured. Orders will be empty.');
         setOrders([]);
+        setIsLoadingOrders(false);
       }
     };
 
@@ -805,6 +811,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         importProducts,
         refreshProducts,
         orders,
+        isLoadingOrders,
         addOrder,
         updateOrder,
         categories,
