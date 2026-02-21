@@ -17,6 +17,7 @@ export interface SupabaseProduct {
   carousel_state: string | null;
   categories: string[]; // JSON array stored as JSONB
   subcategories: string[]; // JSON array stored as JSONB
+  short_title: string | null;
   track_stock: boolean | null;
   stock: number | null;
   created_at: string; // ISO timestamp
@@ -39,6 +40,7 @@ export interface SupabaseProductWithImages extends SupabaseProduct {
 export interface Product {
   id: string;
   name: string;
+  shortTitle: string;
   price: number;
   salePrice?: number;
   categories: string[];

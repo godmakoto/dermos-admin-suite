@@ -280,35 +280,39 @@ const OrderForm = () => {
     setProductSearchOpen(false);
   };
 
+  const formatBs = (amount: number): string => {
+    if (amount % 1 === 0) {
+      return amount.toLocaleString('de-DE');
+    }
+    return amount.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  };
+
   const buildWhatsAppMessage = (orderNumber: string): string => {
     const lines: string[] = [];
-    lines.push("Tu pedido seria el siguiente:");
-    lines.push("");
-    lines.push(`🧴 Pedido: ${orderNumber}`);
-    lines.push("");
+    lines.push(`✅ *Confirmación de Pedido: ${orderNumber}*`);
+    lines.push(`📦 *Detalle:*`);
+    lines.push("━━━━━━━━━━━━━━━━━━━━━━━━");
 
-    formData.items.forEach((item, index) => {
+    formData.items.forEach((item) => {
       const product = products.find((p) => p.id === item.product_id);
       const effectivePrice = product?.salePrice ?? item.price;
       const itemSubtotal = effectivePrice * item.quantity;
+      const displayName = product?.shortTitle || item.name;
 
-      lines.push(`${index + 1}. ${item.name}`);
-      lines.push(`   Cantidad: ${item.quantity}`);
-      lines.push(`   Precio: ${effectivePrice.toFixed(1)} Bs c/u`);
-      lines.push(`   Subtotal: ${itemSubtotal.toFixed(1)} Bs`);
-      lines.push("");
+      lines.push(`${item.quantity}x ${displayName} — ${formatBs(itemSubtotal)} Bs`);
     });
 
-    lines.push(`Subtotal: ${calculateSubtotal().toFixed(1)} Bs`);
+    lines.push("━━━━━━━━━━━━━━━━━━━━━━━━");
+    lines.push(`Subtotal: ${formatBs(calculateSubtotal())} Bs`);
 
     const productDiscounts = calculateProductDiscounts();
     const additionalDiscount = parseFloat(formData.discount) || 0;
     const totalDiscount = productDiscounts + additionalDiscount;
     if (totalDiscount > 0) {
-      lines.push(`Descuento: -${totalDiscount.toFixed(1)} Bs`);
+      lines.push(`Descuento: -${formatBs(totalDiscount)} Bs`);
     }
 
-    lines.push(`Total: ${calculateTotal().toFixed(1)} Bs`);
+    lines.push(`💰 *TOTAL: ${formatBs(calculateTotal())} Bs*`);
 
     return lines.join("\n");
   };
