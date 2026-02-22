@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Checkbox } from "@/components/ui/checkbox";
-import { GripVertical, Link as LinkIcon, Upload, Loader2, Copy, Trash2, X } from "lucide-react";
+import { GripVertical, Upload, Loader2, Copy, Trash2, X } from "lucide-react";
 import { FormSelect } from "@/components/ui/form-select";
 import {
   AlertDialog,
@@ -55,7 +55,6 @@ const ProductForm = () => {
     status: "Activo" as "Activo" | "Inactivo" | "Agotado",
   });
 
-  const [imageUrl, setImageUrl] = useState("");
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [cropEditorOpen, setCropEditorOpen] = useState(false);
@@ -156,16 +155,6 @@ const ProductForm = () => {
         description: message,
         variant: "destructive"
       });
-    }
-  };
-
-  const addImageUrl = () => {
-    if (imageUrl.trim()) {
-      setFormData((prev) => ({
-        ...prev,
-        images: [...prev.images, imageUrl.trim()],
-      }));
-      setImageUrl("");
     }
   };
 
@@ -506,31 +495,6 @@ const ProductForm = () => {
           </TabsContent>
 
           <TabsContent value="images" className="space-y-4">
-            <div className="space-y-2">
-              <Label>Agregar imagen por URL</Label>
-              <div className="flex flex-col gap-2 sm:flex-row">
-                <Input
-                  value={imageUrl}
-                  onChange={(e) => setImageUrl(e.target.value)}
-                  placeholder="https://ejemplo.com/imagen.jpg"
-                  className="w-full"
-                />
-                <Button type="button" onClick={addImageUrl} variant="secondary" className="w-full shrink-0 sm:w-auto">
-                  <LinkIcon className="mr-2 h-4 w-4" />
-                  Agregar
-                </Button>
-              </div>
-            </div>
-
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t" />
-              </div>
-              <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-background px-2 text-muted-foreground">O</span>
-              </div>
-            </div>
-
             <div className="space-y-2">
               <Label>Subir imagen desde tu dispositivo</Label>
               <div className="flex flex-col gap-2">

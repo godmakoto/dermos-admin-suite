@@ -8,7 +8,7 @@ import { useApp } from "@/contexts/AppContext";
 import { Order } from "@/types";
 import { format, isToday, isYesterday, isThisWeek, isThisMonth, isWithinInterval } from "date-fns";
 import { es } from "date-fns/locale";
-import { Search, CalendarIcon, SlidersHorizontal, Plus } from "lucide-react";
+import { Search, CalendarIcon, SlidersHorizontal, Plus, Loader2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -28,7 +28,7 @@ import { cn } from "@/lib/utils";
 
 const Orders = () => {
   const navigate = useNavigate();
-  const { orders, orderStatuses, updateOrder } = useApp();
+  const { orders, isLoadingOrders, orderStatuses, updateOrder } = useApp();
   const [filterPopoverOpen, setFilterPopoverOpen] = useState(false);
 
   // Filter states
@@ -348,12 +348,19 @@ const Orders = () => {
         </div>
       </div>
 
-      <DataTable
-        columns={columns}
-        data={filteredOrders}
-        onRowClick={handleEdit}
-        emptyMessage="No hay pedidos"
-      />
+      {isLoadingOrders ? (
+        <div className="rounded-lg border border-dashed border-border p-12 text-center">
+          <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto mb-3" />
+          <p className="text-sm text-muted-foreground">Cargando pedidos...</p>
+        </div>
+      ) : (
+        <DataTable
+          columns={columns}
+          data={filteredOrders}
+          onRowClick={handleEdit}
+          emptyMessage="No hay pedidos"
+        />
+      )}
 
     </AppLayout>
   );
